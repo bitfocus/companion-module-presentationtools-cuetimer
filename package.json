@@ -1,0 +1,26 @@
+{
+  "name": "presentationtools-cuetimer",
+  "version": "1.0.0",
+  "api_version": "1.0.0",
+  "support": {
+    "action": true,
+    "feedback": true,
+    "preset": false
+  },
+  "shortname": "cuetimer",
+  "keywords": [
+    "Presentation",
+    "Timer",
+    "Software"
+  ],
+  "homepage": "https://presentationtools.com/",
+  "manufacturer": "PresentationTools",
+  "product": "CueTimer",
+  "description": "Module to control CueTimer",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Mohammad Ahmad <eng.ma90@gmail.com>",
+  "license": "MIT"
+}
