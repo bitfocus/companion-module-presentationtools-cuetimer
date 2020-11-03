@@ -48,11 +48,14 @@ instance.prototype.init = function () {
     debug = self.debug;
     log = self.log;
 
-    self.sec = '01';
-    self.minutes = '02';
-    self.hours = '03';
+    self.sec = '00';
+    self.minutes = '00';
+    self.hours = '00';
     self.bgColor = self.rgb(0, 0, 0);
     self.fgColor = self.rgb(255, 255, 255);
+    self.name = "";
+    self.speed = "";
+    self.endTime = "";
 
     self.initTCP();
     self.feedbacks();
@@ -102,11 +105,16 @@ instance.prototype.initTCP = function () {
             let tempBg = self.hexToRgb(jsonData.bg.substr(0, 1) + jsonData.bg.substr(3))
             self.fgColor = self.rgb(tempFg.r, tempFg.g, tempFg.b);
             self.bgColor = self.rgb(tempBg.r, tempBg.g, tempBg.b);
-            // console.log(self.fgColor);
+            self.name = jsonData.name;
+            self.speed = `Speed\\n\\n${jsonData.speed}%`;
+            self.endTime = `End Time\\n\\n${jsonData.endTime}`;
 
             self.checkFeedbacks('set_hours');
             self.checkFeedbacks('set_minutes');
             self.checkFeedbacks('set_seconds');
+            self.checkFeedbacks('set_name');
+            self.checkFeedbacks('set_speed');
+            self.checkFeedbacks('set_endTime');
 
         });
         self.socket.on('end', function () {
@@ -201,7 +209,30 @@ instance.prototype.feedbacks = function () {
             callback: function (feedback, bank) {
                 return { color: self.fgColor, bgcolor: self.bgColor, text: self.sec }
             }
-        }
+        },
+        //////////////////////
+        set_name: {
+            label: 'Name',
+            description: 'Display name on this button',
+            callback: function (feedback, bank) {
+                return { /*color: self.fgColor, bgcolor: self.bgColor,*/ text: self.name }
+            }
+        },
+        set_speed: {
+            label: 'speed',
+            description: 'Display speed on this button',
+            callback: function (feedback, bank) {
+                return { size: '14', text: self.speed }
+            }
+        },
+        set_endTime: {
+            label: 'end time',
+            description: 'Display end time on this button',
+            callback: function (feedback, bank) {
+                return { size: '14', text: self.endTime }
+            }
+        },
+
     }
 
 
