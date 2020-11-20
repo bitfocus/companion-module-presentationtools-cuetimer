@@ -97,9 +97,15 @@ instance.prototype.initTCP = function () {
             let message = received.handleData()
             let jsonData = JSON.parse(message)
             // console.log(message);
-            self.hours = (jsonData.h < 0 ? '+' : '') + jsonData.h.replace('-', '').lpad('0', 2);
-            self.minutes = (jsonData.m < 0 ? '+' : '') + jsonData.m.replace('-', '').lpad('0', 2);
-            self.sec = (jsonData.s < 0 ? '+' : '') + jsonData.s.replace('-', '').lpad('0', 2);
+            self.hours = (jsonData.h < 0 ? '+' : '') + jsonData.h.replace('-', '');
+            self.hours = (self.hours == '') ? '' : self.hours.lpad('0', 2);
+
+            self.minutes = (jsonData.m < 0 ? '+' : '') + jsonData.m.replace('-', '');
+            self.minutes = (self.minutes == '') ? '' : self.minutes.lpad('0', 2);
+
+            self.sec = (jsonData.s < 0 ? '+' : '') + jsonData.s.replace('-', '');
+            self.sec = (self.sec == '') ? '' : self.sec.lpad('0', 2);
+
             // console.log(jsonData.fg.substr(0, 1) + jsonData.fg.substr(2))
             let tempFg = self.hexToRgb(jsonData.fg.substr(0, 1) + jsonData.fg.substr(3))
             let tempBg = self.hexToRgb(jsonData.bg.substr(0, 1) + jsonData.bg.substr(3))
