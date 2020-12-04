@@ -201,21 +201,21 @@ instance.prototype.feedbacks = function () {
             label: 'hours',
             description: 'Display hours on this button',
             callback: function (feedback, bank) {
-                return { color: self.fgColor, bgcolor: self.bgColor, text: self.hours }
+                return { size: 'auto', color: self.fgColor, bgcolor: self.bgColor, text: self.hours }
             }
         },
         set_minutes: {
             label: 'minutes',
             description: 'Display minutes on this button',
             callback: function (feedback, bank) {
-                return { color: self.fgColor, bgcolor: self.bgColor, text: self.minutes }
+                return { size: 'auto', color: self.fgColor, bgcolor: self.bgColor, text: self.minutes }
             }
         },
         set_seconds: {
             label: 'seconds',
             description: 'Display seconds on this button',
             callback: function (feedback, bank) {
-                return { color: self.fgColor, bgcolor: self.bgColor, text: self.sec }
+                return { size: 'auto', color: self.fgColor, bgcolor: self.bgColor, text: self.sec }
             }
         },
         //////////////////////
@@ -223,7 +223,7 @@ instance.prototype.feedbacks = function () {
             label: 'Name',
             description: 'Display name on this button',
             callback: function (feedback, bank) {
-                return { /*color: self.fgColor, bgcolor: self.bgColor,*/ text: self.name }
+                return { size: 'auto', text: self.name }
             }
         },
         set_speed: {
