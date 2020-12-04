@@ -83,6 +83,26 @@ exports.getPresets = function () {
         },
         {
             category: 'Commands',
+            label: 'Reset',
+            bank: {
+                bgcolor: 0,
+
+                style: 'png',
+                png64: icons.Reset,
+                pngalignment: 'center:top',
+
+                text: 'Reset',
+                alignment: 'center:bottom',
+                size: '14',
+                color: 16777215
+
+            },
+            actions: [{
+                action: 'Reset'
+            }]
+        },
+        {
+            category: 'Commands',
             label: 'Continue Previous Timer',
             bank: {
                 bgcolor: 0,
@@ -99,26 +119,6 @@ exports.getPresets = function () {
             },
             actions: [{
                 action: 'ContinuePrev'
-            }]
-        },
-        {
-            category: 'Commands',
-            label: 'Blackout',
-            bank: {
-                bgcolor: 0,
-
-                style: 'png',
-                png64: icons.Blackout,
-                pngalignment: 'center:top',
-
-                text: 'Blackout',
-                alignment: 'center:bottom',
-                size: '14',
-                color: 16777215
-
-            },
-            actions: [{
-                action: 'Blackout'
             }]
         },
         {
@@ -203,22 +203,22 @@ exports.getPresets = function () {
         },
         {
             category: 'Commands',
-            label: 'Reset',
+            label: 'Blackout',
             bank: {
                 bgcolor: 0,
 
                 style: 'png',
-                png64: icons.Reset,
+                png64: icons.Blackout,
                 pngalignment: 'center:top',
 
-                text: 'Reset',
+                text: 'Blackout',
                 alignment: 'center:bottom',
                 size: '14',
                 color: 16777215
 
             },
             actions: [{
-                action: 'Reset'
+                action: 'Blackout'
             }]
         },
 
@@ -281,7 +281,7 @@ exports.getPresets = function () {
             bank: {
                 bgcolor: 0,
                 style: 'text',
-                text: 'Timer',
+                text: 'Name',
                 alignment: 'center:center',
                 size: '18',
                 color: 16777215
