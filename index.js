@@ -1,5 +1,6 @@
 var tcp = require('../../tcp');
 var instance_skel = require('../../instance_skel');
+var presets = require('./presets')
 var debug;
 var log;
 
@@ -59,6 +60,7 @@ instance.prototype.init = function () {
 
     self.initTCP();
     self.feedbacks();
+    self.presets();
     // self.initVariables();
 }
 
@@ -250,6 +252,12 @@ instance.prototype.feedbacks = function () {
 
     // self.setVariable('sec', '09');
     // self.checkFeedbacks('set_seconds');
+}
+
+
+instance.prototype.presets = function () {
+    var self = this;
+    self.setPresetDefinitions(presets.getPresets());
 }
 
 // instance.prototype.initVariables = function () {

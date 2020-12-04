@@ -5,7 +5,7 @@
   "support": {
     "action": true,
     "feedback": true,
-    "preset": false
+    "preset": true
   },
   "shortname": "cuetimer",
   "keywords": [
