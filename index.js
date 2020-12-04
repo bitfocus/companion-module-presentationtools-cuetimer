@@ -223,7 +223,7 @@ instance.prototype.feedbacks = function () {
             label: 'Name',
             description: 'Display name on this button',
             callback: function (feedback, bank) {
-                return { size: 'auto', text: self.name }
+                return { size: 'auto', color: self.fgColor, bgcolor: self.bgColor, text: self.name }
             }
         },
         set_speed: {
