@@ -220,6 +220,108 @@ exports.getPresets = function () {
             actions: [{
                 action: 'Reset'
             }]
+        },
+
+
+
+        // FeedBack presets
+        {
+            category: 'Feedbacks',
+            label: 'Hours',
+            bank: {
+                bgcolor: 0,
+                style: 'text',
+                text: 'Hours',
+                alignment: 'center:center',
+                size: '18',
+                color: 16777215
+
+            },
+            feedbacks: [{
+                type: 'set_hours'
+            }]
+        },
+        {
+            category: 'Feedbacks',
+            label: 'Minutes',
+            bank: {
+                bgcolor: 0,
+                style: 'text',
+                text: 'Minutes',
+                alignment: 'center:center',
+                size: '18',
+                color: 16777215
+
+            },
+            feedbacks: [{
+                type: 'set_minutes'
+            }]
+        },
+        {
+            category: 'Feedbacks',
+            label: 'Seconds',
+            bank: {
+                bgcolor: 0,
+                style: 'text',
+                text: 'Seconds',
+                alignment: 'center:center',
+                size: '18',
+                color: 16777215
+
+            },
+            feedbacks: [{
+                type: 'set_seconds'
+            }]
+        },
+
+
+        {
+            category: 'Feedbacks',
+            label: 'Name',
+            bank: {
+                bgcolor: 0,
+                style: 'text',
+                text: 'Timer',
+                alignment: 'center:center',
+                size: '18',
+                color: 16777215
+
+            },
+            feedbacks: [{
+                type: 'set_name'
+            }]
+        },
+        {
+            category: 'Feedbacks',
+            label: 'Speed',
+            bank: {
+                bgcolor: 0,
+                style: 'text',
+                text: 'Speed',
+                alignment: 'center:center',
+                size: '18',
+                color: 16777215
+
+            },
+            feedbacks: [{
+                type: 'set_speed'
+            }]
+        },
+        {
+            category: 'Feedbacks',
+            label: 'End Time',
+            bank: {
+                bgcolor: 0,
+                style: 'text',
+                text: 'End Time',
+                alignment: 'center:center',
+                size: '14',
+                color: 16777215
+
+            },
+            feedbacks: [{
+                type: 'set_endTime'
+            }]
         }
     ]
 }
