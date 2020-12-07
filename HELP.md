@@ -11,13 +11,13 @@ Controls CueTimer by [PresentationTools](https://presentationtools.com/).
 * Cue next
 * Pause
 * Restart
-* Continue previous
+* Reset
+* Revert
 * Blackout
 * Add 1 minute
 * Subtract 1 minute
 * Increase speed by 5%
 * Decrease speed by 5%
-* Reset all non-active timers
 
 #### Feedback:
 * Hours, Minutes, and Seconds parts of the counter.
