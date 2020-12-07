@@ -170,7 +170,8 @@ instance.prototype.actions = function () {
         'AddMinute': { label: 'Add 1 minute' },
         'SubMinute': { label: 'Subtract 1 minute' },
         'AddSpeed': { label: 'Increase speed' },
-        'SubSpeed': { label: 'Decrease speed' }
+        'SubSpeed': { label: 'Decrease speed' },
+        'Reset': { label: 'Reset all non-active timers' }
     };
 
     self.setActions(actions);
