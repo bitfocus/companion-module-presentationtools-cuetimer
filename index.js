@@ -61,7 +61,6 @@ instance.prototype.init = function () {
     self.initTCP();
     self.feedbacks();
     self.presets();
-    // self.initVariables();
 }
 
 instance.prototype.initTCP = function () {
@@ -93,12 +92,11 @@ instance.prototype.initTCP = function () {
 
 
         self.socket.on('data', (data) => {
-            //console.log(data)
             let received = new MessageBuffer("$")
             received.push(data)
             let message = received.handleData()
             let jsonData = JSON.parse(message)
-            // console.log(message);
+
             self.hours = (jsonData.h < 0 ? '+' : '') + jsonData.h.replace('-', '');
             self.hours = (self.hours == '') ? '' : self.hours.lpad('0', 2);
 
@@ -108,7 +106,6 @@ instance.prototype.initTCP = function () {
             self.sec = (jsonData.s < 0 ? '+' : '') + jsonData.s.replace('-', '');
             self.sec = (self.sec == '') ? '' : self.sec.lpad('0', 2);
 
-            // console.log(jsonData.fg.substr(0, 1) + jsonData.fg.substr(2))
             let tempFg = self.hexToRgb(jsonData.fg.substr(0, 1) + jsonData.fg.substr(3))
             let tempBg = self.hexToRgb(jsonData.bg.substr(0, 1) + jsonData.bg.substr(3))
             self.fgColor = self.rgb(tempFg.r, tempFg.g, tempFg.b);
@@ -218,7 +215,6 @@ instance.prototype.feedbacks = function () {
                 return { size: 'auto', color: self.fgColor, bgcolor: self.bgColor, text: self.sec }
             }
         },
-        //////////////////////
         set_name: {
             label: 'Name',
             description: 'Display name on this button',
@@ -242,16 +238,7 @@ instance.prototype.feedbacks = function () {
         },
 
     }
-
-
-
-
-
     self.setFeedbackDefinitions(feedbacks);
-    console.log("feedbacks have been initialized");
-
-    // self.setVariable('sec', '09');
-    // self.checkFeedbacks('set_seconds');
 }
 
 
@@ -259,18 +246,6 @@ instance.prototype.presets = function () {
     var self = this;
     self.setPresetDefinitions(presets.getPresets());
 }
-
-// instance.prototype.initVariables = function () {
-//     var self = this;
-
-//     var variables = [
-//         {
-//             label: 'counter (Seconds)',
-//             name: 'sec'
-//         },
-//     ];
-//     self.setVariableDefinitions(variables);
-// };
 
 instance.prototype.destroy = function () {
     var self = this;
@@ -313,12 +288,6 @@ class MessageBuffer {
     }
 
     handleData() {
-        /**
-         * Try to accumulate the buffer with messages
-         *
-         * If the server isnt sending delimiters for some reason
-         * then nothing will ever come back for these requests
-         */
         const message = this.getMessage()
         return message
     }
