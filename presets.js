@@ -103,7 +103,7 @@ exports.getPresets = function () {
         },
         {
             category: 'Commands',
-            label: 'Continue Previous Timer',
+            label: 'Revert',
             bank: {
                 bgcolor: 0,
 
@@ -118,7 +118,7 @@ exports.getPresets = function () {
 
             },
             actions: [{
-                action: 'ContinuePrev'
+                action: 'Revert'
             }]
         },
         {

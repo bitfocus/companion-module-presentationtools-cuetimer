@@ -165,7 +165,7 @@ instance.prototype.actions = function () {
         'CueNext': { label: 'Cue next' },
         'Pause': { label: 'Pause' },
         'Restart': { label: 'Restart' },
-        'ContinuePrev': { label: 'Continue previous' },
+        'Revert': { label: 'Revert' },
         'Blackout': { label: 'Blackout' },
         'AddMinute': { label: 'Add 1 minute' },
         'SubMinute': { label: 'Subtract 1 minute' },
