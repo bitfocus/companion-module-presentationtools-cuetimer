@@ -165,13 +165,13 @@ instance.prototype.actions = function () {
         'CueNext': { label: 'Cue next' },
         'Pause': { label: 'Pause' },
         'Restart': { label: 'Restart' },
+        'Reset': { label: 'Reset' },
         'Revert': { label: 'Revert' },
-        'Blackout': { label: 'Blackout' },
+        'AddSpeed': { label: 'Increase speed by 5%' },
+        'SubSpeed': { label: 'Decrease speed by 5%' },
         'AddMinute': { label: 'Add 1 minute' },
         'SubMinute': { label: 'Subtract 1 minute' },
-        'AddSpeed': { label: 'Increase speed' },
-        'SubSpeed': { label: 'Decrease speed' },
-        'Reset': { label: 'Reset all non-active timers' }
+        'Blackout': { label: 'Blackout' }
     };
 
     self.setActions(actions);
