@@ -49,18 +49,20 @@ instance.prototype.init = function () {
     debug = self.debug;
     log = self.log;
 
-    self.sec = '00';
-    self.minutes = '00';
-    self.hours = '00';
-    self.bgColor = self.rgb(0, 0, 0);
-    self.fgColor = self.rgb(255, 255, 255);
-    self.name = "";
-    self.speed = "";
-    self.endTime = "";
 
     self.initTCP();
     self.feedbacks();
     self.presets();
+    self.variables();
+
+    self.setVariable('hours', '');
+    self.setVariable('minutes', '');
+    self.setVariable('seconds', '');
+    self.setVariable('name', '');
+    self.setVariable('speed', '');
+    self.setVariable('endTime', '');
+    self.bgColor = self.rgb(0, 0, 0);
+    self.fgColor = self.rgb(255, 255, 255);
 }
 
 instance.prototype.initTCP = function () {
@@ -97,29 +99,27 @@ instance.prototype.initTCP = function () {
             let message = received.handleData()
             let jsonData = JSON.parse(message)
 
-            self.hours = (jsonData.h < 0 ? '+' : '') + jsonData.h.replace('-', '');
-            self.hours = (self.hours == '') ? '' : self.hours.lpad('0', 2);
+            hours = (jsonData.h < 0 ? '+' : '') + jsonData.h.replace('-', '');
+            hours = (hours == '') ? '' : hours.lpad('0', 2);
+            self.setVariable('hours', hours);
 
-            self.minutes = (jsonData.m < 0 ? '+' : '') + jsonData.m.replace('-', '');
-            self.minutes = (self.minutes == '') ? '' : self.minutes.lpad('0', 2);
+            minutes = (jsonData.m < 0 ? '+' : '') + jsonData.m.replace('-', '');
+            minutes = (minutes == '') ? '' : minutes.lpad('0', 2);
+            self.setVariable('minutes', minutes);
 
-            self.sec = (jsonData.s < 0 ? '+' : '') + jsonData.s.replace('-', '');
-            self.sec = (self.sec == '') ? '' : self.sec.lpad('0', 2);
+            seconds = (jsonData.s < 0 ? '+' : '') + jsonData.s.replace('-', '');
+            seconds = (seconds == '') ? '' : seconds.lpad('0', 2);
+            self.setVariable('seconds', seconds);
+
+            self.setVariable('speed', jsonData.speed);
+            self.setVariable('name', jsonData.name);
+            self.setVariable('endTime', jsonData.endTime);
 
             let tempFg = self.hexToRgb(jsonData.fg.substr(0, 1) + jsonData.fg.substr(3))
-            let tempBg = self.hexToRgb(jsonData.bg.substr(0, 1) + jsonData.bg.substr(3))
             self.fgColor = self.rgb(tempFg.r, tempFg.g, tempFg.b);
+            let tempBg = self.hexToRgb(jsonData.bg.substr(0, 1) + jsonData.bg.substr(3))
             self.bgColor = self.rgb(tempBg.r, tempBg.g, tempBg.b);
-            self.name = jsonData.name;
-            self.speed = `Speed\\n\\n${jsonData.speed}%`;
-            self.endTime = `End Time\\n\\n${jsonData.endTime}`;
-
-            self.checkFeedbacks('set_hours');
-            self.checkFeedbacks('set_minutes');
-            self.checkFeedbacks('set_seconds');
-            self.checkFeedbacks('set_name');
-            self.checkFeedbacks('set_speed');
-            self.checkFeedbacks('set_endTime');
+            self.checkFeedbacks('colors');
 
         });
         self.socket.on('end', function () {
@@ -192,52 +192,31 @@ instance.prototype.action = function (action) {
     }
 }
 
+instance.prototype.variables = function () {
+    var self = this;
+
+    var variables = [
+        { label: 'Hours', name: 'hours' },
+        { label: 'Minutes', name: 'minutes' },
+        { label: 'Seconds', name: 'seconds' },
+        { label: 'Name', name: 'name' },
+        { label: 'Speed', name: 'speed' },
+        { label: 'End Time', name: 'endTime' }
+    ];
+
+    self.setVariableDefinitions(variables);
+};
+
 instance.prototype.feedbacks = function () {
     var self = this;
     var feedbacks = {
-        set_hours: {
-            label: 'hours',
-            description: 'Display hours on this button',
+        colors: {
+            label: 'colors',
+            description: 'Foreground and background colors of the timer',
             callback: function (feedback, bank) {
-                return { size: 'auto', color: self.fgColor, bgcolor: self.bgColor, text: self.hours }
+                return { color: self.fgColor, bgcolor: self.bgColor }
             }
-        },
-        set_minutes: {
-            label: 'minutes',
-            description: 'Display minutes on this button',
-            callback: function (feedback, bank) {
-                return { size: 'auto', color: self.fgColor, bgcolor: self.bgColor, text: self.minutes }
-            }
-        },
-        set_seconds: {
-            label: 'seconds',
-            description: 'Display seconds on this button',
-            callback: function (feedback, bank) {
-                return { size: 'auto', color: self.fgColor, bgcolor: self.bgColor, text: self.sec }
-            }
-        },
-        set_name: {
-            label: 'Name',
-            description: 'Display name on this button',
-            callback: function (feedback, bank) {
-                return { size: 'auto', color: self.fgColor, bgcolor: self.bgColor, text: self.name }
-            }
-        },
-        set_speed: {
-            label: 'speed',
-            description: 'Display speed on this button',
-            callback: function (feedback, bank) {
-                return { size: '14', text: self.speed }
-            }
-        },
-        set_endTime: {
-            label: 'end time',
-            description: 'Display end time on this button',
-            callback: function (feedback, bank) {
-                return { size: '14', text: self.endTime }
-            }
-        },
-
+        }
     }
     self.setFeedbackDefinitions(feedbacks);
 }
@@ -245,7 +224,7 @@ instance.prototype.feedbacks = function () {
 
 instance.prototype.presets = function () {
     var self = this;
-    self.setPresetDefinitions(presets.getPresets());
+    self.setPresetDefinitions(presets.getPresets(self.label));
 }
 
 instance.prototype.destroy = function () {

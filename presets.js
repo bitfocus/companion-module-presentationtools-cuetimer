@@ -1,5 +1,5 @@
 var icons = require('./icons');
-exports.getPresets = function () {
+exports.getPresets = function (instanceLabel) {
     return [
         {
             category: 'Commands',
@@ -224,21 +224,21 @@ exports.getPresets = function () {
 
 
 
-        // FeedBack presets
+        // Variables & FeedBack presets
         {
             category: 'Feedbacks',
             label: 'Hours',
             bank: {
                 bgcolor: 0,
                 style: 'text',
-                text: 'Hours',
+                text: `$(${instanceLabel}:hours)`,
                 alignment: 'center:center',
-                size: '18',
+                size: 'auto',
                 color: 16777215
 
             },
             feedbacks: [{
-                type: 'set_hours'
+                type: 'colors'
             }]
         },
         {
@@ -247,14 +247,14 @@ exports.getPresets = function () {
             bank: {
                 bgcolor: 0,
                 style: 'text',
-                text: 'Minutes',
+                text: `$(${instanceLabel}:minutes)`,
                 alignment: 'center:center',
-                size: '18',
+                size: 'auto',
                 color: 16777215
 
             },
             feedbacks: [{
-                type: 'set_minutes'
+                type: 'colors'
             }]
         },
         {
@@ -263,14 +263,14 @@ exports.getPresets = function () {
             bank: {
                 bgcolor: 0,
                 style: 'text',
-                text: 'Seconds',
+                text: `$(${instanceLabel}:seconds)`,
                 alignment: 'center:center',
-                size: '18',
+                size: 'auto',
                 color: 16777215
 
             },
             feedbacks: [{
-                type: 'set_seconds'
+                type: 'colors'
             }]
         },
 
@@ -281,14 +281,14 @@ exports.getPresets = function () {
             bank: {
                 bgcolor: 0,
                 style: 'text',
-                text: 'Name',
+                text: `$(${instanceLabel}:name)`,
                 alignment: 'center:center',
-                size: '18',
+                size: 'auto',
                 color: 16777215
 
             },
             feedbacks: [{
-                type: 'set_name'
+                type: 'colors'
             }]
         },
         {
@@ -297,15 +297,12 @@ exports.getPresets = function () {
             bank: {
                 bgcolor: 0,
                 style: 'text',
-                text: 'Speed',
+                text: `Speed\\n\\n$(${instanceLabel}:speed)%`,
                 alignment: 'center:center',
-                size: '18',
+                size: '14',
                 color: 16777215
 
-            },
-            feedbacks: [{
-                type: 'set_speed'
-            }]
+            }
         },
         {
             category: 'Feedbacks',
@@ -313,15 +310,12 @@ exports.getPresets = function () {
             bank: {
                 bgcolor: 0,
                 style: 'text',
-                text: 'End Time',
+                text: `End Time\\n\\n$(${instanceLabel}:endTime)`,
                 alignment: 'center:center',
                 size: '14',
                 color: 16777215
 
-            },
-            feedbacks: [{
-                type: 'set_endTime'
-            }]
+            }
         }
     ]
 }
