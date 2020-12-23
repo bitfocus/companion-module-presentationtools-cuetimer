@@ -2,11 +2,11 @@
 # PresentationTools CueTimer
 Controls CueTimer by [PresentationTools](https://presentationtools.com/).
 
-### Configuration
+## Configuration
 * IP address of the computer running APS for local use 127.0.0.1.
 * Port, the default is 4778.
 
-### Available actions:
+## Available actions:
 * Fire the next timer
 * Cue next
 * Pause
@@ -19,11 +19,18 @@ Controls CueTimer by [PresentationTools](https://presentationtools.com/).
 * Increase speed by 5%
 * Decrease speed by 5%
 
-#### Feedback:
-* Hours, Minutes, and Seconds parts of the counter.
-* Name/Description.
-* Speed.
-* End Time.
+## Variables:
+Variables can be used by putting $(instancename:variablename) e.g. $(cuetimer:hours)
+##### Variables names:
+* hours
+* minutes
+* seconds
+* name
+* speed
+* endTime
 
-#### Presets:
-All the Actions and Feedbacks are available via the Presets tab.
+## Feedback:
+* Foreground & Backgroung colors
+
+## Presets:
+All the Actions, Variables and Feedbacks are available via the Presets tab.
