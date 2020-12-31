@@ -211,7 +211,7 @@ instance.prototype.feedbacks = function () {
     var self = this;
     var feedbacks = {
         colors: {
-            label: 'colors',
+            label: 'Colors from timer',
             description: 'Foreground and background colors of the timer',
             callback: function (feedback, bank) {
                 return { color: self.fgColor, bgcolor: self.bgColor }
