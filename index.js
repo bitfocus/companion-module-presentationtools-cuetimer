@@ -104,7 +104,6 @@ instance.prototype.initTCP = function () {
             console.log("Connected");
         });
 
-        var buffer = "";
         self.socket.on('data', (data) => {
 
             let received = new MessageBuffer("$");
