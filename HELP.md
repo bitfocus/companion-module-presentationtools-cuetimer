@@ -18,6 +18,15 @@ Controls CueTimer by [PresentationTools](https://presentationtools.com/).
 * Subtract 1 minute
 * Increase speed by 5%
 * Decrease speed by 5%
+* Fullscreen
+* NDI
+* Message
+* Single Timer Mode
+* Clock
+* Move next up
+* Move next down
+* Fire timer with ID
+* Cue timer with ID
 
 ## Variables:
 Variables can be used by putting $(instancename:variablename) e.g. $(cuetimer:hours)
@@ -28,9 +37,30 @@ Variables can be used by putting $(instancename:variablename) e.g. $(cuetimer:ho
 * name
 * speed
 * endTime
+* nextTimerName
+* nextTimerDuration
 
 ## Feedback:
-* Foreground & Backgroung colors
+##### Active timer
+* Foreground & Backgroun colors
+
+##### Status
+* Orange/Black for on/off
+
+* Available status
+
+* Fullscreen
+* NDI
+* Message
+* Single Timer Mode
+* Clock
+* Pause
+* Blackout
+
+##### Timer with ID
+* timerDuration
+* timerName
+* timerBackground
 
 ## Presets:
 All the Actions, Variables and Feedbacks are available via the Presets tab.

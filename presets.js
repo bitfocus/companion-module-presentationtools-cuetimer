@@ -59,6 +59,16 @@ exports.getPresets = function (instanceLabel) {
             },
             actions: [{
                 action: 'Pause'
+            }],
+            feedbacks: [{
+                type: 'status',
+                options: {
+                    Key: 'Pause'
+                },
+                style: {
+                    color: 16777215,
+                    bgcolor: 16753920
+                }
             }]
         },
         {
@@ -219,6 +229,246 @@ exports.getPresets = function (instanceLabel) {
             },
             actions: [{
                 action: 'Blackout'
+            }],
+            feedbacks: [{
+                type: 'status',
+                options: {
+                    Key: 'Blackout'
+                },
+                style: {
+                    color: 16777215,
+                    bgcolor: 16753920
+                }
+            }]
+        },
+        {
+            category: 'Commands',
+            label: 'Clock',
+            bank: {
+                bgcolor: 0,
+
+                style: 'png',
+                png64: icons.Clock,
+                pngalignment: 'center:top',
+
+                text: 'Clock',
+                alignment: 'center:bottom',
+                size: '14',
+                color: 16777215
+
+            },
+            actions: [{
+                action: 'Clock'
+            }],
+            feedbacks: [{
+                type: 'status',
+                options: {
+                    Key: 'Clock'
+                },
+                style: {
+                    color: 16777215,
+                    bgcolor: 16753920
+                }
+            }]
+        },
+        {
+            category: 'Commands',
+            label: 'Message',
+            bank: {
+                bgcolor: 0,
+
+                style: 'png',
+                png64: icons.Message,
+                pngalignment: 'center:top',
+
+                text: 'Message',
+                alignment: 'center:bottom',
+                size: '14',
+                color: 16777215
+
+            },
+            actions: [{
+                action: 'Message'
+            }],
+            feedbacks: [{
+                type: 'status',
+                options: {
+                    Key: 'Message'
+                },
+                style: {
+                    color: 16777215,
+                    bgcolor: 16753920
+                }
+            }]
+        },
+        {
+            category: 'Commands',
+            label: 'Full Screen',
+            bank: {
+                bgcolor: 0,
+                style: 'text',
+                text: 'Full Screen',
+                alignment: 'center:center',
+                size: '18',
+                color: 16777215
+
+            },
+            actions: [{
+                action: 'Fullscreen'
+            }],
+            feedbacks: [{
+                type: 'status',
+                options: {
+                    Key: 'Fullscreen'
+                },
+                style: {
+                    color: 16777215,
+                    bgcolor: 16753920
+                }
+            }]
+        },
+        {
+            category: 'Commands',
+            label: 'NDI',
+            bank: {
+                bgcolor: 0,
+                style: 'text',
+                text: 'NDI',
+                alignment: 'center:center',
+                size: '30',
+                color: 16777215
+
+            },
+            actions: [{
+                action: 'NDI'
+            }],
+            feedbacks: [{
+                type: 'status',
+                options: {
+                    Key: 'NDI'
+                },
+                style: {
+                    color: 16777215,
+                    bgcolor: 16753920
+                }
+            }]
+        },
+        {
+            category: 'Commands',
+            label: 'Single Mode',
+            bank: {
+                bgcolor: 0,
+                style: 'text',
+                text: 'Single Mode',
+                alignment: 'center:center',
+                size: '18',
+                color: 16777215
+
+            },
+            actions: [{
+                action: 'STM'
+            }],
+            feedbacks: [{
+                type: 'status',
+                options: {
+                    Key: 'STM'
+                },
+                style: {
+                    color: 16777215,
+                    bgcolor: 16753920
+                }
+            }]
+        },
+        {
+            category: 'Commands',
+            label: 'Move Next Up',
+            bank: {
+                bgcolor: 0,
+
+                style: 'png',
+                png64: icons.Up,
+                pngalignment: 'center:center',
+                text: ''
+            },
+            actions: [{
+                action: 'MoveNextUp'
+            }]
+        },
+        {
+            category: 'Commands',
+            label: 'Move Next Down',
+            bank: {
+                bgcolor: 0,
+
+                style: 'png',
+                png64: icons.Down,
+                pngalignment: 'center:center',
+                text: ''
+            },
+            actions: [{
+                action: 'MoveNextDown'
+            }]
+        },
+        {
+            category: 'Commands',
+            label: 'Fire with ID',
+            bank: {
+                bgcolor: 0,
+
+                style: 'text',
+                text: 'Fire',
+                alignment: 'center:center',
+                size: '14',
+                color: 16777215
+
+            },
+            actions: [{
+                action: 'FireTimerWithID',
+                options: {
+                    Key: '1'
+                }
+            }],
+            feedbacks: [{
+                type: 'timerName',
+                options: {
+                    Key: '1'
+                }
+            }, {
+                type: 'timerBackground',
+                options: {
+                    Key: '1'
+                }
+            }]
+        },
+        {
+            category: 'Commands',
+            label: 'Cue with ID',
+            bank: {
+                bgcolor: 0,
+
+                style: 'text',
+                text: 'Cue',
+                alignment: 'center:center',
+                size: '14',
+                color: 16777215
+
+            },
+            actions: [{
+                action: 'CueTimerWithID',
+                options: {
+                    Key: '1'
+                }
+            }],
+            feedbacks: [{
+                type: 'timerName',
+                options: {
+                    Key: '1'
+                }
+            }, {
+                type: 'timerBackground',
+                options: {
+                    Key: '1'
+                }
             }]
         },
 
@@ -311,6 +561,32 @@ exports.getPresets = function (instanceLabel) {
                 bgcolor: 0,
                 style: 'text',
                 text: `End Time\\n\\n$(${instanceLabel}:endTime)`,
+                alignment: 'center:center',
+                size: '14',
+                color: 16777215
+
+            }
+        },
+        {
+            category: 'Feedbacks',
+            label: 'Next name',
+            bank: {
+                bgcolor: 0,
+                style: 'text',
+                text: `Next:\\n$(${instanceLabel}:nextTimerName)`,
+                alignment: 'center:center',
+                size: '14',
+                color: 16777215
+
+            }
+        },
+        {
+            category: 'Feedbacks',
+            label: 'Next duration',
+            bank: {
+                bgcolor: 0,
+                style: 'text',
+                text: `Next:\\n\\n$(${instanceLabel}:nextTimerDuration)`,
                 alignment: 'center:center',
                 size: '14',
                 color: 16777215
