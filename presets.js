@@ -471,6 +471,26 @@ exports.getPresets = function (instanceLabel) {
                 }
             }]
         },
+        {
+            category: 'Commands',
+            label: 'Cue Current Timer',
+            bank: {
+                bgcolor: 0,
+
+                style: 'png',
+                png64: icons.CueCurrent,
+                pngalignment: 'center:top',
+
+                text: 'Cue Current',
+                alignment: 'center:bottom',
+                size: '7',
+                color: 16777215
+
+            },
+            actions: [{
+                action: 'CueCurrent'
+            }]
+        },
 
 
 

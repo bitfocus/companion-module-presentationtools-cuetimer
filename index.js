@@ -194,6 +194,7 @@ instance.prototype.actions = function () {
 	actions = {
 		FireNext: { label: 'Fire the next timer' },
 		CueNext: { label: 'Cue next' },
+		CueCurrent: { label: 'Cue Current' },
 		Pause: { label: 'Pause' },
 		Restart: { label: 'Restart' },
 		Reset: { label: 'Reset' },
