@@ -27,6 +27,7 @@ Controls CueTimer by [PresentationTools](https://presentationtools.com/).
 * Move next down
 * Fire timer with ID
 * Cue timer with ID
+* Cue Current
 
 ## Variables:
 Variables can be used by putting $(instancename:variablename) e.g. $(cuetimer:hours)
