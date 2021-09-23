@@ -481,7 +481,7 @@ exports.getPresets = function (instanceLabel) {
                 png64: icons.CueCurrent,
                 pngalignment: 'center:top',
 
-                text: 'Cue Current',
+                text: 'CueCurrent',
                 alignment: 'center:bottom',
                 size: '7',
                 color: 16777215
