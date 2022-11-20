@@ -43,6 +43,8 @@ instance.prototype.updateConfig = function (config) {
 	if (resetConnection === true || self.socket === undefined) {
 		self.initTCP()
 	}
+
+	self.setupEventListeners.bind(self)();
 }
 
 instance.prototype.init = function () {
@@ -51,7 +53,14 @@ instance.prototype.init = function () {
 	debug = self.debug
 	log = self.log
 
+	self.variable1Value = '';
+	self.variable2Value = '';
+	self.variable3Value = '';
+	self.variable4Value = '';
+	self.variable5Value = '';
+
 	self.initTCP()
+	self.setupEventListeners.bind(this)();
 	self.feedbacks()
 	self.presets()
 	self.variables()
@@ -161,6 +170,29 @@ instance.prototype.initTCP = function () {
 
 instance.prototype.config_fields = function () {
 	var self = this
+
+	const dynamicVariableChoices = [];
+	dynamicVariableChoices.push({
+		id: null,
+		label: '(No Variable Selected)'
+	});
+
+	try {
+		this.system.emit('variable_get_definitions', (definitions) =>
+			Object.entries(definitions).forEach(([instanceLabel, variables]) =>
+				variables.forEach((variable) =>
+					dynamicVariableChoices.push({
+						id: `${instanceLabel}:${variable.name}`,
+						label: `${instanceLabel}:${variable.name}`
+					})
+				)
+			)
+		);
+	}
+	catch(error) {
+		this.log('error', 'Error with Variables: ' + error.toString());
+	}
+
 	return [
 		{
 			type: 'text',
@@ -185,8 +217,215 @@ instance.prototype.config_fields = function () {
 			width: 6,
 			regex: self.REGEX_PORT,
 		},
+		{
+			type: 'text',
+			id: 'variablesinfo',
+			label: 'Send Companion Variables to CueTimer',
+			width: 12,
+			value: `
+				<div class="alert alert-warning">
+					<div>
+						<strong>You can select up to 5 Companion Variables to send to CueTimer. They will be sent any time their values change within Companion.</strong>
+					</div>
+				</div>
+			`
+		},
+		{
+			type: 'dropdown',
+			id: 'variable1',
+			label: 'Variable 1',
+			width: 6,
+			tooltip: 'Variable to send to CueTimer',
+			choices: dynamicVariableChoices,
+			minChoicesForSearch: 5
+		},
+		{
+			type: 'dropdown',
+			id: 'variable2',
+			label: 'Variable 2',
+			width: 6,
+			tooltip: 'Variable to send to CueTimer',
+			choices: dynamicVariableChoices,
+			minChoicesForSearch: 5
+		},
+		{
+			type: 'dropdown',
+			id: 'variable3',
+			label: 'Variable 3',
+			width: 6,
+			tooltip: 'Variable to send to CueTimer',
+			choices: dynamicVariableChoices,
+			minChoicesForSearch: 5
+		},
+		{
+			type: 'dropdown',
+			id: 'variable4',
+			label: 'Variable 4',
+			width: 6,
+			tooltip: 'Variable to send to CueTimer',
+			choices: dynamicVariableChoices,
+			minChoicesForSearch: 5
+		},
+		{
+			type: 'dropdown',
+			id: 'variable5',
+			label: 'Variable 5',
+			width: 6,
+			tooltip: 'Variable to send to CueTimer',
+			choices: dynamicVariableChoices,
+			minChoicesForSearch: 5
+		},
 	]
 }
+
+instance.prototype.variableListener = function(variables) {
+	try {
+		let dataChanged = false;
+
+		for (let key in variables) {
+			if (variables.hasOwnProperty(key)) {
+				if (key == this.config.variable1) {
+					if (this.variable1Value !== variables[key]) {
+						dataChanged = true;
+					}
+					this.variable1Value = variables[key];
+				}
+	
+				if (key == this.config.variable2) {
+					if (this.variable2Value !== variables[key]) {
+						dataChanged = true;
+					}
+					this.variable2Value = variables[key];
+				}
+	
+				if (key == this.config.variable3) {
+					if (this.variable3Value !== variables[key]) {
+						dataChanged = true;
+					}
+					this.variable3Value = variables[key];
+				}
+	
+				if (key == this.config.variable4) {
+					if (this.variable4Value !== variables[key]) {
+						dataChanged = true;
+					}
+					this.variable4Value = variables[key];
+				}
+	
+				if (key == this.config.variable5) {
+					if (this.variable5Value !== variables[key]) {
+						dataChanged = true;
+					}
+					this.variable5Value = variables[key];
+				}
+			}
+		}
+		
+		if (dataChanged) {
+			this.sendVariables.bind(this)();
+		}
+	}
+	catch(error) {
+		this.log('error', 'Error sending variables: ' + error.toString())
+	}
+};
+
+instance.prototype.sendVariables = function() {
+	let variableSendArray = [];
+		
+	if (this.config.variable1) {
+		variableSendArray.push({
+			variable: this.config.variable1,
+			value: this.variable1Value
+		});
+	}
+
+	if (this.config.variable2) {
+		variableSendArray.push({
+			variable: this.config.variable2,
+			value: this.variable2Value
+		});
+	}
+
+	if (this.config.variable3) {
+		variableSendArray.push({
+			variable: this.config.variable3,
+			value: this.variable3Value
+		});
+	}
+
+	if (this.config.variable4) {
+		variableSendArray.push({
+			variable: this.config.variable4,
+			value: this.variable4Value
+		});
+	}
+		
+	if (this.config.variable5) {
+		variableSendArray.push({
+			variable: this.config.variable5,
+			value: this.variable5Value
+		});
+	}
+
+	if (variableSendArray.length > 0) {
+		let variableSendString = '$VARIABLES:' + JSON.stringify(variableSendArray) + '\r\n';
+		if (this.socket !== undefined && this.socket.connected) {
+			this.socket.send(variableSendString);
+		}
+	}
+}
+
+instance.prototype.setupEventListeners = function() {
+	//get initial values
+
+	try {
+		if (this.config.variable1) {
+			this.system.emit('variable_parse', '$(' + this.config.variable1 + ')', (parsedValue) => {
+				this.variable1Value = parsedValue;
+			});
+		}
+	
+		if (this.config.variable2) {
+			this.system.emit('variable_parse', '$(' + this.config.variable2 + ')', (parsedValue) => {
+				this.variable2Value = parsedValue;
+			});
+		}
+	
+		if (this.config.variable3) {
+			this.system.emit('variable_parse', '$(' + this.config.variable3 + ')', (parsedValue) => {
+				this.variable3Value = parsedValue;
+			});
+		}
+	
+		if (this.config.variable4) {
+			this.system.emit('variable_parse', '$(' + this.config.variable4 + ')', (parsedValue) => {
+				this.variable4Value = parsedValue;
+			});
+		}
+	
+		if (this.config.variable5) {
+			this.system.emit('variable_parse', '$(' + this.config.variable5 + ')', (parsedValue) => {
+				this.variable5Value = parsedValue;
+			});
+		}
+
+		this.sendVariables();
+	
+		//get values any time they change
+		if (this.activeVariableListener) {
+			this.system.removeListener('variables_changed', this.activeVariableListener);
+			delete this.activeVariableListener;
+		}
+		
+		this.activeVariableListener = this.variableListener.bind(this);
+		this.system.on('variables_changed', this.activeVariableListener);
+	}
+	catch(error) {
+		this.log('error', 'Error with sending variables: ' + error.toString());
+	}
+	
+};
 
 instance.prototype.actions = function () {
 	var self = this

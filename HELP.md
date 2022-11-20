@@ -3,8 +3,9 @@
 Controls CueTimer by [PresentationTools](https://presentationtools.com/).
 
 ## Configuration
-* IP address of the computer running APS for local use 127.0.0.1.
+* IP address of the computer running CueTimer for local use 127.0.0.1.
 * Port, the default is 4778.
+* You can also choose up to 5 Companion Variables to send to CueTimer. These variables will be sent any time they change values.
 
 ## Available actions:
 * Fire the next timer
