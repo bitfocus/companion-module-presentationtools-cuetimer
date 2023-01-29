@@ -1,38 +1,25 @@
 {
 	"name": "presentationtools-cuetimer",
-	"version": "1.1.4",
-	"api_version": "1.0.0",
+	"version": "2.0.0",
 	"support": {
 		"action": true,
 		"feedback": true,
 		"preset": true,
 		"variable": true
 	},
-	"shortname": "cuetimer",
-	"keywords": [
-		"Presentation",
-		"Timer",
-		"Software"
-	],
-	"homepage": "https://github.com/bitfocus/companion-module-presentationtools-cuetimer#readme",
-	"manufacturer": "PresentationTools",
-	"product": "CueTimer",
-	"description": "Module to control CueTimer",
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
-	"author": "Mohammad Ahmad <eng.ma90@gmail.com>",
-	"contributors": [
-		"David Dabela <david.dabela@outlook.com>",
-		"Joseph Adams <josephdadams@gmail.com>"
-	],
 	"license": "MIT",
-	"bugs": {
-		"url": "https://github.com/bitfocus/companion-module-presentationtools-cuetimer/issues"
-	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/bitfocus/companion-module-presentationtools-cuetimer.git"
+	},
+	"dependencies": {
+		"@companion-module/base": "~1.1.0"
+	},
+	"devDependencies": {
+		"@companion-module/tools": "^0.5.2"
 	}
 }

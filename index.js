@@ -1,20 +1,21 @@
-var tcp = require('../../tcp')
-var instance_skel = require('../../instance_skel')
+const { InstanceBase, Regex, runEntrypoint, TCPHelper, combineRgb, InstanceStatus  } = require('@companion-module/base')
 var presets = require('./presets')
-var debug
-var log
 
-function instance(system, id, config) {
-	var self = this
 
-	// super-constructor
-	instance_skel.apply(this, arguments)
 
-	self.actions() // export actions
+class CueTimerInstance extends InstanceBase {
 
-	return self
-}
-instance.prototype.hexToRgb = function (hex) {
+	constructor(internal) {
+		super(internal)
+
+		String.prototype.lpad = function (padString, length) {
+			var str = this
+			while (str.length < length) str = padString + str
+			return str
+		}
+	}
+
+hexToRgb(hex) {
 	var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
 	return result
 		? {
@@ -24,21 +25,16 @@ instance.prototype.hexToRgb = function (hex) {
 		  }
 		: null
 }
-String.prototype.lpad = function (padString, length) {
-	var str = this
-	while (str.length < length) str = padString + str
-	return str
-}
 
-instance.prototype.updateConfig = function (config) {
+updateConfig(config) {
 	var self = this
+	self.config = config
 	var resetConnection = false
 
 	if (self.config.host != config.host || self.config.port != config.port) {
 		resetConnection = true
 	}
 
-	self.config = config
 
 	if (resetConnection === true || self.socket === undefined) {
 		self.initTCP()
@@ -47,11 +43,11 @@ instance.prototype.updateConfig = function (config) {
 	self.setupEventListeners.bind(self)();
 }
 
-instance.prototype.init = function () {
+async init(config) {
 	var self = this
 
-	debug = self.debug
-	log = self.log
+	self.config = config;
+
 
 	self.variable1Value = '';
 	self.variable2Value = '';
@@ -61,20 +57,23 @@ instance.prototype.init = function () {
 
 	self.initTCP()
 	self.setupEventListeners.bind(this)();
+	self.actions()
 	self.feedbacks()
 	self.presets()
 	self.variables()
 
-	self.setVariable('hours', '')
-	self.setVariable('minutes', '')
-	self.setVariable('seconds', '')
-	self.setVariable('name', '')
-	self.setVariable('speed', '')
-	self.setVariable('endTime', '')
-	self.setVariable('nextTimerName', '')
-	self.setVariable('nextTimerDuration', '')
-	self.bgColor = self.rgb(0, 0, 0)
-	self.fgColor = self.rgb(255, 255, 255)
+	self.setVariableValues({
+		hours: '',
+		minutes: '',
+		seconds: '',
+		name: '',
+		speed: '',
+		endTime: '',
+		nextTimerName: '',
+		nextTimerDuration: '',
+	})
+	self.bgColor = combineRgb(0, 0, 0)
+	self.fgColor = combineRgb(255, 255, 255)
 	self.buttonStates = {
 		Fullscreen: false,
 		NDI: false,
@@ -87,7 +86,7 @@ instance.prototype.init = function () {
 	self.timers = {}
 }
 
-instance.prototype.initTCP = function () {
+initTCP() {
 	var self = this
 
 	if (self.socket !== undefined) {
@@ -96,22 +95,19 @@ instance.prototype.initTCP = function () {
 	}
 
 	if (self.config.host && self.config.port) {
-		self.socket = new tcp(self.config.host, self.config.port)
+		self.socket = new TCPHelper(self.config.host, self.config.port)
 
 		self.socket.on('status_change', (status, message) => {
-			self.status(status, message)
+			self.log('debug', `Status ${status}, message: ${message}`);
+			self.updateStatus(status)
 		})
 
 		self.socket.on('error', (err) => {
-			debug('Network error', err)
-			self.status(self.STATE_ERROR, err)
-			console.log('error', 'Network error: ' + err.message)
+			self.updateStatus(InstanceStatus.UnknownError)
 		})
 
 		self.socket.on('connect', () => {
-			debug('Connected')
-			self.status(self.STATE_OK)
-			console.log('Connected')
+			self.updateStatus(InstanceStatus.Ok)
 		})
 
 		self.socket.on('data', (data) => {
@@ -121,27 +117,28 @@ instance.prototype.initTCP = function () {
 
 			try {
 				let jsonData = JSON.parse(message)
-				console.log(jsonData)
-				hours = (jsonData.h < 0 ? '+' : '') + jsonData.h.replace('-', '')
+				let hours = (jsonData.h < 0 ? '+' : '') + jsonData.h.replace('-', '')
 				hours = hours == '' ? '' : hours.lpad('0', 2)
-				self.setVariable('hours', hours)
+				self.setVariableValues({hours: hours})
 
-				minutes = (jsonData.m < 0 ? '+' : '') + jsonData.m.replace('-', '')
+				let minutes = (jsonData.m < 0 ? '+' : '') + jsonData.m.replace('-', '')
 				minutes = minutes == '' ? '' : minutes.lpad('0', 2)
-				self.setVariable('minutes', minutes)
+				self.setVariableValues({minutes: minutes})
 
-				seconds = (jsonData.s < 0 ? '+' : '') + jsonData.s.replace('-', '')
+				let seconds = (jsonData.s < 0 ? '+' : '') + jsonData.s.replace('-', '')
 				seconds = seconds == '' ? '' : seconds.lpad('0', 2)
-				self.setVariable('seconds', seconds)
-
-				self.setVariable('speed', jsonData.speed)
-				self.setVariable('name', jsonData.name)
-				self.setVariable('endTime', jsonData.endTime)
+				self.setVariableValues({seconds: seconds})
+				
+				self.setVariableValues({
+					speed: jsonData.speed,
+					name: jsonData.name,
+					endTime: jsonData.endTime,
+				})
 
 				let tempFg = self.hexToRgb(jsonData.fg.substr(0, 1) + jsonData.fg.substr(3))
-				self.fgColor = self.rgb(tempFg.r, tempFg.g, tempFg.b)
+				self.fgColor = combineRgb(tempFg.r, tempFg.g, tempFg.b)
 				let tempBg = self.hexToRgb(jsonData.bg.substr(0, 1) + jsonData.bg.substr(3))
-				self.bgColor = self.rgb(tempBg.r, tempBg.g, tempBg.b)
+				self.bgColor = combineRgb(tempBg.r, tempBg.g, tempBg.b)
 
 				self.buttonStates['Fullscreen'] = jsonData['Fullscreen']
 				self.buttonStates['NDI'] = jsonData['NDI']
@@ -151,8 +148,10 @@ instance.prototype.initTCP = function () {
 				self.buttonStates['Pause'] = jsonData['Pause']
 				self.buttonStates['Blackout'] = jsonData['Blackout']
 
-				self.setVariable('nextTimerName', jsonData.nextTimerName)
-				self.setVariable('nextTimerDuration', jsonData.nextTimerDuration)
+				self.setVariableValues({
+					nextTimerName: jsonData.nextTimerName,
+					nextTimerDuration: jsonData.nextTimerDuration
+				})
 
 				self.timers = jsonData.timers
 
@@ -163,12 +162,12 @@ instance.prototype.initTCP = function () {
 			}
 		})
 		self.socket.on('end', function () {
-			console.log('end')
+			self.log('debug', 'end')
 		})
 	}
 }
 
-instance.prototype.config_fields = function () {
+getConfigFields() {
 	var self = this
 
 	const dynamicVariableChoices = [];
@@ -177,6 +176,7 @@ instance.prototype.config_fields = function () {
 		label: '(No Variable Selected)'
 	});
 
+	// TODO: Find an alternative to this.system in v3
 	try {
 		this.system.emit('variable_get_definitions', (definitions) =>
 			Object.entries(definitions).forEach(([instanceLabel, variables]) =>
@@ -195,7 +195,7 @@ instance.prototype.config_fields = function () {
 
 	return [
 		{
-			type: 'text',
+			type: 'static-text',
 			id: 'info',
 			width: 12,
 			label: 'Information',
@@ -207,7 +207,7 @@ instance.prototype.config_fields = function () {
 			label: 'Target IP (For local: 127.0.0.1)',
 			default: '127.0.0.1',
 			width: 6,
-			regex: self.REGEX_IP,
+			regex: Regex.IP,
 		},
 		{
 			type: 'textinput',
@@ -215,10 +215,10 @@ instance.prototype.config_fields = function () {
 			label: 'Target port (Default: 4778)',
 			default: '4778',
 			width: 6,
-			regex: self.REGEX_PORT,
+			regex: Regex.PORT,
 		},
 		{
-			type: 'text',
+			type: 'static-text',
 			id: 'variablesinfo',
 			label: 'Send Companion Variables to CueTimer',
 			width: 12,
@@ -278,7 +278,7 @@ instance.prototype.config_fields = function () {
 	]
 }
 
-instance.prototype.variableListener = function(variables) {
+variableListener(variables) {
 	try {
 		let dataChanged = false;
 
@@ -330,7 +330,7 @@ instance.prototype.variableListener = function(variables) {
 	}
 };
 
-instance.prototype.sendVariables = function() {
+sendVariables() {
 	let variableSendArray = [];
 		
 	if (this.config.variable1) {
@@ -370,13 +370,15 @@ instance.prototype.sendVariables = function() {
 
 	if (variableSendArray.length > 0) {
 		let variableSendString = '$VARIABLES:' + JSON.stringify(variableSendArray) + '\r\n';
-		if (this.socket !== undefined && this.socket.connected) {
+		if (this.socket !== undefined && this.socket.isConnected) {
 			this.socket.send(variableSendString);
 		}
 	}
 }
 
-instance.prototype.setupEventListeners = function() {
+setupEventListeners() {
+	// TODO: Find an alternative to this.system in v3
+
 	//get initial values
 
 	try {
@@ -427,31 +429,30 @@ instance.prototype.setupEventListeners = function() {
 	
 };
 
-instance.prototype.actions = function () {
-	var self = this
+actions() {
 
-	actions = {
-		FireNext: { label: 'Fire the next timer' },
-		CueNext: { label: 'Cue next' },
-		CueCurrent: { label: 'Cue Current' },
-		Pause: { label: 'Pause' },
-		Restart: { label: 'Restart' },
-		Reset: { label: 'Reset' },
-		Revert: { label: 'Revert' },
-		AddSpeed: { label: 'Increase speed by 5%' },
-		SubSpeed: { label: 'Decrease speed by 5%' },
-		AddMinute: { label: 'Add 1 minute' },
-		SubMinute: { label: 'Subtract 1 minute' },
-		Blackout: { label: 'Blackout' },
-		Fullscreen: { label: 'Fullscreen' },
-		NDI: { label: 'NDI' },
-		Message: { label: 'Message' },
-		Clock: { label: 'Clock' },
-		STM: { label: 'Single Timer Mode' },
-		MoveNextUp: { label: 'Move Next Up' },
-		MoveNextDown: { label: 'Move Next Down' },
+	let actions = {
+		FireNext: { name: 'Fire the next timer', options: [], callback: this.actionCallback.bind(this)},
+		CueNext: { name: 'Cue next', options: [], callback: this.actionCallback.bind(this) },
+		CueCurrent: { name: 'Cue Current', options: [], callback: this.actionCallback.bind(this) },
+		Pause: { name: 'Pause', options: [], callback: this.actionCallback.bind(this) },
+		Restart: { name: 'Restart', options: [], callback: this.actionCallback.bind(this) },
+		Reset: { name: 'Reset', options: [], callback: this.actionCallback.bind(this) },
+		Revert: { name: 'Revert', options: [], callback: this.actionCallback.bind(this) },
+		AddSpeed: { name: 'Increase speed by 5%', options: [], callback: this.actionCallback.bind(this) },
+		SubSpeed: { name: 'Decrease speed by 5%', options: [], callback: this.actionCallback.bind(this) },
+		AddMinute: { name: 'Add 1 minute', options: [], callback: this.actionCallback.bind(this) },
+		SubMinute: { name: 'Subtract 1 minute', options: [], callback: this.actionCallback.bind(this) },
+		Blackout: { name: 'Blackout', options: [], callback: this.actionCallback.bind(this) },
+		Fullscreen: { name: 'Fullscreen', options: [], callback: this.actionCallback.bind(this) },
+		NDI: { name: 'NDI', options: [], callback: this.actionCallback.bind(this) },
+		Message: { name: 'Message', options: [], callback: this.actionCallback.bind(this) },
+		Clock: { name: 'Clock', options: [], callback: this.actionCallback.bind(this) },
+		STM: { name: 'Single Timer Mode', options: [], callback: this.actionCallback.bind(this) },
+		MoveNextUp: { name: 'Move Next Up', options: [], callback: this.actionCallback.bind(this) },
+		MoveNextDown: { name: 'Move Next Down', options: [], callback: this.actionCallback.bind(this) },
 		FireTimerWithID: {
-			label: 'Fire Timer with ID',
+			name: 'Fire Timer with ID',
 			options: [
 				{
 					type: 'textinput',
@@ -460,9 +461,10 @@ instance.prototype.actions = function () {
 					default: '1',
 				},
 			],
+			callback: this.actionCallback.bind(this)
 		},
 		CueTimerWithID: {
-			label: 'Cue Timer with ID',
+			name: 'Cue Timer with ID',
 			options: [
 				{
 					type: 'textinput',
@@ -471,18 +473,18 @@ instance.prototype.actions = function () {
 					default: '1',
 				},
 			],
+			callback: this.actionCallback.bind(this)
 		},
 	}
 
-	self.setActions(actions)
+	this.setActionDefinitions(actions)
 }
 
-instance.prototype.action = function (action) {
-	var self = this
+actionCallback(action) {
 	var cmd = ''
 	var terminationChar = '$'
 
-	cmd = action.action
+	cmd = action.actionId
 
 	if (cmd == 'FireTimerWithID' || cmd == 'CueTimerWithID') {
 		cmd += '#' + action.options.Key
@@ -490,42 +492,44 @@ instance.prototype.action = function (action) {
 
 	cmd += terminationChar
 	if (cmd !== undefined && cmd != terminationChar) {
-		if (self.socket !== undefined && self.socket.connected) {
-			self.socket.send(cmd)
+		if (this.socket !== undefined && this.socket.isConnected) {
+			this.socket.send(cmd)
 		}
 	}
 }
 
-instance.prototype.variables = function () {
+variables() {
 	var self = this
 
 	var variables = [
-		{ label: 'Hours', name: 'hours' },
-		{ label: 'Minutes', name: 'minutes' },
-		{ label: 'Seconds', name: 'seconds' },
-		{ label: 'Name', name: 'name' },
-		{ label: 'Speed', name: 'speed' },
-		{ label: 'End Time', name: 'endTime' },
-		{ label: 'Next Timer Name', name: 'nextTimerName' },
-		{ label: 'Next Timer Duration', name: 'nextTimerDuration' },
+		{ name: 'Hours', variableId: 'hours' },
+		{ name: 'Minutes', variableId: 'minutes' },
+		{ name: 'Seconds', variableId: 'seconds' },
+		{ name: 'Name', variableId: 'name' },
+		{ name: 'Speed', variableId: 'speed' },
+		{ name: 'End Time', variableId: 'endTime' },
+		{ name: 'Next Timer Name', variableId: 'nextTimerName' },
+		{ name: 'Next Timer Duration', variableId: 'nextTimerDuration' },
 	]
 
 	self.setVariableDefinitions(variables)
 }
 
-instance.prototype.feedbacks = function () {
+feedbacks() {
 	var self = this
 	var feedbacks = {
 		colors: {
-			label: 'Main counter Colors from timer',
+			type: 'advanced',
+			name: 'Main counter Colors from timer',
 			description: 'Foreground and background colors of the timer',
-			callback: function (feedback, bank) {
+			options: [],
+			callback: function (feedback) {
 				return { color: self.fgColor, bgcolor: self.bgColor }
 			},
 		},
 		status: {
 			type: 'boolean',
-			label: 'Main counter Background Color',
+			name: 'Main counter Background Color',
 			description: 'Background color of button, based on its status',
 			options: [
 				{
@@ -544,9 +548,9 @@ instance.prototype.feedbacks = function () {
 					],
 				},
 			],
-			style: {
-				color: self.rgb(255, 255, 255),
-				bgcolor: self.rgb(255, 165, 0),
+			defaultStyle: {
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(255, 165, 0),
 			},
 			callback: function (feedback) {
 				return self.buttonStates[feedback.options.Key]
@@ -554,7 +558,7 @@ instance.prototype.feedbacks = function () {
 		},
 		timerName: {
 			type: 'advanced',
-			label: 'ID timer Name',
+			name: 'ID timer Name',
 			description: 'Timer Name with ID',
 			options: [
 				{
@@ -573,7 +577,7 @@ instance.prototype.feedbacks = function () {
 		},
 		timerDuration: {
 			type: 'advanced',
-			label: 'ID timer Duration',
+			name: 'ID timer Duration',
 			description: 'Timer Duration with ID',
 			options: [
 				{
@@ -592,7 +596,7 @@ instance.prototype.feedbacks = function () {
 		},
 		timerBackground: {
 			type: 'advanced',
-			label: 'ID timer Background',
+			name: 'ID timer Background',
 			description: 'Timer Background with ID',
 			options: [
 				{
@@ -605,30 +609,30 @@ instance.prototype.feedbacks = function () {
 			callback: function (feedback) {
 				if (feedback.options.Key in self.timers) {
 					let tempBg = self.hexToRgb(self.timers[feedback.options.Key].bg.substr(1))
-					return { bgcolor: self.rgb(tempBg.r, tempBg.g, tempBg.b) }
+					return { bgcolor: combineRgb(tempBg.r, tempBg.g, tempBg.b) }
 				}
-				return { bgcolor: self.rgb(0, 0, 0) }
+				return { bgcolor: combineRgb(0, 0, 0) }
 			},
 		},
 	}
 	self.setFeedbackDefinitions(feedbacks)
 }
 
-instance.prototype.presets = function () {
+presets() {
 	var self = this
 	self.setPresetDefinitions(presets.getPresets(self.label))
 }
 
-instance.prototype.destroy = function () {
+async destroy() {
 	var self = this
 
 	if (self.socket !== undefined) {
 		self.socket.destroy()
 	}
 
-	self.debug('destroy', self.id)
+	self.log('debug', `destroy ${self.id}`)
 }
-
+}
 class MessageBuffer {
 	constructor(delimiter) {
 		this.delimiter = delimiter
@@ -662,5 +666,4 @@ class MessageBuffer {
 	}
 }
 
-instance_skel.extendedBy(instance)
-exports = module.exports = instance
+runEntrypoint(CueTimerInstance, [])
