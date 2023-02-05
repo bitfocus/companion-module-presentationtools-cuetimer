@@ -238,12 +238,24 @@ actions() {
 			],
 			callback: this.actionCallback.bind(this)
 		},
+		SendVariableToCueTimer: {
+			name: 'Send Variable To CueTimer',
+			options: [
+				{
+					type: 'textinput',
+					useVariables: true,
+					label: 'Variable eg. $(internal:time_hms)',
+					id: 'VariableSelector',
+				},
+			],
+			callback: this.actionCallback.bind(this)
+		},
 	}
 
 	this.setActionDefinitions(actions)
 }
 
-actionCallback(action) {
+async actionCallback(action) {
 	var cmd = ''
 	var terminationChar = '$'
 
@@ -251,6 +263,10 @@ actionCallback(action) {
 
 	if (cmd == 'FireTimerWithID' || cmd == 'CueTimerWithID') {
 		cmd += '#' + action.options.Key
+	}
+	else if (cmd == 'SendVariableToCueTimer') {
+		let VariableValue = await this.parseVariablesInString(action.options.VariableSelector)
+		cmd += '#' + VariableValue
 	}
 
 	cmd += terminationChar

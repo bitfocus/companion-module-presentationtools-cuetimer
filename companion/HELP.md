@@ -5,7 +5,7 @@ Controls CueTimer by [PresentationTools](https://presentationtools.com/).
 ## Configuration
 * IP address of the computer running CueTimer for local use 127.0.0.1.
 * Port, the default is 4778.
-* You can also choose up to 5 Companion Variables to send to CueTimer. These variables will be sent any time they change values.
+* Using Triggers, you can choose Companion variables to send to CueTimer. These variables will be sent any time they change values.
 
 ## Available actions:
 * Fire the next timer
@@ -29,6 +29,7 @@ Controls CueTimer by [PresentationTools](https://presentationtools.com/).
 * Fire timer with ID
 * Cue timer with ID
 * Cue Current
+* Send Variable To CueTimer
 
 ## Variables:
 Variables can be used by putting $(instancename:variablename) e.g. $(cuetimer:hours)
