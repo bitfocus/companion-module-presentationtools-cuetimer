@@ -29,12 +29,6 @@
 		"entrypoint": "..\\index.js"
 	},
 	"manufacturer": "PresentationTools",
-	"products": [
-		"CueTimer"
-	],
-	"keywords": [
-		"Presentation",
-		"Timer",
-		"Software"
-	]
+	"products": ["CueTimer"],
+	"keywords": ["Presentation", "Timer", "Software"]
 }

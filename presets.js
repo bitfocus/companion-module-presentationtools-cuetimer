@@ -1,750 +1,750 @@
-var icons = require("./icons");
+var icons = require('./icons')
 exports.getPresets = function (instanceLabel) {
-  return {
-    FireNext: {
-      type: "button",
-      category: "Commands",
-      name: "Fire next Timer",
-      style: {
-        bgcolor: 0,
+	return {
+		FireNext: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Fire next Timer',
+			style: {
+				bgcolor: 0,
 
-        png64: icons.FireNext,
-        pngalignment: "center:top",
+				png64: icons.FireNext,
+				pngalignment: 'center:top',
 
-        text: "Fire Next",
-        alignment: "center:bottom",
-        size: "14",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [{ actionId: "FireNext" }],
-          up: [],
-        },
-      ],
-      feedbacks: [],
-    },
-    CueNext: {
-      type: "button",
-      category: "Commands",
-      name: "Cue next Timer",
-      style: {
-        bgcolor: 0,
+				text: 'Fire Next',
+				alignment: 'center:bottom',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'FireNext' }],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		CueNext: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Cue next Timer',
+			style: {
+				bgcolor: 0,
 
-        png64: icons.CueNext,
-        pngalignment: "center:top",
+				png64: icons.CueNext,
+				pngalignment: 'center:top',
 
-        text: "Cue Next",
-        alignment: "center:bottom",
-        size: "14",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [{ actionId: "CueNext" }],
-          up: [],
-        },
-      ],
-      feedbacks: [],
-    },
-    Pause: {
-      type: "button",
-      category: "Commands",
-      name: "Pause",
-      style: {
-        bgcolor: 0,
+				text: 'Cue Next',
+				alignment: 'center:bottom',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'CueNext' }],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		Pause: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Pause',
+			style: {
+				bgcolor: 0,
 
-        png64: icons.Pause,
-        pngalignment: "center:top",
+				png64: icons.Pause,
+				pngalignment: 'center:top',
 
-        text: "Pause",
-        alignment: "center:bottom",
-        size: "14",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [{ actionId: "Pause" }],
-          up: [],
-        },
-      ],
-      feedbacks: [
-        {
-          feedbackId: "status",
-          options: {
-            Key: "Pause",
-          },
-          style: {
-            color: 16777215,
-            bgcolor: 16753920,
-          },
-        },
-      ],
-    },
-    Restart: {
-      type: "button",
-      category: "Commands",
-      name: "Restart",
-      style: {
-        bgcolor: 0,
+				text: 'Pause',
+				alignment: 'center:bottom',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'Pause' }],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'status',
+					options: {
+						Key: 'Pause',
+					},
+					style: {
+						color: 16777215,
+						bgcolor: 16753920,
+					},
+				},
+			],
+		},
+		Restart: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Restart',
+			style: {
+				bgcolor: 0,
 
-        png64: icons.Restart,
-        pngalignment: "center:top",
+				png64: icons.Restart,
+				pngalignment: 'center:top',
 
-        text: "Restart",
-        alignment: "center:bottom",
-        size: "14",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [{ actionId: "Restart" }],
-          up: [],
-        },
-      ],
-      feedbacks: [],
-    },
-    Reset: {
-      type: "button",
-      category: "Commands",
-      name: "Reset",
-      style: {
-        bgcolor: 0,
+				text: 'Restart',
+				alignment: 'center:bottom',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'Restart' }],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		Reset: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Reset',
+			style: {
+				bgcolor: 0,
 
-        png64: icons.Reset,
-        pngalignment: "center:top",
+				png64: icons.Reset,
+				pngalignment: 'center:top',
 
-        text: "Reset",
-        alignment: "center:bottom",
-        size: "14",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [{ actionId: "Reset" }],
-          up: [],
-        },
-      ],
-      feedbacks: [],
-    },
-    Revert: {
-      type: "button",
-      category: "Commands",
-      name: "Revert",
-      style: {
-        bgcolor: 0,
+				text: 'Reset',
+				alignment: 'center:bottom',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'Reset' }],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		Revert: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Revert',
+			style: {
+				bgcolor: 0,
 
-        png64: icons.Revert,
-        pngalignment: "center:top",
+				png64: icons.Revert,
+				pngalignment: 'center:top',
 
-        text: "Revert",
-        alignment: "center:bottom",
-        size: "14",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [{ actionId: "Revert" }],
-          up: [],
-        },
-      ],
-      feedbacks: [],
-    },
-    AddSpeed: {
-      type: "button",
-      category: "Commands",
-      name: "Increase speed by 5%",
-      style: {
-        bgcolor: 0,
+				text: 'Revert',
+				alignment: 'center:bottom',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'Revert' }],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		AddSpeed: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Increase speed by 5%',
+			style: {
+				bgcolor: 0,
 
-        png64: icons.AddSpeed,
-        pngalignment: "center:top",
+				png64: icons.AddSpeed,
+				pngalignment: 'center:top',
 
-        text: "Speed",
-        alignment: "center:bottom",
-        size: "14",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [{ actionId: "AddSpeed" }],
-          up: [],
-        },
-      ],
-      feedbacks: [],
-    },
-    SubSpeed: {
-      type: "button",
-      category: "Commands",
-      name: "Decrease speed by 5%",
-      style: {
-        bgcolor: 0,
+				text: 'Speed',
+				alignment: 'center:bottom',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'AddSpeed' }],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		SubSpeed: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Decrease speed by 5%',
+			style: {
+				bgcolor: 0,
 
-        png64: icons.SubSpeed,
-        pngalignment: "center:top",
+				png64: icons.SubSpeed,
+				pngalignment: 'center:top',
 
-        text: "Speed",
-        alignment: "center:bottom",
-        size: "14",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [{ actionId: "SubSpeed" }],
-          up: [],
-        },
-      ],
-      feedbacks: [],
-    },
-    AddMinute: {
-      type: "button",
-      category: "Commands",
-      name: "Add 1 Minute",
-      style: {
-        bgcolor: 0,
+				text: 'Speed',
+				alignment: 'center:bottom',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'SubSpeed' }],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		AddMinute: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Add 1 Minute',
+			style: {
+				bgcolor: 0,
 
-        png64: icons.AddMinute,
-        pngalignment: "center:top",
+				png64: icons.AddMinute,
+				pngalignment: 'center:top',
 
-        text: "Minute",
-        alignment: "center:bottom",
-        size: "14",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [{ actionId: "AddMinute" }],
-          up: [],
-        },
-      ],
-      feedbacks: [],
-    },
-    SubMinute: {
-      type: "button",
-      category: "Commands",
-      name: "Subtract 1 Minute",
-      style: {
-        bgcolor: 0,
+				text: 'Minute',
+				alignment: 'center:bottom',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'AddMinute' }],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		SubMinute: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Subtract 1 Minute',
+			style: {
+				bgcolor: 0,
 
-        png64: icons.SubMinute,
-        pngalignment: "center:top",
+				png64: icons.SubMinute,
+				pngalignment: 'center:top',
 
-        text: "Minute",
-        alignment: "center:bottom",
-        size: "14",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [{ actionId: "SubMinute" }],
-          up: [],
-        },
-      ],
-      feedbacks: [],
-    },
-    Blackout: {
-      type: "button",
-      category: "Commands",
-      name: "Blackout",
-      style: {
-        bgcolor: 0,
+				text: 'Minute',
+				alignment: 'center:bottom',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'SubMinute' }],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		Blackout: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Blackout',
+			style: {
+				bgcolor: 0,
 
-        png64: icons.Blackout,
-        pngalignment: "center:top",
+				png64: icons.Blackout,
+				pngalignment: 'center:top',
 
-        text: "Blackout",
-        alignment: "center:bottom",
-        size: "14",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [{ actionId: "Blackout" }],
-          up: [],
-        },
-      ],
-      feedbacks: [
-        {
-          feedbackId: "status",
-          options: {
-            Key: "Blackout",
-          },
-          style: {
-            color: 16777215,
-            bgcolor: 16753920,
-          },
-        },
-      ],
-    },
-    Clock: {
-      type: "button",
-      category: "Commands",
-      name: "Clock",
-      style: {
-        bgcolor: 0,
+				text: 'Blackout',
+				alignment: 'center:bottom',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'Blackout' }],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'status',
+					options: {
+						Key: 'Blackout',
+					},
+					style: {
+						color: 16777215,
+						bgcolor: 16753920,
+					},
+				},
+			],
+		},
+		Clock: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Clock',
+			style: {
+				bgcolor: 0,
 
-        png64: icons.Clock,
-        pngalignment: "center:top",
+				png64: icons.Clock,
+				pngalignment: 'center:top',
 
-        text: "Clock",
-        alignment: "center:bottom",
-        size: "14",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [{ actionId: "Clock" }],
-          up: [],
-        },
-      ],
-      feedbacks: [
-        {
-          feedbackId: "status",
-          options: {
-            Key: "Clock",
-          },
-          style: {
-            color: 16777215,
-            bgcolor: 16753920,
-          },
-        },
-      ],
-    },
-    Message: {
-      type: "button",
-      category: "Commands",
-      name: "Message",
-      style: {
-        bgcolor: 0,
+				text: 'Clock',
+				alignment: 'center:bottom',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'Clock' }],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'status',
+					options: {
+						Key: 'Clock',
+					},
+					style: {
+						color: 16777215,
+						bgcolor: 16753920,
+					},
+				},
+			],
+		},
+		Message: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Message',
+			style: {
+				bgcolor: 0,
 
-        png64: icons.Message,
-        pngalignment: "center:top",
+				png64: icons.Message,
+				pngalignment: 'center:top',
 
-        text: "Message",
-        alignment: "center:bottom",
-        size: "14",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [{ actionId: "Message" }],
-          up: [],
-        },
-      ],
-      feedbacks: [
-        {
-          feedbackId: "status",
-          options: {
-            Key: "Message",
-          },
-          style: {
-            color: 16777215,
-            bgcolor: 16753920,
-          },
-        },
-      ],
-    },
-    Fullscreen: {
-      type: "button",
-      category: "Commands",
-      name: "Full Screen",
-      style: {
-        bgcolor: 0,
-        text: "Full Screen",
-        alignment: "center:center",
-        size: "18",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [{ actionId: "Fullscreen" }],
-          up: [],
-        },
-      ],
-      feedbacks: [
-        {
-          feedbackId: "status",
-          options: {
-            Key: "Fullscreen",
-          },
-          style: {
-            color: 16777215,
-            bgcolor: 16753920,
-          },
-        },
-      ],
-    },
-    NDI: {
-      type: "button",
-      category: "Commands",
-      name: "NDI",
-      style: {
-        bgcolor: 0,
-        text: "NDI",
-        alignment: "center:center",
-        size: "30",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [{ actionId: "NDI" }],
-          up: [],
-        },
-      ],
-      feedbacks: [
-        {
-          feedbackId: "status",
-          options: {
-            Key: "NDI",
-          },
-          style: {
-            color: 16777215,
-            bgcolor: 16753920,
-          },
-        },
-      ],
-    },
-    STM: {
-      type: "button",
-      category: "Commands",
-      name: "Single Mode",
-      style: {
-        bgcolor: 0,
-        text: "Single Mode",
-        alignment: "center:center",
-        size: "18",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [{ actionId: "STM" }],
-          up: [],
-        },
-      ],
-      feedbacks: [
-        {
-          feedbackId: "status",
-          options: {
-            Key: "STM",
-          },
-          style: {
-            color: 16777215,
-            bgcolor: 16753920,
-          },
-        },
-      ],
-    },
-    MoveNextUp: {
-      type: "button",
-      category: "Commands",
-      name: "Move Next Up",
-      style: {
-        bgcolor: 0,
+				text: 'Message',
+				alignment: 'center:bottom',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'Message' }],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'status',
+					options: {
+						Key: 'Message',
+					},
+					style: {
+						color: 16777215,
+						bgcolor: 16753920,
+					},
+				},
+			],
+		},
+		Fullscreen: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Full Screen',
+			style: {
+				bgcolor: 0,
+				text: 'Full Screen',
+				alignment: 'center:center',
+				size: '18',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'Fullscreen' }],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'status',
+					options: {
+						Key: 'Fullscreen',
+					},
+					style: {
+						color: 16777215,
+						bgcolor: 16753920,
+					},
+				},
+			],
+		},
+		NDI: {
+			type: 'button',
+			category: 'Commands',
+			name: 'NDI',
+			style: {
+				bgcolor: 0,
+				text: 'NDI',
+				alignment: 'center:center',
+				size: '30',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'NDI' }],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'status',
+					options: {
+						Key: 'NDI',
+					},
+					style: {
+						color: 16777215,
+						bgcolor: 16753920,
+					},
+				},
+			],
+		},
+		STM: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Single Mode',
+			style: {
+				bgcolor: 0,
+				text: 'Single Mode',
+				alignment: 'center:center',
+				size: '18',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'STM' }],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'status',
+					options: {
+						Key: 'STM',
+					},
+					style: {
+						color: 16777215,
+						bgcolor: 16753920,
+					},
+				},
+			],
+		},
+		MoveNextUp: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Move Next Up',
+			style: {
+				bgcolor: 0,
 
-        png64: icons.Up,
-        pngalignment: "center:center",
-        text: "",
-      },
-      steps: [
-        {
-          down: [{ actionId: "MoveNextUp" }],
-          up: [],
-        },
-      ],
-      feedbacks: [],
-    },
-    MoveNextDown: {
-      type: "button",
-      category: "Commands",
-      name: "Move Next Down",
-      style: {
-        bgcolor: 0,
+				png64: icons.Up,
+				pngalignment: 'center:center',
+				text: '',
+			},
+			steps: [
+				{
+					down: [{ actionId: 'MoveNextUp' }],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		MoveNextDown: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Move Next Down',
+			style: {
+				bgcolor: 0,
 
-        png64: icons.Down,
-        pngalignment: "center:center",
-        text: "",
-      },
-      steps: [
-        {
-          down: [{ actionId: "MoveNextDown" }],
-          up: [],
-        },
-      ],
-      feedbacks: [],
-    },
-    FireTimerWithID: {
-      type: "button",
-      category: "Commands",
-      name: "Fire with ID",
-      style: {
-        bgcolor: 0,
+				png64: icons.Down,
+				pngalignment: 'center:center',
+				text: '',
+			},
+			steps: [
+				{
+					down: [{ actionId: 'MoveNextDown' }],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		FireTimerWithID: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Fire with ID',
+			style: {
+				bgcolor: 0,
 
-        text: "Fire",
-        alignment: "center:center",
-        size: "14",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [
-            {
-              actionId: "FireTimerWithID",
-              options: {
-                Key: "1",
-              },
-            },
-          ],
-          up: [],
-        },
-      ],
-      feedbacks: [
-        {
-          feedbackId: "timerName",
-          options: {
-            Key: "1",
-          },
-        },
-        {
-          feedbackId: "timerBackground",
-          options: {
-            Key: "1",
-          },
-        },
-      ],
-    },
-    CueTimerWithID: {
-      type: "button",
-      category: "Commands",
-      name: "Cue with ID",
-      style: {
-        bgcolor: 0,
+				text: 'Fire',
+				alignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [
+						{
+							actionId: 'FireTimerWithID',
+							options: {
+								Key: '1',
+							},
+						},
+					],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'timerName',
+					options: {
+						Key: '1',
+					},
+				},
+				{
+					feedbackId: 'timerBackground',
+					options: {
+						Key: '1',
+					},
+				},
+			],
+		},
+		CueTimerWithID: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Cue with ID',
+			style: {
+				bgcolor: 0,
 
-        text: "Cue",
-        alignment: "center:center",
-        size: "14",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [
-            {
-              actionId: "CueTimerWithID",
-              options: {
-                Key: "1",
-              },
-            },
-          ],
-          up: [],
-        },
-      ],
-      feedbacks: [
-        {
-          feedbackId: "timerName",
-          options: {
-            Key: "1",
-          },
-        },
-        {
-          feedbackId: "timerBackground",
-          options: {
-            Key: "1",
-          },
-        },
-      ],
-    },
-    CueCurrent: {
-      type: "button",
-      category: "Commands",
-      name: "Cue Current Timer",
-      style: {
-        bgcolor: 0,
+				text: 'Cue',
+				alignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [
+						{
+							actionId: 'CueTimerWithID',
+							options: {
+								Key: '1',
+							},
+						},
+					],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'timerName',
+					options: {
+						Key: '1',
+					},
+				},
+				{
+					feedbackId: 'timerBackground',
+					options: {
+						Key: '1',
+					},
+				},
+			],
+		},
+		CueCurrent: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Cue Current Timer',
+			style: {
+				bgcolor: 0,
 
-        png64: icons.CueCurrent,
-        pngalignment: "center:top",
+				png64: icons.CueCurrent,
+				pngalignment: 'center:top',
 
-        text: "CueCurrent",
-        alignment: "center:bottom",
-        size: "7",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [{ actionId: "CueCurrent" }],
-          up: [],
-        },
-      ],
-      feedbacks: [],
-    },
+				text: 'CueCurrent',
+				alignment: 'center:bottom',
+				size: '7',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'CueCurrent' }],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
 
-    // Variables & FeedBack presets
-    Hours: {
-      type: "button",
-      category: "Feedbacks",
-      name: "Hours",
-      style: {
-        bgcolor: 0,
-        text: `$(${instanceLabel}:hours)`,
-        alignment: "center:center",
-        size: "auto",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [],
-          up: [],
-        },
-      ],
-      feedbacks: [
-        {
-          feedbackId: "colors",
-        },
-      ],
-    },
-    Minutes: {
-      type: "button",
-      category: "Feedbacks",
-      name: "Minutes",
-      style: {
-        bgcolor: 0,
-        text: `$(${instanceLabel}:minutes)`,
-        alignment: "center:center",
-        size: "auto",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [],
-          up: [],
-        },
-      ],
-      feedbacks: [
-        {
-          feedbackId: "colors",
-        },
-      ],
-    },
-    Seconds: {
-      type: "button",
-      category: "Feedbacks",
-      name: "Seconds",
-      style: {
-        bgcolor: 0,
-        text: `$(${instanceLabel}:seconds)`,
-        alignment: "center:center",
-        size: "auto",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [],
-          up: [],
-        },
-      ],
-      feedbacks: [
-        {
-          feedbackId: "colors",
-        },
-      ],
-    },
+		// Variables & FeedBack presets
+		Hours: {
+			type: 'button',
+			category: 'Feedbacks',
+			name: 'Hours',
+			style: {
+				bgcolor: 0,
+				text: `$(${instanceLabel}:hours)`,
+				alignment: 'center:center',
+				size: 'auto',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'colors',
+				},
+			],
+		},
+		Minutes: {
+			type: 'button',
+			category: 'Feedbacks',
+			name: 'Minutes',
+			style: {
+				bgcolor: 0,
+				text: `$(${instanceLabel}:minutes)`,
+				alignment: 'center:center',
+				size: 'auto',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'colors',
+				},
+			],
+		},
+		Seconds: {
+			type: 'button',
+			category: 'Feedbacks',
+			name: 'Seconds',
+			style: {
+				bgcolor: 0,
+				text: `$(${instanceLabel}:seconds)`,
+				alignment: 'center:center',
+				size: 'auto',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'colors',
+				},
+			],
+		},
 
-    Name: {
-      type: "button",
-      category: "Feedbacks",
-      name: "Name",
-      style: {
-        bgcolor: 0,
-        text: `$(${instanceLabel}:name)`,
-        alignment: "center:center",
-        size: "auto",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [],
-          up: [],
-        },
-      ],
-      feedbacks: [
-        {
-          feedbackId: "colors",
-        },
-      ],
-    },
-    Speed: {
-      type: "button",
-      category: "Feedbacks",
-      name: "Speed",
-      style: {
-        bgcolor: 0,
-        text: `Speed\\n\\n$(${instanceLabel}:speed)%`,
-        alignment: "center:center",
-        size: "14",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [],
-          up: [],
-        },
-      ],
-      feedbacks: [],
-    },
-    EndTime: {
-      type: "button",
-      category: "Feedbacks",
-      name: "End Time",
-      style: {
-        bgcolor: 0,
-        text: `End Time\\n\\n$(${instanceLabel}:endTime)`,
-        alignment: "center:center",
-        size: "14",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [],
-          up: [],
-        },
-      ],
-      feedbacks: [],
-    },
-    NextName: {
-      type: "button",
-      category: "Feedbacks",
-      name: "Next name",
-      style: {
-        bgcolor: 0,
-        text: `Next:\\n$(${instanceLabel}:nextTimerName)`,
-        alignment: "center:center",
-        size: "14",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [],
-          up: [],
-        },
-      ],
-      feedbacks: [],
-    },
-    NextDuration: {
-      type: "button",
-      category: "Feedbacks",
-      name: "Next duration",
-      style: {
-        bgcolor: 0,
-        text: `Next:\\n\\n$(${instanceLabel}:nextTimerDuration)`,
-        alignment: "center:center",
-        size: "14",
-        color: 16777215,
-      },
-      steps: [
-        {
-          down: [],
-          up: [],
-        },
-      ],
-      feedbacks: [],
-    },
-  };
-};
+		Name: {
+			type: 'button',
+			category: 'Feedbacks',
+			name: 'Name',
+			style: {
+				bgcolor: 0,
+				text: `$(${instanceLabel}:name)`,
+				alignment: 'center:center',
+				size: 'auto',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'colors',
+				},
+			],
+		},
+		Speed: {
+			type: 'button',
+			category: 'Feedbacks',
+			name: 'Speed',
+			style: {
+				bgcolor: 0,
+				text: `Speed\\n\\n$(${instanceLabel}:speed)%`,
+				alignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		EndTime: {
+			type: 'button',
+			category: 'Feedbacks',
+			name: 'End Time',
+			style: {
+				bgcolor: 0,
+				text: `End Time\\n\\n$(${instanceLabel}:endTime)`,
+				alignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		NextName: {
+			type: 'button',
+			category: 'Feedbacks',
+			name: 'Next name',
+			style: {
+				bgcolor: 0,
+				text: `Next:\\n$(${instanceLabel}:nextTimerName)`,
+				alignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		NextDuration: {
+			type: 'button',
+			category: 'Feedbacks',
+			name: 'Next duration',
+			style: {
+				bgcolor: 0,
+				text: `Next:\\n\\n$(${instanceLabel}:nextTimerDuration)`,
+				alignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+	}
+}
