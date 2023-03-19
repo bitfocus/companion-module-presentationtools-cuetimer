@@ -141,6 +141,16 @@ class CueTimerInstance extends InstanceBase {
 
 					self.timers = jsonData.timers
 
+					self.variables()
+
+					for (let x in self.timers) {
+						self.setVariableValues({
+							[`timer_${x}_name`]: self.timers[x].name,
+							[`timer_${x}_duration`]: self.timers[x].duration,
+							[`timer_${x}_bg`]: self.timers[x].bg,
+						})
+					}
+
 					self.checkFeedbacks('colors', 'status', 'timerName', 'timerDuration', 'timerBackground')
 				} catch (e) {
 					console.error(e.message)
@@ -338,6 +348,12 @@ class CueTimerInstance extends InstanceBase {
 			{ name: 'Next Timer Name', variableId: 'nextTimerName' },
 			{ name: 'Next Timer Duration', variableId: 'nextTimerDuration' },
 		]
+
+		for (let x in self.timers) {
+			variables.push(name: `Timer ${x} Name`, variableId: `timer_${x}_name`)
+			variables.push(name: `Timer ${x} Duration`, variableId: `timer_${x}_duration`)
+			variables.push(name: `Timer ${x} Background`, variableId: `timer_${x}_bg`)		
+		}
 
 		self.setVariableDefinitions(variables)
 	}
