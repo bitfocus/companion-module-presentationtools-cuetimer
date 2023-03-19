@@ -23,7 +23,7 @@ class CueTimerInstance extends InstanceBase {
 			: null
 	}
 
-	updateConfig(config) {
+	async updateConfig(config) {
 		var self = this
 		self.config = config
 		var resetConnection = false
