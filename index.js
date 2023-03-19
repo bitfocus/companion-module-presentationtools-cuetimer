@@ -105,17 +105,17 @@ class CueTimerInstance extends InstanceBase {
 					let jsonData = JSON.parse(message)
 					let hours = (jsonData.h < 0 ? '+' : '') + jsonData.h.replace('-', '')
 					hours = hours == '' ? '' : hours.lpad('0', 2)
-					self.setVariableValues({ hours: hours })
 
 					let minutes = (jsonData.m < 0 ? '+' : '') + jsonData.m.replace('-', '')
 					minutes = minutes == '' ? '' : minutes.lpad('0', 2)
-					self.setVariableValues({ minutes: minutes })
 
 					let seconds = (jsonData.s < 0 ? '+' : '') + jsonData.s.replace('-', '')
 					seconds = seconds == '' ? '' : seconds.lpad('0', 2)
-					self.setVariableValues({ seconds: seconds })
 
 					self.setVariableValues({
+						hours: hours,
+						minutes: minutes,
+						seconds: seconds,
 						speed: jsonData.speed,
 						name: jsonData.name,
 						endTime: jsonData.endTime,
