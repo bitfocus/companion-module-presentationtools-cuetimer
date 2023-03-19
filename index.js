@@ -72,6 +72,10 @@ class CueTimerInstance extends InstanceBase {
 		self.timers = {}
 	}
 
+	compareKeys(a, b) {
+		return JSON.stringify(Object.keys(a).sort()) === JSON.stringify(Object.keys(b).sort())
+	}
+
 	initTCP() {
 		var self = this
 
@@ -139,9 +143,14 @@ class CueTimerInstance extends InstanceBase {
 						nextTimerDuration: jsonData.nextTimerDuration,
 					})
 
+					let updateVariablesFlag = false
+					if (!this.compareKeys(self.timers, jsonData.timers)) {
+						updateVariablesFlag = true
+					}
+
 					self.timers = jsonData.timers
 
-					self.variables()
+					if (updateVariablesFlag) self.variables()
 
 					for (let x in self.timers) {
 						self.setVariableValues({
@@ -350,9 +359,9 @@ class CueTimerInstance extends InstanceBase {
 		]
 
 		for (let x in self.timers) {
-			variables.push(name: `Timer ${x} Name`, variableId: `timer_${x}_name`)
-			variables.push(name: `Timer ${x} Duration`, variableId: `timer_${x}_duration`)
-			variables.push(name: `Timer ${x} Background`, variableId: `timer_${x}_bg`)		
+			variables.push({ name: `Timer ${x} Name`, variableId: `timer_${x}_name` })
+			variables.push({ name: `Timer ${x} Duration`, variableId: `timer_${x}_duration` })
+			variables.push({ name: `Timer ${x} Background`, variableId: `timer_${x}_bg` })
 		}
 
 		self.setVariableDefinitions(variables)
