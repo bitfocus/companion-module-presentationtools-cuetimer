@@ -156,7 +156,6 @@ class CueTimerInstance extends InstanceBase {
 						self.setVariableValues({
 							[`timer_${x}_name`]: self.timers[x].name,
 							[`timer_${x}_duration`]: self.timers[x].duration,
-							[`timer_${x}_bg`]: self.timers[x].bg,
 						})
 					}
 
@@ -361,7 +360,6 @@ class CueTimerInstance extends InstanceBase {
 		for (let x in self.timers) {
 			variables.push({ name: `Timer ${x} Name`, variableId: `timer_${x}_name` })
 			variables.push({ name: `Timer ${x} Duration`, variableId: `timer_${x}_duration` })
-			variables.push({ name: `Timer ${x} Background`, variableId: `timer_${x}_bg` })
 		}
 
 		self.setVariableDefinitions(variables)
