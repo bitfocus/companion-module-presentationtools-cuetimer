@@ -1,13 +1,13 @@
 var icons = require('./icons')
 exports.getPresets = function (instanceLabel) {
-	return [
-		{
+	return {
+		FireNext: {
+			type: 'button',
 			category: 'Commands',
-			label: 'Fire next Timer',
-			bank: {
+			name: 'Fire next Timer',
+			style: {
 				bgcolor: 0,
 
-				style: 'png',
 				png64: icons.FireNext,
 				pngalignment: 'center:top',
 
@@ -16,19 +16,21 @@ exports.getPresets = function (instanceLabel) {
 				size: '14',
 				color: 16777215,
 			},
-			actions: [
+			steps: [
 				{
-					action: 'FireNext',
+					down: [{ actionId: 'FireNext' }],
+					up: [],
 				},
 			],
+			feedbacks: [],
 		},
-		{
+		CueNext: {
+			type: 'button',
 			category: 'Commands',
-			label: 'Cue next Timer',
-			bank: {
+			name: 'Cue next Timer',
+			style: {
 				bgcolor: 0,
 
-				style: 'png',
 				png64: icons.CueNext,
 				pngalignment: 'center:top',
 
@@ -37,19 +39,21 @@ exports.getPresets = function (instanceLabel) {
 				size: '14',
 				color: 16777215,
 			},
-			actions: [
+			steps: [
 				{
-					action: 'CueNext',
+					down: [{ actionId: 'CueNext' }],
+					up: [],
 				},
 			],
+			feedbacks: [],
 		},
-		{
+		Pause: {
+			type: 'button',
 			category: 'Commands',
-			label: 'Pause',
-			bank: {
+			name: 'Pause',
+			style: {
 				bgcolor: 0,
 
-				style: 'png',
 				png64: icons.Pause,
 				pngalignment: 'center:top',
 
@@ -58,14 +62,15 @@ exports.getPresets = function (instanceLabel) {
 				size: '14',
 				color: 16777215,
 			},
-			actions: [
+			steps: [
 				{
-					action: 'Pause',
+					down: [{ actionId: 'Pause' }],
+					up: [],
 				},
 			],
 			feedbacks: [
 				{
-					type: 'status',
+					feedbackId: 'status',
 					options: {
 						Key: 'Pause',
 					},
@@ -76,13 +81,13 @@ exports.getPresets = function (instanceLabel) {
 				},
 			],
 		},
-		{
+		Restart: {
+			type: 'button',
 			category: 'Commands',
-			label: 'Restart',
-			bank: {
+			name: 'Restart',
+			style: {
 				bgcolor: 0,
 
-				style: 'png',
 				png64: icons.Restart,
 				pngalignment: 'center:top',
 
@@ -91,19 +96,21 @@ exports.getPresets = function (instanceLabel) {
 				size: '14',
 				color: 16777215,
 			},
-			actions: [
+			steps: [
 				{
-					action: 'Restart',
+					down: [{ actionId: 'Restart' }],
+					up: [],
 				},
 			],
+			feedbacks: [],
 		},
-		{
+		Reset: {
+			type: 'button',
 			category: 'Commands',
-			label: 'Reset',
-			bank: {
+			name: 'Reset',
+			style: {
 				bgcolor: 0,
 
-				style: 'png',
 				png64: icons.Reset,
 				pngalignment: 'center:top',
 
@@ -112,19 +119,21 @@ exports.getPresets = function (instanceLabel) {
 				size: '14',
 				color: 16777215,
 			},
-			actions: [
+			steps: [
 				{
-					action: 'Reset',
+					down: [{ actionId: 'Reset' }],
+					up: [],
 				},
 			],
+			feedbacks: [],
 		},
-		{
+		Revert: {
+			type: 'button',
 			category: 'Commands',
-			label: 'Revert',
-			bank: {
+			name: 'Revert',
+			style: {
 				bgcolor: 0,
 
-				style: 'png',
 				png64: icons.Revert,
 				pngalignment: 'center:top',
 
@@ -133,19 +142,21 @@ exports.getPresets = function (instanceLabel) {
 				size: '14',
 				color: 16777215,
 			},
-			actions: [
+			steps: [
 				{
-					action: 'Revert',
+					down: [{ actionId: 'Revert' }],
+					up: [],
 				},
 			],
+			feedbacks: [],
 		},
-		{
+		AddSpeed: {
+			type: 'button',
 			category: 'Commands',
-			label: 'Increase speed by 5%',
-			bank: {
+			name: 'Increase speed by 5%',
+			style: {
 				bgcolor: 0,
 
-				style: 'png',
 				png64: icons.AddSpeed,
 				pngalignment: 'center:top',
 
@@ -154,19 +165,21 @@ exports.getPresets = function (instanceLabel) {
 				size: '14',
 				color: 16777215,
 			},
-			actions: [
+			steps: [
 				{
-					action: 'AddSpeed',
+					down: [{ actionId: 'AddSpeed' }],
+					up: [],
 				},
 			],
+			feedbacks: [],
 		},
-		{
+		SubSpeed: {
+			type: 'button',
 			category: 'Commands',
-			label: 'Decrease speed by 5%',
-			bank: {
+			name: 'Decrease speed by 5%',
+			style: {
 				bgcolor: 0,
 
-				style: 'png',
 				png64: icons.SubSpeed,
 				pngalignment: 'center:top',
 
@@ -175,19 +188,21 @@ exports.getPresets = function (instanceLabel) {
 				size: '14',
 				color: 16777215,
 			},
-			actions: [
+			steps: [
 				{
-					action: 'SubSpeed',
+					down: [{ actionId: 'SubSpeed' }],
+					up: [],
 				},
 			],
+			feedbacks: [],
 		},
-		{
+		AddMinute: {
+			type: 'button',
 			category: 'Commands',
-			label: 'Add 1 Minute',
-			bank: {
+			name: 'Add 1 Minute',
+			style: {
 				bgcolor: 0,
 
-				style: 'png',
 				png64: icons.AddMinute,
 				pngalignment: 'center:top',
 
@@ -196,19 +211,21 @@ exports.getPresets = function (instanceLabel) {
 				size: '14',
 				color: 16777215,
 			},
-			actions: [
+			steps: [
 				{
-					action: 'AddMinute',
+					down: [{ actionId: 'AddMinute' }],
+					up: [],
 				},
 			],
+			feedbacks: [],
 		},
-		{
+		SubMinute: {
+			type: 'button',
 			category: 'Commands',
-			label: 'Subtract 1 Minute',
-			bank: {
+			name: 'Subtract 1 Minute',
+			style: {
 				bgcolor: 0,
 
-				style: 'png',
 				png64: icons.SubMinute,
 				pngalignment: 'center:top',
 
@@ -217,19 +234,21 @@ exports.getPresets = function (instanceLabel) {
 				size: '14',
 				color: 16777215,
 			},
-			actions: [
+			steps: [
 				{
-					action: 'SubMinute',
+					down: [{ actionId: 'SubMinute' }],
+					up: [],
 				},
 			],
+			feedbacks: [],
 		},
-		{
+		Blackout: {
+			type: 'button',
 			category: 'Commands',
-			label: 'Blackout',
-			bank: {
+			name: 'Blackout',
+			style: {
 				bgcolor: 0,
 
-				style: 'png',
 				png64: icons.Blackout,
 				pngalignment: 'center:top',
 
@@ -238,14 +257,15 @@ exports.getPresets = function (instanceLabel) {
 				size: '14',
 				color: 16777215,
 			},
-			actions: [
+			steps: [
 				{
-					action: 'Blackout',
+					down: [{ actionId: 'Blackout' }],
+					up: [],
 				},
 			],
 			feedbacks: [
 				{
-					type: 'status',
+					feedbackId: 'status',
 					options: {
 						Key: 'Blackout',
 					},
@@ -256,13 +276,13 @@ exports.getPresets = function (instanceLabel) {
 				},
 			],
 		},
-		{
+		Clock: {
+			type: 'button',
 			category: 'Commands',
-			label: 'Clock',
-			bank: {
+			name: 'Clock',
+			style: {
 				bgcolor: 0,
 
-				style: 'png',
 				png64: icons.Clock,
 				pngalignment: 'center:top',
 
@@ -271,14 +291,15 @@ exports.getPresets = function (instanceLabel) {
 				size: '14',
 				color: 16777215,
 			},
-			actions: [
+			steps: [
 				{
-					action: 'Clock',
+					down: [{ actionId: 'Clock' }],
+					up: [],
 				},
 			],
 			feedbacks: [
 				{
-					type: 'status',
+					feedbackId: 'status',
 					options: {
 						Key: 'Clock',
 					},
@@ -289,13 +310,13 @@ exports.getPresets = function (instanceLabel) {
 				},
 			],
 		},
-		{
+		Message: {
+			type: 'button',
 			category: 'Commands',
-			label: 'Message',
-			bank: {
+			name: 'Message',
+			style: {
 				bgcolor: 0,
 
-				style: 'png',
 				png64: icons.Message,
 				pngalignment: 'center:top',
 
@@ -304,14 +325,15 @@ exports.getPresets = function (instanceLabel) {
 				size: '14',
 				color: 16777215,
 			},
-			actions: [
+			steps: [
 				{
-					action: 'Message',
+					down: [{ actionId: 'Message' }],
+					up: [],
 				},
 			],
 			feedbacks: [
 				{
-					type: 'status',
+					feedbackId: 'status',
 					options: {
 						Key: 'Message',
 					},
@@ -322,25 +344,26 @@ exports.getPresets = function (instanceLabel) {
 				},
 			],
 		},
-		{
+		Fullscreen: {
+			type: 'button',
 			category: 'Commands',
-			label: 'Full Screen',
-			bank: {
+			name: 'Full Screen',
+			style: {
 				bgcolor: 0,
-				style: 'text',
 				text: 'Full Screen',
 				alignment: 'center:center',
 				size: '18',
 				color: 16777215,
 			},
-			actions: [
+			steps: [
 				{
-					action: 'Fullscreen',
+					down: [{ actionId: 'Fullscreen' }],
+					up: [],
 				},
 			],
 			feedbacks: [
 				{
-					type: 'status',
+					feedbackId: 'status',
 					options: {
 						Key: 'Fullscreen',
 					},
@@ -351,25 +374,26 @@ exports.getPresets = function (instanceLabel) {
 				},
 			],
 		},
-		{
+		NDI: {
+			type: 'button',
 			category: 'Commands',
-			label: 'NDI',
-			bank: {
+			name: 'NDI',
+			style: {
 				bgcolor: 0,
-				style: 'text',
 				text: 'NDI',
 				alignment: 'center:center',
 				size: '30',
 				color: 16777215,
 			},
-			actions: [
+			steps: [
 				{
-					action: 'NDI',
+					down: [{ actionId: 'NDI' }],
+					up: [],
 				},
 			],
 			feedbacks: [
 				{
-					type: 'status',
+					feedbackId: 'status',
 					options: {
 						Key: 'NDI',
 					},
@@ -380,25 +404,26 @@ exports.getPresets = function (instanceLabel) {
 				},
 			],
 		},
-		{
+		STM: {
+			type: 'button',
 			category: 'Commands',
-			label: 'Single Mode',
-			bank: {
+			name: 'Single Mode',
+			style: {
 				bgcolor: 0,
-				style: 'text',
 				text: 'Single Mode',
 				alignment: 'center:center',
 				size: '18',
 				color: 16777215,
 			},
-			actions: [
+			steps: [
 				{
-					action: 'STM',
+					down: [{ actionId: 'STM' }],
+					up: [],
 				},
 			],
 			feedbacks: [
 				{
-					type: 'status',
+					feedbackId: 'status',
 					options: {
 						Key: 'STM',
 					},
@@ -409,117 +434,131 @@ exports.getPresets = function (instanceLabel) {
 				},
 			],
 		},
-		{
+		MoveNextUp: {
+			type: 'button',
 			category: 'Commands',
-			label: 'Move Next Up',
-			bank: {
+			name: 'Move Next Up',
+			style: {
 				bgcolor: 0,
 
-				style: 'png',
 				png64: icons.Up,
 				pngalignment: 'center:center',
 				text: '',
 			},
-			actions: [
+			steps: [
 				{
-					action: 'MoveNextUp',
+					down: [{ actionId: 'MoveNextUp' }],
+					up: [],
 				},
 			],
+			feedbacks: [],
 		},
-		{
+		MoveNextDown: {
+			type: 'button',
 			category: 'Commands',
-			label: 'Move Next Down',
-			bank: {
+			name: 'Move Next Down',
+			style: {
 				bgcolor: 0,
 
-				style: 'png',
 				png64: icons.Down,
 				pngalignment: 'center:center',
 				text: '',
 			},
-			actions: [
+			steps: [
 				{
-					action: 'MoveNextDown',
+					down: [{ actionId: 'MoveNextDown' }],
+					up: [],
 				},
 			],
+			feedbacks: [],
 		},
-		{
+		FireTimerWithID: {
+			type: 'button',
 			category: 'Commands',
-			label: 'Fire with ID',
-			bank: {
+			name: 'Fire with ID',
+			style: {
 				bgcolor: 0,
 
-				style: 'text',
 				text: 'Fire',
 				alignment: 'center:center',
 				size: '14',
 				color: 16777215,
 			},
-			actions: [
+			steps: [
 				{
-					action: 'FireTimerWithID',
-					options: {
-						Key: '1',
-					},
+					down: [
+						{
+							actionId: 'FireTimerWithID',
+							options: {
+								Key: '1',
+							},
+						},
+					],
+					up: [],
 				},
 			],
 			feedbacks: [
 				{
-					type: 'timerName',
+					feedbackId: 'timerName',
 					options: {
 						Key: '1',
 					},
 				},
 				{
-					type: 'timerBackground',
+					feedbackId: 'timerBackground',
 					options: {
 						Key: '1',
 					},
 				},
 			],
 		},
-		{
+		CueTimerWithID: {
+			type: 'button',
 			category: 'Commands',
-			label: 'Cue with ID',
-			bank: {
+			name: 'Cue with ID',
+			style: {
 				bgcolor: 0,
 
-				style: 'text',
 				text: 'Cue',
 				alignment: 'center:center',
 				size: '14',
 				color: 16777215,
 			},
-			actions: [
+			steps: [
 				{
-					action: 'CueTimerWithID',
-					options: {
-						Key: '1',
-					},
+					down: [
+						{
+							actionId: 'CueTimerWithID',
+							options: {
+								Key: '1',
+							},
+						},
+					],
+					up: [],
 				},
 			],
 			feedbacks: [
 				{
-					type: 'timerName',
+					feedbackId: 'timerName',
 					options: {
 						Key: '1',
 					},
 				},
 				{
-					type: 'timerBackground',
+					feedbackId: 'timerBackground',
 					options: {
 						Key: '1',
 					},
 				},
 			],
 		},
-		{
+		CueCurrent: {
+			type: 'button',
 			category: 'Commands',
-			label: 'Cue Current Timer',
-			bank: {
+			name: 'Cue Current Timer',
+			style: {
 				bgcolor: 0,
 
-				style: 'png',
 				png64: icons.CueCurrent,
 				pngalignment: 'center:top',
 
@@ -528,130 +567,184 @@ exports.getPresets = function (instanceLabel) {
 				size: '7',
 				color: 16777215,
 			},
-			actions: [
+			steps: [
 				{
-					action: 'CueCurrent',
+					down: [{ actionId: 'CueCurrent' }],
+					up: [],
 				},
 			],
+			feedbacks: [],
 		},
 
 		// Variables & FeedBack presets
-		{
+		Hours: {
+			type: 'button',
 			category: 'Feedbacks',
-			label: 'Hours',
-			bank: {
+			name: 'Hours',
+			style: {
 				bgcolor: 0,
-				style: 'text',
 				text: `$(${instanceLabel}:hours)`,
 				alignment: 'center:center',
 				size: 'auto',
 				color: 16777215,
 			},
+			steps: [
+				{
+					down: [],
+					up: [],
+				},
+			],
 			feedbacks: [
 				{
-					type: 'colors',
+					feedbackId: 'colors',
 				},
 			],
 		},
-		{
+		Minutes: {
+			type: 'button',
 			category: 'Feedbacks',
-			label: 'Minutes',
-			bank: {
+			name: 'Minutes',
+			style: {
 				bgcolor: 0,
-				style: 'text',
 				text: `$(${instanceLabel}:minutes)`,
 				alignment: 'center:center',
 				size: 'auto',
 				color: 16777215,
 			},
+			steps: [
+				{
+					down: [],
+					up: [],
+				},
+			],
 			feedbacks: [
 				{
-					type: 'colors',
+					feedbackId: 'colors',
 				},
 			],
 		},
-		{
+		Seconds: {
+			type: 'button',
 			category: 'Feedbacks',
-			label: 'Seconds',
-			bank: {
+			name: 'Seconds',
+			style: {
 				bgcolor: 0,
-				style: 'text',
 				text: `$(${instanceLabel}:seconds)`,
 				alignment: 'center:center',
 				size: 'auto',
 				color: 16777215,
 			},
+			steps: [
+				{
+					down: [],
+					up: [],
+				},
+			],
 			feedbacks: [
 				{
-					type: 'colors',
+					feedbackId: 'colors',
 				},
 			],
 		},
 
-		{
+		Name: {
+			type: 'button',
 			category: 'Feedbacks',
-			label: 'Name',
-			bank: {
+			name: 'Name',
+			style: {
 				bgcolor: 0,
-				style: 'text',
 				text: `$(${instanceLabel}:name)`,
 				alignment: 'center:center',
 				size: 'auto',
 				color: 16777215,
 			},
+			steps: [
+				{
+					down: [],
+					up: [],
+				},
+			],
 			feedbacks: [
 				{
-					type: 'colors',
+					feedbackId: 'colors',
 				},
 			],
 		},
-		{
+		Speed: {
+			type: 'button',
 			category: 'Feedbacks',
-			label: 'Speed',
-			bank: {
+			name: 'Speed',
+			style: {
 				bgcolor: 0,
-				style: 'text',
 				text: `Speed\\n\\n$(${instanceLabel}:speed)%`,
 				alignment: 'center:center',
 				size: '14',
 				color: 16777215,
 			},
+			steps: [
+				{
+					down: [],
+					up: [],
+				},
+			],
+			feedbacks: [],
 		},
-		{
+		EndTime: {
+			type: 'button',
 			category: 'Feedbacks',
-			label: 'End Time',
-			bank: {
+			name: 'End Time',
+			style: {
 				bgcolor: 0,
-				style: 'text',
 				text: `End Time\\n\\n$(${instanceLabel}:endTime)`,
 				alignment: 'center:center',
 				size: '14',
 				color: 16777215,
 			},
+			steps: [
+				{
+					down: [],
+					up: [],
+				},
+			],
+			feedbacks: [],
 		},
-		{
+		NextName: {
+			type: 'button',
 			category: 'Feedbacks',
-			label: 'Next name',
-			bank: {
+			name: 'Next name',
+			style: {
 				bgcolor: 0,
-				style: 'text',
 				text: `Next:\\n$(${instanceLabel}:nextTimerName)`,
 				alignment: 'center:center',
 				size: '14',
 				color: 16777215,
 			},
+			steps: [
+				{
+					down: [],
+					up: [],
+				},
+			],
+			feedbacks: [],
 		},
-		{
+		NextDuration: {
+			type: 'button',
 			category: 'Feedbacks',
-			label: 'Next duration',
-			bank: {
+			name: 'Next duration',
+			style: {
 				bgcolor: 0,
-				style: 'text',
 				text: `Next:\\n\\n$(${instanceLabel}:nextTimerDuration)`,
 				alignment: 'center:center',
 				size: '14',
 				color: 16777215,
 			},
+			steps: [
+				{
+					down: [],
+					up: [],
+				},
+			],
+			feedbacks: [],
 		},
-	]
+	}
 }
