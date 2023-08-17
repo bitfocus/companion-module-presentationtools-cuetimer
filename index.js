@@ -25,20 +25,6 @@ class CueTimerInstance extends InstanceBase {
 
 	async configUpdated(config) {
 		var self = this
-		self.config = config
-		var resetConnection = false
-
-		if (self.config.host != config.host || self.config.port != config.port) {
-			resetConnection = true
-		}
-
-		if (resetConnection === true || self.socket === undefined) {
-			self.initTCP()
-		}
-	}
-
-	async init(config) {
-		var self = this
 
 		self.config = config
 
@@ -70,6 +56,10 @@ class CueTimerInstance extends InstanceBase {
 			Blackout: false,
 		}
 		self.timers = {}
+	}
+
+	async init(config) {
+		this.configUpdated(config);
 	}
 
 	compareKeys(a, b) {
