@@ -310,6 +310,42 @@ class CueTimerInstance extends InstanceBase {
 				],
 				callback: this.actionCallback.bind(this),
 			},
+			SetDuration: {
+				name: 'Set Duration',
+				options: [
+					{
+						type: 'textinput',
+						label: 'New duration (hh:mm:ss)',
+						id: 'Key',
+						default: '00:10:00',
+					},
+				],
+				callback: this.actionCallback.bind(this),
+			},
+			AddXMinutes: {
+				name: 'Add X Minutes',
+				options: [
+					{
+						type: 'textinput',
+						label: 'Time span to be added in minutes',
+						id: 'Key',
+						default: '1',
+					},
+				],
+				callback: this.actionCallback.bind(this),
+			},
+			SubXMinutes: {
+				name: 'Subtract X Minutes',
+				options: [
+					{
+						type: 'textinput',
+						label: 'Time span to be subtracted in minutes',
+						id: 'Key',
+						default: '1',
+					},
+				],
+				callback: this.actionCallback.bind(this),
+			},
 		}
 
 		this.setActionDefinitions(actions)
@@ -320,8 +356,7 @@ class CueTimerInstance extends InstanceBase {
 		var terminationChar = '$'
 
 		cmd = action.actionId
-
-		if (cmd == 'FireTimerWithID' || cmd == 'CueTimerWithID') {
+		if (action.options) {
 			cmd += '#' + action.options.Key
 		}
 
