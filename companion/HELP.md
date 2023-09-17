@@ -30,6 +30,10 @@ Controls CueTimer by [PresentationTools](https://presentationtools.com/).
 - Fire timer with ID
 - Cue timer with ID
 - Cue Current
+- Initialize List
+- Set Duration
+- Add X Minutes
+- Subtract X Minutes
 
 ## Variables:
 
