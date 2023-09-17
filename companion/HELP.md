@@ -5,7 +5,7 @@ Controls CueTimer by [PresentationTools](https://presentationtools.com/).
 ## Configuration
 
 - IP address of the computer running CueTimer for local use 127.0.0.1.
-- Port, the default is 4778.
+- Port, the default is 31601.
 
 ## Available actions:
 

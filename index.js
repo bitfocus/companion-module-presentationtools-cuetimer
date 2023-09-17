@@ -185,8 +185,8 @@ class CueTimerInstance extends InstanceBase {
 			{
 				type: 'textinput',
 				id: 'port',
-				label: 'Target port (Default: 4778)',
-				default: '4778',
+				label: 'Target port (Default: 31601)',
+				default: '31601',
 				width: 6,
 				regex: Regex.PORT,
 			},
