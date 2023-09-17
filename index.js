@@ -350,6 +350,11 @@ class CueTimerInstance extends InstanceBase {
 				],
 				callback: this.actionCallback.bind(this),
 			},
+			InitList: {
+				name: 'Initialize List',
+				options: [],
+				callback: this.actionCallback.bind(this),
+			},
 		}
 
 		this.setActionDefinitions(actions)
