@@ -45,6 +45,8 @@ Variables can be used by putting $(instancename:variablename) e.g. $(cuetimer:ho
 - endTime
 - nextTimerName
 - nextTimerDuration
+- scheduleOffset
+- scheduleOffsetStatus
 
 ## Feedback:
 

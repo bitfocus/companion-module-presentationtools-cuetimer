@@ -43,6 +43,8 @@ class CueTimerInstance extends InstanceBase {
 			endTime: '',
 			nextTimerName: '',
 			nextTimerDuration: '',
+			scheduleOffset: '00:00:00',
+			scheduleOffsetStatus: '',
 		})
 		self.bgColor = combineRgb(0, 0, 0)
 		self.fgColor = combineRgb(255, 255, 255)
@@ -131,6 +133,8 @@ class CueTimerInstance extends InstanceBase {
 					self.setVariableValues({
 						nextTimerName: jsonData.nextTimerName,
 						nextTimerDuration: jsonData.nextTimerDuration,
+						scheduleOffset: jsonData.scheduleOffset,
+						scheduleOffsetStatus: jsonData.scheduleOffsetStatus,
 					})
 
 					let updateVariablesFlag = false
@@ -380,6 +384,8 @@ class CueTimerInstance extends InstanceBase {
 			{ name: 'End Time', variableId: 'endTime' },
 			{ name: 'Next Timer Name', variableId: 'nextTimerName' },
 			{ name: 'Next Timer Duration', variableId: 'nextTimerDuration' },
+			{ name: 'Schedule Offset', variableId: 'scheduleOffset' },
+			{ name: 'Schedule Offset Status', variableId: 'scheduleOffsetStatus' },
 		]
 
 		for (let x in self.timers) {

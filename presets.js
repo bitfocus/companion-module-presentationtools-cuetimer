@@ -746,5 +746,43 @@ exports.getPresets = function (instanceLabel) {
 			],
 			feedbacks: [],
 		},
+		ScheduleOffset: {
+			type: 'button',
+			category: 'Feedbacks',
+			name: 'Schedule Offset',
+			style: {
+				bgcolor: 0,
+				text: `$(${instanceLabel}:scheduleOffset)`,
+				alignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		scheduleOffsetStatus: {
+			type: 'button',
+			category: 'Feedbacks',
+			name: 'Schedule Offset Status',
+			style: {
+				bgcolor: 0,
+				text: `$(${instanceLabel}:scheduleOffsetStatus)`,
+				alignment: 'center:center',
+				size: '18',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
 	}
 }
