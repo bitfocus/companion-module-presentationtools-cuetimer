@@ -3,7 +3,7 @@
 	"name": "presentationtools-cuetimer",
 	"shortname": "cuetimer",
 	"description": "Module to control CueTimer",
-	"version": "2.0.0",
+	"version": "2.0.3",
 	"license": "MIT",
 	"repository": "git+https://github.com/bitfocus/companion-module-presentationtools-cuetimer.git",
 	"bugs": "https://github.com/bitfocus/companion-module-presentationtools-cuetimer/issues",
