@@ -3,22 +3,14 @@
 	"name": "presentationtools-cuetimer",
 	"shortname": "cuetimer",
 	"description": "Module to control CueTimer",
-	"version": "2.0.3",
+	"version": "2.0.4",
 	"license": "MIT",
 	"repository": "git+https://github.com/bitfocus/companion-module-presentationtools-cuetimer.git",
 	"bugs": "https://github.com/bitfocus/companion-module-presentationtools-cuetimer/issues",
 	"maintainers": [
 		{
-			"name": "Mohammad Ahmad",
-			"email": "eng.ma90@gmail.com"
-		},
-		{
-			"name": "David Dabela",
-			"email": "david.dabela@outlook.com"
-		},
-		{
-			"name": "Joseph Adams",
-			"email": "josephdadams@gmail.com"
+			"name": "PresentationTools A/S",
+			"email": "info@presentationtools.com"
 		}
 	],
 	"legacyIds": [],
