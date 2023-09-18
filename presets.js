@@ -575,6 +575,103 @@ exports.getPresets = function (instanceLabel) {
 			],
 			feedbacks: [],
 		},
+		SetDuration: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Set Duration',
+			style: {
+				bgcolor: 0,
+				text: 'Set Duration',
+				alignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [
+						{
+							actionId: 'SetDuration',
+							options: {
+								Key: '00:10:00',
+							},
+						},
+					],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		AddXMinutes: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Add X Minutes',
+			style: {
+				bgcolor: 0,
+				text: 'Add X Minutes',
+				alignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [
+						{
+							actionId: 'AddXMinutes',
+							options: {
+								Key: '1',
+							},
+						},
+					],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		SubXMinutes: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Subtract X Minutes',
+			style: {
+				bgcolor: 0,
+				text: 'Subtract X Minutes',
+				alignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [
+						{
+							actionId: 'SubXMinutes',
+							options: {
+								Key: '1',
+							},
+						},
+					],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		InitList: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Initialize List',
+			style: {
+				bgcolor: 0,
+				text: 'Initialize List',
+				alignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'InitList' }],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
 
 		// Variables & FeedBack presets
 		Hours: {
@@ -736,6 +833,44 @@ exports.getPresets = function (instanceLabel) {
 				text: `Next:\\n\\n$(${instanceLabel}:nextTimerDuration)`,
 				alignment: 'center:center',
 				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		ScheduleOffset: {
+			type: 'button',
+			category: 'Feedbacks',
+			name: 'Schedule Offset',
+			style: {
+				bgcolor: 0,
+				text: `$(${instanceLabel}:scheduleOffset)`,
+				alignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		scheduleOffsetStatus: {
+			type: 'button',
+			category: 'Feedbacks',
+			name: 'Schedule Offset Status',
+			style: {
+				bgcolor: 0,
+				text: `$(${instanceLabel}:scheduleOffsetStatus)`,
+				alignment: 'center:center',
+				size: '18',
 				color: 16777215,
 			},
 			steps: [

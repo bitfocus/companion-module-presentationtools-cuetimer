@@ -43,6 +43,8 @@ class CueTimerInstance extends InstanceBase {
 			endTime: '',
 			nextTimerName: '',
 			nextTimerDuration: '',
+			scheduleOffset: '00:00:00',
+			scheduleOffsetStatus: '',
 		})
 		self.bgColor = combineRgb(0, 0, 0)
 		self.fgColor = combineRgb(255, 255, 255)
@@ -126,6 +128,8 @@ class CueTimerInstance extends InstanceBase {
 					self.setVariableValues({
 						nextTimerName: jsonData.nextTimerName,
 						nextTimerDuration: jsonData.nextTimerDuration,
+						scheduleOffset: jsonData.scheduleOffset,
+						scheduleOffsetStatus: jsonData.scheduleOffsetStatus,
 					})
 
 					let updateVariablesFlag = false
@@ -176,8 +180,8 @@ class CueTimerInstance extends InstanceBase {
 			{
 				type: 'textinput',
 				id: 'port',
-				label: 'Target port (Default: 4778)',
-				default: '4778',
+				label: 'Target port (Default: 31601)',
+				default: '31601',
 				width: 6,
 				regex: Regex.PORT,
 			},
@@ -305,6 +309,47 @@ class CueTimerInstance extends InstanceBase {
 				],
 				callback: this.actionCallback.bind(this),
 			},
+			SetDuration: {
+				name: 'Set Duration',
+				options: [
+					{
+						type: 'textinput',
+						label: 'New duration (hh:mm:ss)',
+						id: 'Key',
+						default: '00:10:00',
+					},
+				],
+				callback: this.actionCallback.bind(this),
+			},
+			AddXMinutes: {
+				name: 'Add X Minutes',
+				options: [
+					{
+						type: 'textinput',
+						label: 'Time span to be added in minutes',
+						id: 'Key',
+						default: '1',
+					},
+				],
+				callback: this.actionCallback.bind(this),
+			},
+			SubXMinutes: {
+				name: 'Subtract X Minutes',
+				options: [
+					{
+						type: 'textinput',
+						label: 'Time span to be subtracted in minutes',
+						id: 'Key',
+						default: '1',
+					},
+				],
+				callback: this.actionCallback.bind(this),
+			},
+			InitList: {
+				name: 'Initialize List',
+				options: [],
+				callback: this.actionCallback.bind(this),
+			},
 		}
 
 		this.setActionDefinitions(actions)
@@ -315,8 +360,7 @@ class CueTimerInstance extends InstanceBase {
 		var terminationChar = '$'
 
 		cmd = action.actionId
-
-		if (cmd == 'FireTimerWithID' || cmd == 'CueTimerWithID') {
+		if (action.options) {
 			cmd += '#' + action.options.Key
 		}
 
@@ -340,6 +384,8 @@ class CueTimerInstance extends InstanceBase {
 			{ name: 'End Time', variableId: 'endTime' },
 			{ name: 'Next Timer Name', variableId: 'nextTimerName' },
 			{ name: 'Next Timer Duration', variableId: 'nextTimerDuration' },
+			{ name: 'Schedule Offset', variableId: 'scheduleOffset' },
+			{ name: 'Schedule Offset Status', variableId: 'scheduleOffsetStatus' },
 		]
 
 		for (let x in self.timers) {
