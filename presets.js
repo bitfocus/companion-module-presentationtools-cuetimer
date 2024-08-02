@@ -350,14 +350,16 @@ exports.getPresets = function (instanceLabel) {
 			name: 'Full Screen',
 			style: {
 				bgcolor: 0,
-				text: 'Full Screen',
-				alignment: 'center:center',
-				size: '18',
+				text: 'FullScreen',
+				alignment: 'center:bottom',
+				png64: icons.Fullscreen,
+				pngalignment: "center:center",
+				size: '14',
 				color: 16777215,
 			},
 			steps: [
 				{
-					down: [{ actionId: 'Fullscreen' }],
+					down: [{ actionId: 'Fullscreen', options: {Key: 'toggle'}}],
 					up: [],
 				},
 			],
@@ -366,6 +368,70 @@ exports.getPresets = function (instanceLabel) {
 					feedbackId: 'status',
 					options: {
 						Key: 'Fullscreen',
+					},
+					style: {
+						color: 16777215,
+						bgcolor: 16753920,
+					},
+				},
+			],
+		},
+		Preview: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Preview',
+			style: {
+				bgcolor: 0,
+				text: 'Preview window',
+				alignment: 'center:bottom',
+				png64: icons.Preview,
+				pngalignment: "center:center",
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'Preview', options: {Key: 'toggle'} }],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'status',
+					options: {
+						Key: 'Preview',
+					},
+					style: {
+						color: 16777215,
+						bgcolor: 16753920,
+					},
+				},
+			],
+		},
+		Presenter: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Presenter',
+			style: {
+				bgcolor: 0,
+				text: 'Presenter window',
+				alignment: 'center:bottom',
+				png64: icons.Presenter,
+				pngalignment: "center:center",
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'Presenter', options: {Key: 'toggle'} }],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'status',
+					options: {
+						Key: 'Presenter',
 					},
 					style: {
 						color: 16777215,
