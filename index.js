@@ -258,7 +258,17 @@ class CueTimerInstance extends InstanceBase {
 			},
 			Fullscreen: {
 				name: 'Fullscreen',
-				options: [],
+				options: [{
+					type: 'dropdown',
+					label: 'State',
+					id: 'Key',
+					default: 'toggle',
+					choices: [
+						{id: "on", label: "On"},
+						{id: "off", label: "Off"},
+						{id: "toggle", label: "Toggle"},
+					],
+				}],
 				callback: this.actionCallback.bind(this),
 			},
 			NDI: {
