@@ -271,6 +271,36 @@ class CueTimerInstance extends InstanceBase {
 				}],
 				callback: this.actionCallback.bind(this),
 			},
+			Preview: {
+				name: 'Preview',
+				options: [{
+					type: 'dropdown',
+					label: 'State',
+					id: 'Key',
+					default: 'toggle',
+					choices: [
+						{id: "on", label: "On"},
+						{id: "off", label: "Off"},
+						{id: "toggle", label: "Toggle"},
+					],
+				}],
+				callback: this.actionCallback.bind(this),
+			},
+			Presenter: {
+				name: 'Presenter',
+				options: [{
+					type: 'dropdown',
+					label: 'State',
+					id: 'Key',
+					default: 'toggle',
+					choices: [
+						{id: "on", label: "On"},
+						{id: "off", label: "Off"},
+						{id: "toggle", label: "Toggle"},
+					],
+				}],
+				callback: this.actionCallback.bind(this),
+			},
 			NDI: {
 				name: 'NDI',
 				options: [],
