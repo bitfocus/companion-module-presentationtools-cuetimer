@@ -50,6 +50,8 @@ class CueTimerInstance extends InstanceBase {
 		self.fgColor = combineRgb(255, 255, 255)
 		self.buttonStates = {
 			Fullscreen: false,
+			Preview: false,
+			Presenter: false,
 			NDI: false,
 			Message: false,
 			STM: false,
@@ -115,6 +117,8 @@ class CueTimerInstance extends InstanceBase {
 					self.bgColor = combineRgb(tempBg.r, tempBg.g, tempBg.b)
 
 					self.buttonStates['Fullscreen'] = jsonData['Fullscreen']
+					self.buttonStates['Preview'] = jsonData['Preview']
+					self.buttonStates['Presenter'] = jsonData['Presenter']
 					self.buttonStates['NDI'] = jsonData['NDI']
 					self.buttonStates['Message'] = jsonData['Message']
 					self.buttonStates['STM'] = jsonData['STM']
@@ -255,7 +259,47 @@ class CueTimerInstance extends InstanceBase {
 			},
 			Fullscreen: {
 				name: 'Fullscreen',
-				options: [],
+				options: [{
+					type: 'dropdown',
+					label: 'State',
+					id: 'Key',
+					default: 'toggle',
+					choices: [
+						{id: "on", label: "On"},
+						{id: "off", label: "Off"},
+						{id: "toggle", label: "Toggle"},
+					],
+				}],
+				callback: this.actionCallback.bind(this),
+			},
+			Preview: {
+				name: 'Preview',
+				options: [{
+					type: 'dropdown',
+					label: 'State',
+					id: 'Key',
+					default: 'toggle',
+					choices: [
+						{id: "on", label: "On"},
+						{id: "off", label: "Off"},
+						{id: "toggle", label: "Toggle"},
+					],
+				}],
+				callback: this.actionCallback.bind(this),
+			},
+			Presenter: {
+				name: 'Presenter',
+				options: [{
+					type: 'dropdown',
+					label: 'State',
+					id: 'Key',
+					default: 'toggle',
+					choices: [
+						{id: "on", label: "On"},
+						{id: "off", label: "Off"},
+						{id: "toggle", label: "Toggle"},
+					],
+				}],
 				callback: this.actionCallback.bind(this),
 			},
 			NDI: {
@@ -423,6 +467,8 @@ class CueTimerInstance extends InstanceBase {
 						default: 'Fullscreen',
 						choices: [
 							{ id: 'Fullscreen', label: 'Fullscreen' },
+							{ id: 'Preview', label: 'Preview' },
+							{ id: 'Presenter', label: 'Presenter' },
 							{ id: 'NDI', label: 'NDI' },
 							{ id: 'Message', label: 'Message' },
 							{ id: 'STM', label: 'Single Timer Mode' },
