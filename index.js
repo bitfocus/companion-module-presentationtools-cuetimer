@@ -96,6 +96,9 @@ class CueTimerInstance extends InstanceBase {
 
 				try {
 					let jsonData = JSON.parse(message)
+					if (jsonData.list != self.config.list)
+						return
+
 					let hours = (jsonData.h < 0 ? '+' : '') + jsonData.h.replace('-', '')
 
 					let minutes = (jsonData.m < 0 ? '+' : '') + jsonData.m.replace('-', '')
@@ -169,6 +172,13 @@ class CueTimerInstance extends InstanceBase {
 				width: 12,
 				label: 'Information',
 				value: 'This will establish a TCP connection to interact with the CueTimer app',
+			},
+			{
+				type: 'textinput',
+				id: 'list',
+				label: 'List Name',
+				default: 'List 1',
+				width: 12,
 			},
 			{
 				type: 'textinput',
@@ -410,6 +420,7 @@ class CueTimerInstance extends InstanceBase {
 		if (action.options) {
 			cmd += '#' + action.options.Key
 		}
+		cmd += '#' + this.config.list
 
 		cmd += terminationChar
 		if (cmd !== undefined && cmd != terminationChar) {
