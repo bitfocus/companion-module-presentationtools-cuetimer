@@ -176,8 +176,8 @@ class CueTimerInstance extends InstanceBase {
 			{
 				type: 'textinput',
 				id: 'list',
-				label: 'List Name',
-				default: 'List 1',
+				label: 'List Number',
+				default: '1',
 				width: 12,
 			},
 			{
