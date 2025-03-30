@@ -407,6 +407,19 @@ class CueTimerInstance extends InstanceBase {
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
+			InitEndTimeTimer: {
+				name: 'Initialize and start a new EndTime timer',
+				options: [
+					{
+						type: 'textinput',
+						label: 'EndTime hh:mm:ss',
+						id: 'Key',
+						default: '',
+						useVariables: true,
+					},
+				],
+				callback: this.actionCallback.bind(this),
+			},
 		}
 
 		this.setActionDefinitions(actions)
