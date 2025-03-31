@@ -425,19 +425,20 @@ class CueTimerInstance extends InstanceBase {
 		this.setActionDefinitions(actions)
 	}
 
-	actionCallback(action) {
+	async actionCallback(action) {
 		var cmd = ''
 		var terminationChar = '$'
 
 		cmd = action.actionId
 		if (action.options) {
-			cmd += '#' + action.options.Key
+			cmd += '#' + await this.parseVariablesInString(action.options.Key)
 		}
 		cmd += '#' + this.config.list
 
 		cmd += terminationChar
 		if (cmd !== undefined && cmd != terminationChar) {
 			if (this.socket !== undefined && this.socket.isConnected) {
+				this.log('debug', `Sending ${cmd}`)
 				this.socket.send(cmd)
 			}
 		}
