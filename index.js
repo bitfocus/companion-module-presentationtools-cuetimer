@@ -59,6 +59,7 @@ class CueTimerInstance extends InstanceBase {
 			Pause: false,
 			Blackout: false,
 		}
+		self.lists = []
 		self.timers = {}
 	}
 
@@ -96,6 +97,11 @@ class CueTimerInstance extends InstanceBase {
 
 				try {
 					let jsonData = JSON.parse(message)
+
+					if(jsonData.lists && JSON.stringify(self.lists) != JSON.stringify(jsonData.lists)){
+						self.lists = jsonData.lists
+					}
+
 					if (jsonData.list != self.config.list)
 						return
 
@@ -164,6 +170,27 @@ class CueTimerInstance extends InstanceBase {
 		}
 	}
 
+	getListsChoises(arr) {
+		let result = []
+		if(arr){
+			result = arr.map((item, index) => ({
+				id: (index + 1).toString(),
+				label: `${index + 1}- ${item}`
+			}));
+		}
+		
+		// Add placeholders if the array has less than 10 items
+		while (result.length < 10) {
+			const index = result.length + 1;
+			result.push({
+			id: index.toString(),
+			label: `${index}- `
+			});
+		}
+		
+		return result;
+	}
+
 	getConfigFields() {
 		return [
 			{
@@ -174,11 +201,12 @@ class CueTimerInstance extends InstanceBase {
 				value: 'This will establish a TCP connection to interact with the CueTimer app',
 			},
 			{
-				type: 'textinput',
+				type: 'dropdown',
 				id: 'list',
 				label: 'List Number',
 				default: '1',
 				width: 12,
+				choices: this.getListsChoises(this.lists)
 			},
 			{
 				type: 'textinput',
