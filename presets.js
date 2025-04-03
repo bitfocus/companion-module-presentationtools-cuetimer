@@ -127,24 +127,24 @@ exports.getPresets = function (instanceLabel) {
 			],
 			feedbacks: [],
 		},
-		Revert: {
+		Undo: {
 			type: 'button',
 			category: 'Commands',
-			name: 'Revert',
+			name: 'Undo',
 			style: {
 				bgcolor: 0,
 
-				png64: icons.Revert,
+				png64: icons.Undo,
 				pngalignment: 'center:top',
 
-				text: 'Revert',
+				text: 'Undo',
 				alignment: 'center:bottom',
 				size: '14',
 				color: 16777215,
 			},
 			steps: [
 				{
-					down: [{ actionId: 'Revert' }],
+					down: [{ actionId: 'Undo' }],
 					up: [],
 				},
 			],

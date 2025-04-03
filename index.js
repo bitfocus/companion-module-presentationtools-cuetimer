@@ -265,8 +265,8 @@ class CueTimerInstance extends InstanceBase {
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
-			Revert: {
-				name: 'Revert',
+			Undo: {
+				name: 'Undo',
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
