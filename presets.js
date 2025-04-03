@@ -104,29 +104,6 @@ exports.getPresets = function (instanceLabel) {
 			],
 			feedbacks: [],
 		},
-		Reset: {
-			type: 'button',
-			category: 'Commands',
-			name: 'Reset',
-			style: {
-				bgcolor: 0,
-
-				png64: icons.Reset,
-				pngalignment: 'center:top',
-
-				text: 'Reset',
-				alignment: 'center:bottom',
-				size: '14',
-				color: 16777215,
-			},
-			steps: [
-				{
-					down: [{ actionId: 'Reset' }],
-					up: [],
-				},
-			],
-			feedbacks: [],
-		},
 		Undo: {
 			type: 'button',
 			category: 'Commands',
