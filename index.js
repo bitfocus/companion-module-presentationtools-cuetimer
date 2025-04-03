@@ -45,6 +45,8 @@ class CueTimerInstance extends InstanceBase {
 			nextTimerDuration: '',
 			scheduleOffset: '00:00:00',
 			scheduleOffsetStatus: '',
+			listName: '',
+			listNumber: config.list,
 		})
 		self.bgColor = combineRgb(0, 0, 0)
 		self.fgColor = combineRgb(255, 255, 255)
@@ -100,10 +102,14 @@ class CueTimerInstance extends InstanceBase {
 
 					if(jsonData.lists && JSON.stringify(self.lists) != JSON.stringify(jsonData.lists)){
 						self.lists = jsonData.lists
+						self.setVariableValues({listName: ''})
 					}
 
 					if (jsonData.list != self.config.list)
 						return
+
+					if(jsonData.lists)
+						self.setVariableValues({listName: jsonData.lists[parseInt(self.config.list) - 1]})
 
 					let hours = (jsonData.h < 0 ? '+' : '') + jsonData.h.replace('-', '')
 
@@ -481,6 +487,8 @@ class CueTimerInstance extends InstanceBase {
 			{ name: 'Next Timer Duration', variableId: 'nextTimerDuration' },
 			{ name: 'Schedule Offset', variableId: 'scheduleOffset' },
 			{ name: 'Schedule Offset Status', variableId: 'scheduleOffsetStatus' },
+			{ name: 'List Name', variableId: 'listName' },
+			{ name: 'List Number', variableId: 'listNumber' },
 		]
 
 		for (let x in self.timers) {
