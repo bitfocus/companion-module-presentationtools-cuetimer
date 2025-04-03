@@ -236,17 +236,17 @@ class CueTimerInstance extends InstanceBase {
 	actions() {
 		let actions = {
 			FireNext: {
-				name: 'Fire the next timer',
+				name: 'Start',
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
 			CueNext: {
-				name: 'Cue next',
+				name: 'Stop',
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
 			CueCurrent: {
-				name: 'Cue Current',
+				name: 'Stop and go back',
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
@@ -371,7 +371,7 @@ class CueTimerInstance extends InstanceBase {
 				callback: this.actionCallback.bind(this),
 			},
 			FireTimerWithID: {
-				name: 'Fire Timer with ID',
+				name: 'Start timer with ID',
 				options: [
 					{
 						type: 'textinput',
