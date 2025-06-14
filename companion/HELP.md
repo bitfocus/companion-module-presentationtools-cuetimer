@@ -13,8 +13,7 @@ Controls CueTimer by [PresentationTools](https://presentationtools.com/).
 - Cue next
 - Pause
 - Restart
-- Reset
-- Revert
+- Undo
 - Blackout
 - Add 1 minute
 - Subtract 1 minute

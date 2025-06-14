@@ -45,6 +45,8 @@ class CueTimerInstance extends InstanceBase {
 			nextTimerDuration: '',
 			scheduleOffset: '00:00:00',
 			scheduleOffsetStatus: '',
+			listName: '',
+			listNumber: config.list,
 		})
 		self.bgColor = combineRgb(0, 0, 0)
 		self.fgColor = combineRgb(255, 255, 255)
@@ -59,6 +61,7 @@ class CueTimerInstance extends InstanceBase {
 			Pause: false,
 			Blackout: false,
 		}
+		self.lists = []
 		self.timers = {}
 	}
 
@@ -96,6 +99,18 @@ class CueTimerInstance extends InstanceBase {
 
 				try {
 					let jsonData = JSON.parse(message)
+
+					if(jsonData.lists && JSON.stringify(self.lists) != JSON.stringify(jsonData.lists)){
+						self.lists = jsonData.lists
+						self.setVariableValues({listName: ''})
+					}
+
+					if (jsonData.list != self.config.list)
+						return
+
+					if(jsonData.lists)
+						self.setVariableValues({listName: jsonData.lists[parseInt(self.config.list) - 1]})
+
 					let hours = (jsonData.h < 0 ? '+' : '') + jsonData.h.replace('-', '')
 
 					let minutes = (jsonData.m < 0 ? '+' : '') + jsonData.m.replace('-', '')
@@ -161,6 +176,27 @@ class CueTimerInstance extends InstanceBase {
 		}
 	}
 
+	getListsChoises(arr) {
+		let result = []
+		if(arr){
+			result = arr.map((item, index) => ({
+				id: (index + 1).toString(),
+				label: `${index + 1}- ${item}`
+			}));
+		}
+		
+		// Add placeholders if the array has less than 10 items
+		while (result.length < 10) {
+			const index = result.length + 1;
+			result.push({
+			id: index.toString(),
+			label: `${index}- `
+			});
+		}
+		
+		return result;
+	}
+
 	getConfigFields() {
 		return [
 			{
@@ -169,6 +205,14 @@ class CueTimerInstance extends InstanceBase {
 				width: 12,
 				label: 'Information',
 				value: 'This will establish a TCP connection to interact with the CueTimer app',
+			},
+			{
+				type: 'dropdown',
+				id: 'list',
+				label: 'List Number',
+				default: '1',
+				width: 12,
+				choices: this.getListsChoises(this.lists)
 			},
 			{
 				type: 'textinput',
@@ -198,17 +242,17 @@ class CueTimerInstance extends InstanceBase {
 	actions() {
 		let actions = {
 			FireNext: {
-				name: 'Fire the next timer',
+				name: 'Start',
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
 			CueNext: {
-				name: 'Cue next',
+				name: 'Stop',
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
 			CueCurrent: {
-				name: 'Cue Current',
+				name: 'Stop and go back',
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
@@ -222,13 +266,8 @@ class CueTimerInstance extends InstanceBase {
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
-			Reset: {
-				name: 'Reset',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-			Revert: {
-				name: 'Revert',
+			Undo: {
+				name: 'Undo',
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
@@ -333,7 +372,7 @@ class CueTimerInstance extends InstanceBase {
 				callback: this.actionCallback.bind(this),
 			},
 			FireTimerWithID: {
-				name: 'Fire Timer with ID',
+				name: 'Start timer with ID',
 				options: [
 					{
 						type: 'textinput',
@@ -397,23 +436,38 @@ class CueTimerInstance extends InstanceBase {
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
+			InitEndTimeTimer: {
+				name: 'Initialize and start a new EndTime timer',
+				options: [
+					{
+						type: 'textinput',
+						label: 'EndTime hh:mm:ss',
+						id: 'Key',
+						default: '',
+						useVariables: true,
+					},
+				],
+				callback: this.actionCallback.bind(this),
+			},
 		}
 
 		this.setActionDefinitions(actions)
 	}
 
-	actionCallback(action) {
+	async actionCallback(action) {
 		var cmd = ''
 		var terminationChar = '$'
 
 		cmd = action.actionId
 		if (action.options) {
-			cmd += '#' + action.options.Key
+			cmd += '#' + await this.parseVariablesInString(action.options.Key)
 		}
+		cmd += '#' + this.config.list
 
 		cmd += terminationChar
 		if (cmd !== undefined && cmd != terminationChar) {
 			if (this.socket !== undefined && this.socket.isConnected) {
+				this.log('debug', `Sending ${cmd}`)
 				this.socket.send(cmd)
 			}
 		}
@@ -433,6 +487,8 @@ class CueTimerInstance extends InstanceBase {
 			{ name: 'Next Timer Duration', variableId: 'nextTimerDuration' },
 			{ name: 'Schedule Offset', variableId: 'scheduleOffset' },
 			{ name: 'Schedule Offset Status', variableId: 'scheduleOffsetStatus' },
+			{ name: 'List Name', variableId: 'listName' },
+			{ name: 'List Number', variableId: 'listNumber' },
 		]
 
 		for (let x in self.timers) {
