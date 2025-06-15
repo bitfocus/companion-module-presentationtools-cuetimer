@@ -105,7 +105,7 @@ class CueTimerInstance extends InstanceBase {
 						self.setVariableValues({listName: ''})
 					}
 
-					if (jsonData.list != self.config.list)
+					if (jsonData.list && jsonData.list != self.config.list)
 						return
 
 					if(jsonData.lists)
