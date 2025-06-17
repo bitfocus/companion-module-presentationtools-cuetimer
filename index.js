@@ -90,13 +90,14 @@ class CueTimerInstance extends InstanceBase {
 
 			self.socket.on('connect', () => {
 				self.updateStatus(InstanceStatus.Ok)
+				self.socket.send('api_version#1.1$')
 			})
-
+			
 			self.socket.on('data', (data) => {
 				let received = new MessageBuffer('$')
 				received.push(data)
 				let message = received.handleData()
-
+				
 				try {
 					let jsonData = JSON.parse(message)
 
