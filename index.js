@@ -25,6 +25,7 @@ class CueTimerInstance extends InstanceBase {
 
 	async configUpdated(config) {
 		var self = this
+		self.log('debug', `configUpdated`)
 
 		self.config = config
 
@@ -73,6 +74,18 @@ class CueTimerInstance extends InstanceBase {
 		return JSON.stringify(Object.keys(a).sort()) === JSON.stringify(Object.keys(b).sort())
 	}
 
+	selectList(list) {
+		var self = this
+
+		if (self.socket !== undefined && self.socket.isConnected) {
+			self.log('debug', `selectList: ${list}`)
+			self.socket.send(`select_list#${list}$`)
+			self.isListSeleted = true
+		} else {
+			self.log('debug', 'Socket not connected, cannot select list')
+		}
+	}
+
 	initTCP() {
 		var self = this
 
@@ -90,28 +103,60 @@ class CueTimerInstance extends InstanceBase {
 
 			self.socket.on('connect', () => {
 				self.updateStatus(InstanceStatus.Ok)
-				self.socket.send('api_version#1.1$')
+				self.log('debug', `Connected to ${self.config.host}:${self.config.port}`)
+				self.isListSeleted = false
 			})
 			
 			self.socket.on('data', (data) => {
 				let received = new MessageBuffer('$')
 				received.push(data)
 				let message = received.handleData()
-				
+
 				try {
 					let jsonData = JSON.parse(message)
 
 					if(jsonData.lists && JSON.stringify(self.lists) != JSON.stringify(jsonData.lists)){
+						self.log('debug', `Lists changed, updating lists ${JSON.stringify(jsonData.lists)}`)
+						// Handle list changes - update config if current selected list GUID moved to a different index
+						if(self.config.list && Array.isArray(self.lists) && self.lists.length > 0){
+							let currentSelectedGUID = self.lists[parseInt(self.config.list) - 1]?.guid;
+							if(currentSelectedGUID) {
+								let newSelectedIndex = jsonData.lists.findIndex(item => item.guid === currentSelectedGUID)
+								if(newSelectedIndex != -1){
+									// Found the current GUID in the new list - update config to new index
+									self.log('debug', `Selected List found at index: ${newSelectedIndex + 1}`)
+									self.config.list = (newSelectedIndex + 1).toString()
+									self.saveConfig(self.config)
+								} else {
+									self.isListSeleted = false
+								}
+							}else{
+								self.isListSeleted = false
+							}
+						}
+
 						self.lists = jsonData.lists
 						self.setVariableValues({listName: ''})
 					}
 
-					if (jsonData.list && jsonData.list != self.config.list)
-						return
 
-					if(jsonData.lists)
-						self.setVariableValues({listName: jsonData.lists[parseInt(self.config.list) - 1]})
-
+					if(jsonData.lists){
+						self.setVariableValues({listName: jsonData.lists.find(item => item.guid === jsonData.listGUID)?.title })
+						if(!self.isListSeleted){
+							let guid = ''
+							if(self.config.list)
+								guid = self.lists[parseInt(self.config.list) - 1]?.guid
+							if(guid === undefined){ // Means that a placeholder list is selected not "Active List"
+								self.updateStatus(
+										InstanceStatus.UnknownWarning, 
+										`Selected list not found in new lists, active list will be used`)
+								guid = '' // Use empty string to select active list
+							}else{
+								self.updateStatus(InstanceStatus.Ok)
+							}
+							self.selectList(guid)
+						}
+					}
 					let hours = (jsonData.h < 0 ? '+' : '') + jsonData.h.replace('-', '')
 
 					let minutes = (jsonData.m < 0 ? '+' : '') + jsonData.m.replace('-', '')
@@ -182,19 +227,19 @@ class CueTimerInstance extends InstanceBase {
 		if(arr){
 			result = arr.map((item, index) => ({
 				id: (index + 1).toString(),
-				label: `${index + 1}- ${item}`
+				label: `${index + 1}- ${item.title}`
 			}));
 		}
-		
+
 		// Add placeholders if the array has less than 10 items
 		while (result.length < 10) {
 			const index = result.length + 1;
 			result.push({
-			id: index.toString(),
-			label: `${index}- `
+				id: index.toString(),
+				label: `${index}- `
 			});
 		}
-		
+
 		return result;
 	}
 
@@ -213,7 +258,7 @@ class CueTimerInstance extends InstanceBase {
 				label: 'List Number',
 				default: '1',
 				width: 12,
-				choices: this.getListsChoises(this.lists)
+				choices: [{id: '', label: 'Active List'}].concat(this.getListsChoises(this.lists))
 			},
 			{
 				type: 'textinput',
@@ -463,7 +508,6 @@ class CueTimerInstance extends InstanceBase {
 		if (action.options) {
 			cmd += '#' + await this.parseVariablesInString(action.options.Key)
 		}
-		cmd += '#' + this.config.list
 
 		cmd += terminationChar
 		if (cmd !== undefined && cmd != terminationChar) {
