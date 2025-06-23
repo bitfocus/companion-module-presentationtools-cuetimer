@@ -149,7 +149,7 @@ class CueTimerInstance extends InstanceBase {
 							if(guid === undefined){ // Means that a placeholder list is selected not "Active List"
 								self.updateStatus(
 										InstanceStatus.UnknownWarning, 
-										`Selected list not found in new lists, active list will be used`)
+										`Selected list not found, active list will be used`)
 								guid = '' // Use empty string to select active list
 							}else{
 								self.updateStatus(InstanceStatus.Ok)
