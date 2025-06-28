@@ -80,7 +80,6 @@ class CueTimerInstance extends InstanceBase {
 		if (self.socket !== undefined && self.socket.isConnected) {
 			self.log('debug', `selectList: ${list}`)
 			self.socket.send(`select_list#${list}$`)
-			self.isListSeleted = true
 		} else {
 			self.log('debug', 'Socket not connected, cannot select list')
 		}
@@ -104,7 +103,7 @@ class CueTimerInstance extends InstanceBase {
 			self.socket.on('connect', () => {
 				self.updateStatus(InstanceStatus.Ok)
 				self.log('debug', `Connected to ${self.config.host}:${self.config.port}`)
-				self.isListSeleted = false
+				self.lists = []
 			})
 			
 			self.socket.on('data', (data) => {
@@ -115,48 +114,37 @@ class CueTimerInstance extends InstanceBase {
 				try {
 					let jsonData = JSON.parse(message)
 
-					if(jsonData.lists && JSON.stringify(self.lists) != JSON.stringify(jsonData.lists)){
-						self.log('debug', `Lists changed, updating lists ${JSON.stringify(jsonData.lists)}`)
-						// Handle list changes - update config if current selected list GUID moved to a different index
-						if(self.config.list && Array.isArray(self.lists) && self.lists.length > 0){
-							let currentSelectedGUID = self.lists[parseInt(self.config.list) - 1]?.guid;
-							if(currentSelectedGUID) {
-								let newSelectedIndex = jsonData.lists.findIndex(item => item.guid === currentSelectedGUID)
-								if(newSelectedIndex != -1){
-									// Found the current GUID in the new list - update config to new index
-									self.log('debug', `Selected List found at index: ${newSelectedIndex + 1}`)
-									self.config.list = (newSelectedIndex + 1).toString()
-									self.saveConfig(self.config)
-								} else {
-									self.isListSeleted = false
-								}
-							}else{
-								self.isListSeleted = false
-							}
-						}
-
+					if(jsonData.lists && Array.isArray(jsonData.lists) && jsonData.lists.length > 0 && JSON.stringify(self.lists) != JSON.stringify(jsonData.lists)){
+						self.log('debug', `Lists changed, updating lists ${JSON.stringify(jsonData.lists)}`)						
 						self.lists = jsonData.lists
-						self.setVariableValues({listName: ''})
-					}
+							
+							if(self.isIntegerString(self.config.list)){
+								// If the config.list is an integer string, it means it was set to a placeholder list
+								self.log('debug', `Selected list is a placeholder list with index: ${self.config.list}`)
+								if(self.lists.length >= parseInt(self.config.list)){
+									// Found the current index in the new list - update config to new GUID
+									self.log('debug', `Selected placeholder list found at index: ${self.config.list}`)
+									self.config.list = self.lists[parseInt(self.config.list) - 1].guid
+									self.saveConfig(self.config)
+								}
+							}
 
-
-					if(jsonData.lists){
-						self.setVariableValues({listName: jsonData.lists.find(item => item.guid === jsonData.listGUID)?.title })
-						if(!self.isListSeleted){
-							let guid = ''
-							if(self.config.list)
-								guid = self.lists[parseInt(self.config.list) - 1]?.guid
-							if(guid === undefined){ // Means that a placeholder list is selected not "Active List"
-								self.updateStatus(
-										InstanceStatus.UnknownWarning, 
-										`Selected list not found, active list will be used`)
-								guid = '' // Use empty string to select active list
-							}else{
+							if(self.config.list == '' || self.lists.findIndex(item => item.guid === self.config.list) != -1){
+								self.selectList(self.config.list)
 								self.updateStatus(InstanceStatus.Ok)
 							}
-							self.selectList(guid)
-						}
+							else{
+								self.updateStatus(
+									InstanceStatus.UnknownWarning, 
+									`Selected list not found, active list will be used`)
+							}
+						
+						self.setVariableValues({listName: '' })
 					}
+
+					if(self.lists)
+						self.setVariableValues({listName: self.lists.find(item => item.guid === jsonData.listGUID)?.title })
+					
 					let hours = (jsonData.h < 0 ? '+' : '') + jsonData.h.replace('-', '')
 
 					let minutes = (jsonData.m < 0 ? '+' : '') + jsonData.m.replace('-', '')
@@ -222,11 +210,15 @@ class CueTimerInstance extends InstanceBase {
 		}
 	}
 
+	isIntegerString(str) {
+		return /^-?\d+$/.test(str);
+	}
+
 	getListsChoises(arr) {
 		let result = []
 		if(arr){
 			result = arr.map((item, index) => ({
-				id: (index + 1).toString(),
+				id: item.guid,
 				label: `${index + 1}- ${item.title}`
 			}));
 		}
