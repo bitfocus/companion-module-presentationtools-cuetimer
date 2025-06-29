@@ -139,11 +139,11 @@ class CueTimerInstance extends InstanceBase {
 									`Selected list not found, active list will be used`)
 							}
 						
-						self.setVariableValues({listName: '' })
+						self.variables()
 					}
 
 					if(self.lists)
-						self.setVariableValues({listName: self.lists.find(item => item.guid === jsonData.listGUID)?.title })
+						self.updateListVariablesValues(jsonData.listNumber)
 					
 					let hours = (jsonData.h < 0 ? '+' : '') + jsonData.h.replace('-', '')
 
@@ -207,6 +207,46 @@ class CueTimerInstance extends InstanceBase {
 			self.socket.on('end', function () {
 				self.log('debug', 'end')
 			})
+		}
+	}
+
+	getListVariablesDefinitions() {
+		let self = this
+		let variables = [
+			{ name: 'List Name', variableId: 'listName' },
+			{ name: 'List Number', variableId: 'listNumber' },
+			{ name: 'List GUID', variableId: 'listGUID' },
+		]
+
+		// Loop over self.lists and add variables for each list
+		if (self.lists && self.lists.length > 0) {
+			for (let i = 0; i < self.lists.length; i++) {
+				variables.push({
+					name: `List ${i + 1} Name`,
+					variableId: `list_${i + 1}_name`,
+				})
+			}
+		}
+		
+		return variables
+	}
+
+	updateListVariablesValues(listNumber) {
+		var self = this
+
+		let listIndex = listNumber - 1
+		self.setVariableValues({listNumber: listNumber })
+		self.setVariableValues({listName: self.lists[listIndex]?.title })
+		self.setVariableValues({listGUID: self.lists[listIndex]?.guid })
+		
+
+		// Update list variables
+		if (self.lists && self.lists.length > 0) {
+			for (let i = 0; i < self.lists.length; i++) {
+				self.setVariableValues({
+					[`list_${i + 1}_name`]: `${i + 1} - ${self.lists[i].title}`,
+				})
+			}
 		}
 	}
 
@@ -487,6 +527,27 @@ class CueTimerInstance extends InstanceBase {
 				],
 				callback: this.actionCallback.bind(this),
 			},
+
+			ActivateNextList: {
+				name: 'Activate next list',
+				description: 'Activate the next list',
+				options: [],
+				callback: this.actionCallback.bind(this),
+			},
+
+			ActivatePreviousList: {
+				name: 'Activate previous list',
+				description: 'Activate the previous list',
+				options: [],
+				callback: this.actionCallback.bind(this),
+			},
+
+			ActivateThisList: {
+				name: 'Activate this list',
+				description: 'Activate the list with the GUID set in the configuration settings',
+				options: [],
+				callback: this.actionCallback.bind(this),
+			},
 		}
 
 		this.setActionDefinitions(actions)
@@ -496,9 +557,17 @@ class CueTimerInstance extends InstanceBase {
 		var cmd = ''
 		var terminationChar = '$'
 
-		cmd = action.actionId
-		if (action.options) {
-			cmd += '#' + await this.parseVariablesInString(action.options.Key)
+		if (action.actionId === 'ActivateThisList') {
+			if (this.config.list && this.config.list !== '') {
+				cmd = `ActivateListByGUID#${this.config.list}${terminationChar}`
+			}
+		}
+		else{
+			// For all other actions, we use the actionId as the command
+			cmd = action.actionId
+			if (action.options) {
+				cmd += '#' + await this.parseVariablesInString(action.options.Key)
+			}
 		}
 
 		cmd += terminationChar
@@ -524,8 +593,6 @@ class CueTimerInstance extends InstanceBase {
 			{ name: 'Next Timer Duration', variableId: 'nextTimerDuration' },
 			{ name: 'Schedule Offset', variableId: 'scheduleOffset' },
 			{ name: 'Schedule Offset Status', variableId: 'scheduleOffsetStatus' },
-			{ name: 'List Name', variableId: 'listName' },
-			{ name: 'List Number', variableId: 'listNumber' },
 		]
 
 		for (let x in self.timers) {
@@ -533,6 +600,8 @@ class CueTimerInstance extends InstanceBase {
 			variables.push({ name: `Timer ${x} Duration`, variableId: `timer_${x}_duration` })
 		}
 
+		variables = variables.concat(self.getListVariablesDefinitions())
+		
 		self.setVariableDefinitions(variables)
 	}
 
