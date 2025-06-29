@@ -4,14 +4,14 @@ exports.getPresets = function (instanceLabel) {
 		FireNext: {
 			type: 'button',
 			category: 'Commands',
-			name: 'Fire next Timer',
+			name: 'Start',
 			style: {
 				bgcolor: 0,
 
 				png64: icons.FireNext,
 				pngalignment: 'center:top',
 
-				text: 'Fire Next',
+				text: 'Start',
 				alignment: 'center:bottom',
 				size: '14',
 				color: 16777215,
@@ -27,14 +27,14 @@ exports.getPresets = function (instanceLabel) {
 		CueNext: {
 			type: 'button',
 			category: 'Commands',
-			name: 'Cue next Timer',
+			name: 'Stop',
 			style: {
 				bgcolor: 0,
 
 				png64: icons.CueNext,
 				pngalignment: 'center:top',
 
-				text: 'Cue Next',
+				text: 'Stop',
 				alignment: 'center:bottom',
 				size: '14',
 				color: 16777215,
@@ -104,47 +104,24 @@ exports.getPresets = function (instanceLabel) {
 			],
 			feedbacks: [],
 		},
-		Reset: {
+		Undo: {
 			type: 'button',
 			category: 'Commands',
-			name: 'Reset',
+			name: 'Undo',
 			style: {
 				bgcolor: 0,
 
-				png64: icons.Reset,
+				png64: icons.Undo,
 				pngalignment: 'center:top',
 
-				text: 'Reset',
+				text: 'Undo',
 				alignment: 'center:bottom',
 				size: '14',
 				color: 16777215,
 			},
 			steps: [
 				{
-					down: [{ actionId: 'Reset' }],
-					up: [],
-				},
-			],
-			feedbacks: [],
-		},
-		Revert: {
-			type: 'button',
-			category: 'Commands',
-			name: 'Revert',
-			style: {
-				bgcolor: 0,
-
-				png64: icons.Revert,
-				pngalignment: 'center:top',
-
-				text: 'Revert',
-				alignment: 'center:bottom',
-				size: '14',
-				color: 16777215,
-			},
-			steps: [
-				{
-					down: [{ actionId: 'Revert' }],
+					down: [{ actionId: 'Undo' }],
 					up: [],
 				},
 			],
@@ -541,11 +518,11 @@ exports.getPresets = function (instanceLabel) {
 		FireTimerWithID: {
 			type: 'button',
 			category: 'Commands',
-			name: 'Fire with ID',
+			name: 'Start with ID',
 			style: {
 				bgcolor: 0,
 
-				text: 'Fire',
+				text: 'Start',
 				alignment: 'center:center',
 				size: '14',
 				color: 16777215,
@@ -621,16 +598,16 @@ exports.getPresets = function (instanceLabel) {
 		CueCurrent: {
 			type: 'button',
 			category: 'Commands',
-			name: 'Cue Current Timer',
+			name: 'Stop and go back',
 			style: {
 				bgcolor: 0,
 
 				png64: icons.CueCurrent,
 				pngalignment: 'center:top',
 
-				text: 'CueCurrent',
+				text: 'Stop and go back',
 				alignment: 'center:bottom',
-				size: '7',
+				size: '8',
 				color: 16777215,
 			},
 			steps: [
