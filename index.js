@@ -85,6 +85,12 @@ class CueTimerInstance extends InstanceBase {
 		}
 	}
 
+	isListChanged(jsonData){
+		return JSON.stringify(this.lists) != JSON.stringify(jsonData.lists) || 
+				jsonData.listNumber != this.getVariableValue('listNumber') ||
+				jsonData.listGUID != this.getVariableValue('listGUID')
+	}
+
 	initTCP() {
 		var self = this
 
@@ -114,7 +120,7 @@ class CueTimerInstance extends InstanceBase {
 				try {
 					let jsonData = JSON.parse(message)
 
-					if(jsonData.lists && Array.isArray(jsonData.lists) && jsonData.lists.length > 0 && JSON.stringify(self.lists) != JSON.stringify(jsonData.lists)){
+					if(jsonData.lists && self.isListChanged(jsonData)){
 						self.log('debug', `Lists changed, updating lists ${JSON.stringify(jsonData.lists)}`)						
 						self.lists = jsonData.lists
 							
@@ -128,10 +134,13 @@ class CueTimerInstance extends InstanceBase {
 									self.saveConfig(self.config)
 								}
 							}
-
+							
 							if(self.config.list == '' || self.lists.findIndex(item => item.guid === self.config.list) != -1){
-								self.selectList(self.config.list)
-								self.updateStatus(InstanceStatus.Ok)
+								
+								if(self.config.list == '' || self.config.list != jsonData.listGUID){
+									self.selectList(self.config.list)
+									self.updateStatus(InstanceStatus.Ok)
+								}
 							}
 							else{
 								self.updateStatus(
@@ -140,10 +149,11 @@ class CueTimerInstance extends InstanceBase {
 							}
 						
 						self.variables()
-					}
-
-					if(self.lists)
 						self.updateListVariablesValues(jsonData.listNumber)
+						self.actions()
+						self.feedbacks()
+						self.checkFeedbacks('activeList')
+					}
 					
 					let hours = (jsonData.h < 0 ? '+' : '') + jsonData.h.replace('-', '')
 
@@ -273,6 +283,31 @@ class CueTimerInstance extends InstanceBase {
 		}
 
 		return result;
+	}
+
+	getListNumberedChoices(includePreviousAndNext = false) {
+		let result = []
+
+		if(this.config.list == '' && includePreviousAndNext){
+			result.push({ id: 'Previous', label: 'Previous List' })
+			result.push({ id: 'Next', label: 'Next List' })
+		}
+
+		// Add numbered list options (1-10) with names if available
+		for (let i = 1; i <= 10; i++) {
+			let label = `${i}`
+			if (this.lists && this.lists[i - 1]) {
+				label = `${i} - ${this.lists[i - 1]?.title}`
+			} else {
+				label = `${i} - `
+			}
+			result.push({
+				id: i.toString(),
+				label: label
+			})
+		}
+
+		return result
 	}
 
 	getConfigFields() {
@@ -548,6 +583,21 @@ class CueTimerInstance extends InstanceBase {
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
+
+			ActivateListByNumber: {
+				name: 'Activate list by number',
+				description: 'Activate a specific list by its number',
+				options: [
+					{
+						type: 'dropdown',
+						label: 'List Selection',
+						id: 'Key',
+						default: '1',
+						choices: this.getListNumberedChoices(true),
+					},
+				],
+				callback: this.actionCallback.bind(this),
+			},
 		}
 
 		this.setActionDefinitions(actions)
@@ -562,6 +612,27 @@ class CueTimerInstance extends InstanceBase {
 				cmd = `ActivateListByGUID#${this.config.list}${terminationChar}`
 			}
 		}
+		else if (action.actionId === 'ActivateListByNumber') {
+			const selection = action.options.Key
+			
+			if (selection === 'Previous') {
+				cmd = `ActivatePreviousList${terminationChar}`
+				this.log('debug', 'Activating previous list')
+			} else if (selection === 'Next') {
+				cmd = `ActivateNextList${terminationChar}`
+				this.log('debug', 'Activating next list')
+			} else {
+				const listIndex = parseInt(selection) - 1 // Convert to 0-based index
+				if (this.lists && this.lists.length > listIndex && listIndex >= 0) {
+					const listGuid = this.lists[listIndex].guid
+					cmd = `ActivateListByGUID#${listGuid}${terminationChar}`
+					this.log('debug', `Activating list by index ${listIndex + 1} with GUID: ${listGuid}`)
+				} else {
+					this.log('warn', `List index ${listIndex + 1} is out of range or lists not available`)
+					return
+				}
+			}
+		} 
 		else{
 			// For all other actions, we use the actionId as the command
 			cmd = action.actionId
@@ -704,6 +775,28 @@ class CueTimerInstance extends InstanceBase {
 						return { bgcolor: combineRgb(tempBg.r, tempBg.g, tempBg.b) }
 					}
 					return { bgcolor: combineRgb(0, 0, 0) }
+				},
+			},
+			activeList: {
+				type: 'boolean',
+				name: 'Active List',
+				description: 'If list is active, change the style',
+				options: [
+					{
+						type: 'dropdown',
+						label: 'List Number',
+						id: 'Key',
+						default: '1',
+						choices: self.getListNumberedChoices(),
+					},
+				],
+				defaultStyle: {
+					color: combineRgb(255, 255, 255),
+					bgcolor: '#9A9A00',
+				},
+				callback: function (feedback) {
+					const targetIndex = parseInt(feedback.options.Key)
+					return self.lists[targetIndex - 1]?.isActive
 				},
 			},
 		}
