@@ -61,6 +61,9 @@ class CueTimerInstance extends InstanceBase {
 			Clock: false,
 			Pause: false,
 			Blackout: false,
+			MultiviewPreview: false,
+			MultiviewFullscreen: false,
+			MultiviewNDI: false,
 		}
 		self.lists = []
 		self.timers = {}
@@ -184,7 +187,9 @@ class CueTimerInstance extends InstanceBase {
 					self.buttonStates['Clock'] = jsonData['Clock']
 					self.buttonStates['Pause'] = jsonData['Pause']
 					self.buttonStates['Blackout'] = jsonData['Blackout']
-
+					self.buttonStates['MultiviewPreview'] = jsonData['MultiviewPreview']
+					self.buttonStates['MultiviewFullscreen'] = jsonData['MultiviewFullscreen']
+					self.buttonStates['MultiviewNDI'] = jsonData['MultiviewNDI']
 					self.setVariableValues({
 						nextTimerName: jsonData.nextTimerName,
 						nextTimerDuration: jsonData.nextTimerDuration,
@@ -474,6 +479,41 @@ class CueTimerInstance extends InstanceBase {
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
+			MultiviewPreview: {
+				name: 'Multiview Preview',
+				options: [{
+					type: 'dropdown',
+					label: 'State',
+					id: 'Key',
+					default: 'toggle',
+					choices: [
+						{id: "on", label: "On"},
+						{id: "off", label: "Off"},
+						{id: "toggle", label: "Toggle"},
+					],
+				}],
+				callback: this.actionCallback.bind(this),
+			},
+			MultiviewFullscreen: {
+				name: 'Multiview Fullscreen',
+				options: [{
+					type: 'dropdown',
+					label: 'State',
+					id: 'Key',
+					default: 'toggle',
+					choices: [
+						{id: "on", label: "On"},
+						{id: "off", label: "Off"},
+						{id: "toggle", label: "Toggle"},
+					],
+				}],
+				callback: this.actionCallback.bind(this),
+			},
+			MultiviewNDI: {
+				name: 'Multiview NDI',
+				options: [],
+				callback: this.actionCallback.bind(this),
+			},
 			MoveNextUp: {
 				name: 'Move Next Up',
 				options: [],
@@ -708,6 +748,9 @@ class CueTimerInstance extends InstanceBase {
 							{ id: 'Clock', label: 'Clock' },
 							{ id: 'Pause', label: 'Pause' },
 							{ id: 'Blackout', label: 'Blackout' },
+							{ id: 'MultiviewPreview', label: 'Multiview Preview' },
+							{ id: 'MultiviewFullscreen', label: 'Multiview Fullscreen' },
+							{ id: 'MultiviewNDI', label: 'Multiview NDI' },
 						],
 					},
 				],

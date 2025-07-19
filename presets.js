@@ -417,6 +417,102 @@ exports.getPresets = function (instanceLabel) {
 				},
 			],
 		},
+		MultiviewPreview: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Multiview Preview',
+			style: {
+				bgcolor: 0,
+				text: 'Multiview Preview',
+				alignment: 'center:bottom',
+				png64: icons.Multiview,
+				pngalignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'MultiviewPreview', options: {Key: 'toggle'} }],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'status',
+					options: {
+						Key: 'MultiviewPreview',
+					},
+					style: {
+						color: 16777215,
+						bgcolor: 16753920,
+					},
+				},
+			],
+		},
+		MultiviewFullscreen: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Multiview Fullscreen',
+			style: {
+				bgcolor: 0,
+				text: 'Multiview Fullscreen',
+				alignment: 'center:bottom',
+				png64: icons.Multiview,
+				pngalignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'MultiviewFullscreen', options: {Key: 'toggle'} }],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'status',
+					options: {
+						Key: 'MultiviewFullscreen',
+					},
+					style: {
+						color: 16777215,
+						bgcolor: 16753920,
+					},
+				},
+			],
+		},
+		MultiviewNDI: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Multiview NDI',
+			style: {
+				bgcolor: 0,
+				text: 'Multiview NDI',
+				alignment: 'center:bottom',
+				png64: icons.Multiview,
+				pngalignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'MultiviewNDI' }],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'status',
+					options: {
+						Key: 'MultiviewNDI',
+					},
+					style: {
+						color: 16777215,
+						bgcolor: 16753920,
+					},
+				},
+			],
+		},
 		NDI: {
 			type: 'button',
 			category: 'Commands',
