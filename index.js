@@ -352,7 +352,10 @@ class CueTimerInstance extends InstanceBase {
 				type: 'static-text',
 				id: 'info-defaultport',
 				width: 12,
-				label: 'Check that the port in CueTimer matches the target port shown here. To change the default port in CueTimer, go to Preferences/Triggers/Companion. Note that for earlier versions of CueTimer, (2.5 and below) the default port is 4778. We recommend using port 31601 for connection. If this port is not available, try something else in the same range.',
+				value: '<p>Check that the port in CueTimer matches the target port shown here. ' +
+				'To change the default port in CueTimer, go to Preferences/Triggers/Companion. '+
+				'We recommend using port 31601 for connection. If this port is not available, try something else in the same range.</p>' +
+				'<p>For CueTimer v.3.2 and below: In the list selection, choose “Active list”</p>',
 			}
 		]
 	}
