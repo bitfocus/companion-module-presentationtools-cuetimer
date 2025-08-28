@@ -61,9 +61,9 @@ class CueTimerInstance extends InstanceBase {
 			Clock: false,
 			Pause: false,
 			Blackout: false,
-			MultiviewPreview: false,
-			MultiviewFullscreen: false,
-			MultiviewNDI: false,
+			MultitimerPreview: false,
+			MultitimerFullscreen: false,
+			MultitimerNDI: false,
 		}
 		self.lists = []
 		self.timers = {}
@@ -187,9 +187,9 @@ class CueTimerInstance extends InstanceBase {
 					self.buttonStates['Clock'] = jsonData['Clock']
 					self.buttonStates['Pause'] = jsonData['Pause']
 					self.buttonStates['Blackout'] = jsonData['Blackout']
-					self.buttonStates['MultiviewPreview'] = jsonData['MultiviewPreview']
-					self.buttonStates['MultiviewFullscreen'] = jsonData['MultiviewFullscreen']
-					self.buttonStates['MultiviewNDI'] = jsonData['MultiviewNDI']
+					self.buttonStates['MultitimerPreview'] = jsonData['MultitimerPreview']
+					self.buttonStates['MultitimerFullscreen'] = jsonData['MultitimerFullscreen']
+					self.buttonStates['MultitimerNDI'] = jsonData['MultitimerNDI']
 					self.setVariableValues({
 						nextTimerName: jsonData.nextTimerName,
 						nextTimerDuration: jsonData.nextTimerDuration,
@@ -482,8 +482,8 @@ class CueTimerInstance extends InstanceBase {
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
-			MultiviewPreview: {
-				name: 'Multiview Preview',
+			MultitimerPreview: {
+				name: 'Multitimer Preview',
 				options: [{
 					type: 'dropdown',
 					label: 'State',
@@ -497,8 +497,8 @@ class CueTimerInstance extends InstanceBase {
 				}],
 				callback: this.actionCallback.bind(this),
 			},
-			MultiviewFullscreen: {
-				name: 'Multiview Fullscreen',
+			MultitimerFullscreen: {
+				name: 'Multitimer Fullscreen',
 				options: [{
 					type: 'dropdown',
 					label: 'State',
@@ -512,8 +512,8 @@ class CueTimerInstance extends InstanceBase {
 				}],
 				callback: this.actionCallback.bind(this),
 			},
-			MultiviewNDI: {
-				name: 'Multiview NDI',
+			MultitimerNDI: {
+				name: 'Multitimer NDI',
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
@@ -751,9 +751,9 @@ class CueTimerInstance extends InstanceBase {
 							{ id: 'Clock', label: 'Clock' },
 							{ id: 'Pause', label: 'Pause' },
 							{ id: 'Blackout', label: 'Blackout' },
-							{ id: 'MultiviewPreview', label: 'Multiview Preview' },
-							{ id: 'MultiviewFullscreen', label: 'Multiview Fullscreen' },
-							{ id: 'MultiviewNDI', label: 'Multiview NDI' },
+							{ id: 'MultitimerPreview', label: 'Multitimer Preview' },
+							{ id: 'MultitimerFullscreen', label: 'Multitimer Fullscreen' },
+							{ id: 'MultitimerNDI', label: 'Multitimer NDI' },
 						],
 					},
 				],

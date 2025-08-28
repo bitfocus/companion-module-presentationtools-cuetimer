@@ -417,22 +417,22 @@ exports.getPresets = function (instanceLabel) {
 				},
 			],
 		},
-		MultiviewPreview: {
+		MultitimerPreview: {
 			type: 'button',
 			category: 'Commands',
-			name: 'Multiview Preview',
+			name: 'Multitimer Preview',
 			style: {
 				bgcolor: 0,
-				text: 'Multiview Preview',
+				text: 'Multitimer Preview',
 				alignment: 'center:bottom',
-				png64: icons.Multiview,
+				png64: icons.Multitimer,
 				pngalignment: 'center:center',
 				size: '14',
 				color: 16777215,
 			},
 			steps: [
 				{
-					down: [{ actionId: 'MultiviewPreview', options: {Key: 'toggle'} }],
+					down: [{ actionId: 'MultitimerPreview', options: {Key: 'toggle'} }],
 					up: [],
 				},
 			],
@@ -440,7 +440,7 @@ exports.getPresets = function (instanceLabel) {
 				{
 					feedbackId: 'status',
 					options: {
-						Key: 'MultiviewPreview',
+						Key: 'MultitimerPreview',
 					},
 					style: {
 						color: 16777215,
@@ -449,22 +449,22 @@ exports.getPresets = function (instanceLabel) {
 				},
 			],
 		},
-		MultiviewFullscreen: {
+		MultitimerFullscreen: {
 			type: 'button',
 			category: 'Commands',
-			name: 'Multiview Fullscreen',
+			name: 'Multitimer Fullscreen',
 			style: {
 				bgcolor: 0,
-				text: 'Multiview Fullscreen',
+				text: 'Multitimer Fullscreen',
 				alignment: 'center:bottom',
-				png64: icons.Multiview,
+				png64: icons.Multitimer,
 				pngalignment: 'center:center',
 				size: '14',
 				color: 16777215,
 			},
 			steps: [
 				{
-					down: [{ actionId: 'MultiviewFullscreen', options: {Key: 'toggle'} }],
+					down: [{ actionId: 'MultitimerFullscreen', options: {Key: 'toggle'} }],
 					up: [],
 				},
 			],
@@ -472,7 +472,7 @@ exports.getPresets = function (instanceLabel) {
 				{
 					feedbackId: 'status',
 					options: {
-						Key: 'MultiviewFullscreen',
+						Key: 'MultitimerFullscreen',
 					},
 					style: {
 						color: 16777215,
@@ -481,22 +481,22 @@ exports.getPresets = function (instanceLabel) {
 				},
 			],
 		},
-		MultiviewNDI: {
+		MultitimerNDI: {
 			type: 'button',
 			category: 'Commands',
-			name: 'Multiview NDI',
+			name: 'Multitimer NDI',
 			style: {
 				bgcolor: 0,
-				text: 'Multiview NDI',
+				text: 'Multitimer NDI',
 				alignment: 'center:bottom',
-				png64: icons.Multiview,
+				png64: icons.Multitimer,
 				pngalignment: 'center:center',
 				size: '14',
 				color: 16777215,
 			},
 			steps: [
 				{
-					down: [{ actionId: 'MultiviewNDI' }],
+					down: [{ actionId: 'MultitimerNDI' }],
 					up: [],
 				},
 			],
@@ -504,7 +504,7 @@ exports.getPresets = function (instanceLabel) {
 				{
 					feedbackId: 'status',
 					options: {
-						Key: 'MultiviewNDI',
+						Key: 'MultitimerNDI',
 					},
 					style: {
 						color: 16777215,
