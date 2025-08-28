@@ -1,6 +1,6 @@
 var icons = require('./icons')
 exports.getPresets = function (instanceLabel) {
-	return {
+	var presets = {
 		FireNext: {
 			type: 'button',
 			category: 'Commands',
@@ -812,6 +812,46 @@ exports.getPresets = function (instanceLabel) {
 			feedbacks: [],
 		},
 
+		// List Control presets
+		PrevList: {
+			type: 'button',
+			category: 'List control',
+			name: 'Selects previous list',
+			style: {
+				bgcolor: 0,
+				text: 'Prev list',
+				alignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'ActivatePreviousList' }],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		NextList: {
+			type: 'button',
+			category: 'List control',
+			name: 'Selects next list',
+			style: {
+				bgcolor: 0,
+				text: 'Next list',
+				alignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'ActivateNextList' }],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+
 		// Variables & FeedBack presets
 		Hours: {
 			type: 'button',
@@ -1021,4 +1061,40 @@ exports.getPresets = function (instanceLabel) {
 			feedbacks: [],
 		},
 	}
+
+	// Generate list presets dynamically (1-10)
+	for (var i = 1; i <= 10; i++) {
+		presets[`List${i}`] = {
+			type: 'button',
+			category: 'List control',
+			name: `Selects List ${i}`,
+			style: {
+				bgcolor: 0,
+				text: `$(${instanceLabel}:list_${i}_name)`,
+				alignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'ActivateListByNumber', options: { Key: i } }],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'activeList',
+					options: {
+						Key: i,
+					},
+					style: {
+						color: 16777215,
+						bgcolor: '#9A9A00',
+					},
+				},
+			],
+		}
+	}
+
+	return presets
 }
