@@ -13,7 +13,7 @@
 		"url": "git+https://github.com/bitfocus/companion-module-presentationtools-cuetimer.git"
 	},
 	"dependencies": {
-		"@companion-module/base": "~1.3.0"
+		"@companion-module/base": "~1.7.0"
 	},
 	"devDependencies": {
 		"@companion-module/tools": "^1.2.0"
