@@ -25,6 +25,7 @@ class CueTimerInstance extends InstanceBase {
 
 	async configUpdated(config) {
 		var self = this
+		self.log('debug', `configUpdated`)
 
 		self.config = config
 
@@ -45,6 +46,8 @@ class CueTimerInstance extends InstanceBase {
 			nextTimerDuration: '',
 			scheduleOffset: '00:00:00',
 			scheduleOffsetStatus: '',
+			listName: '',
+			listNumber: config.list,
 		})
 		self.bgColor = combineRgb(0, 0, 0)
 		self.fgColor = combineRgb(255, 255, 255)
@@ -58,7 +61,11 @@ class CueTimerInstance extends InstanceBase {
 			Clock: false,
 			Pause: false,
 			Blackout: false,
+			MultitimerPreview: false,
+			MultitimerFullscreen: false,
+			MultitimerNDI: false,
 		}
+		self.lists = []
 		self.timers = {}
 	}
 
@@ -68,6 +75,23 @@ class CueTimerInstance extends InstanceBase {
 
 	compareKeys(a, b) {
 		return JSON.stringify(Object.keys(a).sort()) === JSON.stringify(Object.keys(b).sort())
+	}
+
+	selectList(list) {
+		var self = this
+
+		if (self.socket !== undefined && self.socket.isConnected) {
+			self.log('debug', `selectList: ${list}`)
+			self.socket.send(`select_list#${list}$`)
+		} else {
+			self.log('debug', 'Socket not connected, cannot select list')
+		}
+	}
+
+	isListChanged(jsonData){
+		return JSON.stringify(this.lists) != JSON.stringify(jsonData.lists) || 
+				jsonData.listNumber != this.getVariableValue('listNumber') ||
+				jsonData.listGUID != this.getVariableValue('listGUID')
 	}
 
 	initTCP() {
@@ -87,8 +111,10 @@ class CueTimerInstance extends InstanceBase {
 
 			self.socket.on('connect', () => {
 				self.updateStatus(InstanceStatus.Ok)
+				self.log('debug', `Connected to ${self.config.host}:${self.config.port}`)
+				self.lists = []
 			})
-
+			
 			self.socket.on('data', (data) => {
 				let received = new MessageBuffer('$')
 				received.push(data)
@@ -96,6 +122,42 @@ class CueTimerInstance extends InstanceBase {
 
 				try {
 					let jsonData = JSON.parse(message)
+
+					if(jsonData.lists && self.isListChanged(jsonData)){
+						self.log('debug', `Lists changed, updating lists ${JSON.stringify(jsonData.lists)}`)						
+						self.lists = jsonData.lists
+							
+							if(self.isIntegerString(self.config.list)){
+								// If the config.list is an integer string, it means it was set to a placeholder list
+								self.log('debug', `Selected list is a placeholder list with index: ${self.config.list}`)
+								if(self.lists.length >= parseInt(self.config.list)){
+									// Found the current index in the new list - update config to new GUID
+									self.log('debug', `Selected placeholder list found at index: ${self.config.list}`)
+									self.config.list = self.lists[parseInt(self.config.list) - 1].guid
+									self.saveConfig(self.config)
+								}
+							}
+							
+							if(self.config.list == '' || self.lists.findIndex(item => item.guid === self.config.list) != -1){
+								
+								if(self.config.list == '' || self.config.list != jsonData.listGUID){
+									self.selectList(self.config.list)
+									self.updateStatus(InstanceStatus.Ok)
+								}
+							}
+							else{
+								self.updateStatus(
+									InstanceStatus.UnknownWarning, 
+									`Selected list not found, active list will be used`)
+							}
+						
+						self.variables()
+						self.updateListVariablesValues(jsonData.listNumber)
+						self.actions()
+						self.feedbacks()
+						self.checkFeedbacks('activeList')
+					}
+					
 					let hours = (jsonData.h < 0 ? '+' : '') + jsonData.h.replace('-', '')
 
 					let minutes = (jsonData.m < 0 ? '+' : '') + jsonData.m.replace('-', '')
@@ -125,7 +187,9 @@ class CueTimerInstance extends InstanceBase {
 					self.buttonStates['Clock'] = jsonData['Clock']
 					self.buttonStates['Pause'] = jsonData['Pause']
 					self.buttonStates['Blackout'] = jsonData['Blackout']
-
+					self.buttonStates['MultitimerPreview'] = jsonData['MultitimerPreview']
+					self.buttonStates['MultitimerFullscreen'] = jsonData['MultitimerFullscreen']
+					self.buttonStates['MultitimerNDI'] = jsonData['MultitimerNDI']
 					self.setVariableValues({
 						nextTimerName: jsonData.nextTimerName,
 						nextTimerDuration: jsonData.nextTimerDuration,
@@ -161,6 +225,96 @@ class CueTimerInstance extends InstanceBase {
 		}
 	}
 
+	getListVariablesDefinitions() {
+		let self = this
+		let variables = [
+			{ name: 'List Name', variableId: 'listName' },
+			{ name: 'List Number', variableId: 'listNumber' },
+			{ name: 'List GUID', variableId: 'listGUID' },
+		]
+
+		// Loop over self.lists and add variables for each list
+		if (self.lists && self.lists.length > 0) {
+			for (let i = 0; i < self.lists.length; i++) {
+				variables.push({
+					name: `List ${i + 1} Name`,
+					variableId: `list_${i + 1}_name`,
+				})
+			}
+		}
+		
+		return variables
+	}
+
+	updateListVariablesValues(listNumber) {
+		var self = this
+
+		let listIndex = listNumber - 1
+		self.setVariableValues({listNumber: listNumber })
+		self.setVariableValues({listName: self.lists[listIndex]?.title })
+		self.setVariableValues({listGUID: self.lists[listIndex]?.guid })
+		
+
+		// Update list variables
+		if (self.lists && self.lists.length > 0) {
+			for (let i = 0; i < self.lists.length; i++) {
+				self.setVariableValues({
+					[`list_${i + 1}_name`]: `${i + 1} - ${self.lists[i].title}`,
+				})
+			}
+		}
+	}
+
+	isIntegerString(str) {
+		return /^-?\d+$/.test(str);
+	}
+
+	getListsChoises(arr) {
+		let result = []
+		if(arr){
+			result = arr.map((item, index) => ({
+				id: item.guid,
+				label: `${index + 1}- ${item.title}`
+			}));
+		}
+
+		// Add placeholders if the array has less than 10 items
+		while (result.length < 10) {
+			const index = result.length + 1;
+			result.push({
+				id: index.toString(),
+				label: `${index}- `
+			});
+		}
+
+		return result;
+	}
+
+	getListNumberedChoices(includePreviousAndNext = false) {
+		let result = []
+
+		if(this.config.list == '' && includePreviousAndNext){
+			result.push({ id: 'Previous', label: 'Previous List' })
+			result.push({ id: 'Next', label: 'Next List' })
+		}
+
+		// Add numbered list options (1-10) with names if available
+		for (let i = 1; i <= 10; i++) {
+			let label = `${i}`
+			if (this.lists && this.lists[i - 1]) {
+				label = `${i} - ${this.lists[i - 1]?.title}`
+			} else {
+				label = `${i} - `
+			}
+			result.push({
+				id: i.toString(),
+				label: label
+			})
+		}
+
+		return result
+	}
+
 	getConfigFields() {
 		return [
 			{
@@ -169,6 +323,14 @@ class CueTimerInstance extends InstanceBase {
 				width: 12,
 				label: 'Information',
 				value: 'This will establish a TCP connection to interact with the CueTimer app',
+			},
+			{
+				type: 'dropdown',
+				id: 'list',
+				label: 'List Number',
+				default: '1',
+				width: 12,
+				choices: [{id: '', label: 'Active List'}].concat(this.getListsChoises(this.lists))
 			},
 			{
 				type: 'textinput',
@@ -190,7 +352,10 @@ class CueTimerInstance extends InstanceBase {
 				type: 'static-text',
 				id: 'info-defaultport',
 				width: 12,
-				label: 'Check that the port in CueTimer matches the target port shown here. To change the default port in CueTimer, go to Preferences/Triggers/Companion. Note that for earlier versions of CueTimer, (2.5 and below) the default port is 4778. We recommend using port 31601 for connection. If this port is not available, try something else in the same range.',
+				value: '<p>Check that the port in CueTimer matches the target port shown here. ' +
+				'To change the default port in CueTimer, go to Preferences/Triggers/Companion. '+
+				'We recommend using port 31601 for connection. If this port is not available, try something else in the same range.</p>' +
+				'<p>For CueTimer v.3.2 and below: In the list selection, choose “Active list”</p>',
 			}
 		]
 	}
@@ -198,17 +363,17 @@ class CueTimerInstance extends InstanceBase {
 	actions() {
 		let actions = {
 			FireNext: {
-				name: 'Fire the next timer',
+				name: 'Start',
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
 			CueNext: {
-				name: 'Cue next',
+				name: 'Stop',
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
 			CueCurrent: {
-				name: 'Cue Current',
+				name: 'Stop and go back',
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
@@ -222,13 +387,8 @@ class CueTimerInstance extends InstanceBase {
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
-			Reset: {
-				name: 'Reset',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-			Revert: {
-				name: 'Revert',
+			Undo: {
+				name: 'Undo',
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
@@ -322,6 +482,41 @@ class CueTimerInstance extends InstanceBase {
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
+			MultitimerPreview: {
+				name: 'Multitimer Preview',
+				options: [{
+					type: 'dropdown',
+					label: 'State',
+					id: 'Key',
+					default: 'toggle',
+					choices: [
+						{id: "on", label: "On"},
+						{id: "off", label: "Off"},
+						{id: "toggle", label: "Toggle"},
+					],
+				}],
+				callback: this.actionCallback.bind(this),
+			},
+			MultitimerFullscreen: {
+				name: 'Multitimer Fullscreen',
+				options: [{
+					type: 'dropdown',
+					label: 'State',
+					id: 'Key',
+					default: 'toggle',
+					choices: [
+						{id: "on", label: "On"},
+						{id: "off", label: "Off"},
+						{id: "toggle", label: "Toggle"},
+					],
+				}],
+				callback: this.actionCallback.bind(this),
+			},
+			MultitimerNDI: {
+				name: 'Multitimer NDI',
+				options: [],
+				callback: this.actionCallback.bind(this),
+			},
 			MoveNextUp: {
 				name: 'Move Next Up',
 				options: [],
@@ -333,7 +528,7 @@ class CueTimerInstance extends InstanceBase {
 				callback: this.actionCallback.bind(this),
 			},
 			FireTimerWithID: {
-				name: 'Fire Timer with ID',
+				name: 'Start timer with ID',
 				options: [
 					{
 						type: 'textinput',
@@ -397,23 +592,102 @@ class CueTimerInstance extends InstanceBase {
 				options: [],
 				callback: this.actionCallback.bind(this),
 			},
+			InitEndTimeTimer: {
+				name: 'Initialize and start a new EndTime timer',
+				options: [
+					{
+						type: 'textinput',
+						label: 'EndTime hh:mm:ss',
+						id: 'Key',
+						default: '',
+						useVariables: true,
+					},
+				],
+				callback: this.actionCallback.bind(this),
+			},
+
+			ActivateNextList: {
+				name: 'Activate next list',
+				description: 'Activate the next list',
+				options: [],
+				callback: this.actionCallback.bind(this),
+			},
+
+			ActivatePreviousList: {
+				name: 'Activate previous list',
+				description: 'Activate the previous list',
+				options: [],
+				callback: this.actionCallback.bind(this),
+			},
+
+			ActivateThisList: {
+				name: 'Activate this list',
+				description: 'Activate the list with the GUID set in the configuration settings',
+				options: [],
+				callback: this.actionCallback.bind(this),
+			},
+
+			ActivateListByNumber: {
+				name: 'Activate list by number',
+				description: 'Activate a specific list by its number',
+				options: [
+					{
+						type: 'dropdown',
+						label: 'List Selection',
+						id: 'Key',
+						default: '1',
+						choices: this.getListNumberedChoices(true),
+					},
+				],
+				callback: this.actionCallback.bind(this),
+			},
 		}
 
 		this.setActionDefinitions(actions)
 	}
 
-	actionCallback(action) {
+	async actionCallback(action) {
 		var cmd = ''
 		var terminationChar = '$'
 
-		cmd = action.actionId
-		if (action.options) {
-			cmd += '#' + action.options.Key
+		if (action.actionId === 'ActivateThisList') {
+			if (this.config.list && this.config.list !== '') {
+				cmd = `ActivateListByGUID#${this.config.list}${terminationChar}`
+			}
+		}
+		else if (action.actionId === 'ActivateListByNumber') {
+			const selection = action.options.Key
+			
+			if (selection === 'Previous') {
+				cmd = `ActivatePreviousList${terminationChar}`
+				this.log('debug', 'Activating previous list')
+			} else if (selection === 'Next') {
+				cmd = `ActivateNextList${terminationChar}`
+				this.log('debug', 'Activating next list')
+			} else {
+				const listIndex = parseInt(selection) - 1 // Convert to 0-based index
+				if (this.lists && this.lists.length > listIndex && listIndex >= 0) {
+					const listGuid = this.lists[listIndex].guid
+					cmd = `ActivateListByGUID#${listGuid}${terminationChar}`
+					this.log('debug', `Activating list by index ${listIndex + 1} with GUID: ${listGuid}`)
+				} else {
+					this.log('warn', `List index ${listIndex + 1} is out of range or lists not available`)
+					return
+				}
+			}
+		} 
+		else{
+			// For all other actions, we use the actionId as the command
+			cmd = action.actionId
+			if (action.options) {
+				cmd += '#' + await this.parseVariablesInString(action.options.Key)
+			}
 		}
 
 		cmd += terminationChar
 		if (cmd !== undefined && cmd != terminationChar) {
 			if (this.socket !== undefined && this.socket.isConnected) {
+				this.log('debug', `Sending ${cmd}`)
 				this.socket.send(cmd)
 			}
 		}
@@ -440,6 +714,8 @@ class CueTimerInstance extends InstanceBase {
 			variables.push({ name: `Timer ${x} Duration`, variableId: `timer_${x}_duration` })
 		}
 
+		variables = variables.concat(self.getListVariablesDefinitions())
+		
 		self.setVariableDefinitions(variables)
 	}
 
@@ -475,6 +751,9 @@ class CueTimerInstance extends InstanceBase {
 							{ id: 'Clock', label: 'Clock' },
 							{ id: 'Pause', label: 'Pause' },
 							{ id: 'Blackout', label: 'Blackout' },
+							{ id: 'MultitimerPreview', label: 'Multitimer Preview' },
+							{ id: 'MultitimerFullscreen', label: 'Multitimer Fullscreen' },
+							{ id: 'MultitimerNDI', label: 'Multitimer NDI' },
 						],
 					},
 				],
@@ -542,6 +821,28 @@ class CueTimerInstance extends InstanceBase {
 						return { bgcolor: combineRgb(tempBg.r, tempBg.g, tempBg.b) }
 					}
 					return { bgcolor: combineRgb(0, 0, 0) }
+				},
+			},
+			activeList: {
+				type: 'boolean',
+				name: 'Active List',
+				description: 'If list is active, change the style',
+				options: [
+					{
+						type: 'dropdown',
+						label: 'List Number',
+						id: 'Key',
+						default: '1',
+						choices: self.getListNumberedChoices(),
+					},
+				],
+				defaultStyle: {
+					color: combineRgb(255, 255, 255),
+					bgcolor: '#9A9A00',
+				},
+				callback: function (feedback) {
+					const targetIndex = parseInt(feedback.options.Key)
+					return self.lists[targetIndex - 1]?.isActive
 				},
 			},
 		}

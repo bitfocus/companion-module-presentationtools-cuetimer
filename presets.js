@@ -1,17 +1,17 @@
 var icons = require('./icons')
 exports.getPresets = function (instanceLabel) {
-	return {
+	var presets = {
 		FireNext: {
 			type: 'button',
 			category: 'Commands',
-			name: 'Fire next Timer',
+			name: 'Start',
 			style: {
 				bgcolor: 0,
 
 				png64: icons.FireNext,
 				pngalignment: 'center:top',
 
-				text: 'Fire Next',
+				text: 'Start',
 				alignment: 'center:bottom',
 				size: '14',
 				color: 16777215,
@@ -27,14 +27,14 @@ exports.getPresets = function (instanceLabel) {
 		CueNext: {
 			type: 'button',
 			category: 'Commands',
-			name: 'Cue next Timer',
+			name: 'Stop',
 			style: {
 				bgcolor: 0,
 
 				png64: icons.CueNext,
 				pngalignment: 'center:top',
 
-				text: 'Cue Next',
+				text: 'Stop',
 				alignment: 'center:bottom',
 				size: '14',
 				color: 16777215,
@@ -104,47 +104,24 @@ exports.getPresets = function (instanceLabel) {
 			],
 			feedbacks: [],
 		},
-		Reset: {
+		Undo: {
 			type: 'button',
 			category: 'Commands',
-			name: 'Reset',
+			name: 'Undo',
 			style: {
 				bgcolor: 0,
 
-				png64: icons.Reset,
+				png64: icons.Undo,
 				pngalignment: 'center:top',
 
-				text: 'Reset',
+				text: 'Undo',
 				alignment: 'center:bottom',
 				size: '14',
 				color: 16777215,
 			},
 			steps: [
 				{
-					down: [{ actionId: 'Reset' }],
-					up: [],
-				},
-			],
-			feedbacks: [],
-		},
-		Revert: {
-			type: 'button',
-			category: 'Commands',
-			name: 'Revert',
-			style: {
-				bgcolor: 0,
-
-				png64: icons.Revert,
-				pngalignment: 'center:top',
-
-				text: 'Revert',
-				alignment: 'center:bottom',
-				size: '14',
-				color: 16777215,
-			},
-			steps: [
-				{
-					down: [{ actionId: 'Revert' }],
+					down: [{ actionId: 'Undo' }],
 					up: [],
 				},
 			],
@@ -440,6 +417,102 @@ exports.getPresets = function (instanceLabel) {
 				},
 			],
 		},
+		MultitimerPreview: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Multitimer Preview',
+			style: {
+				bgcolor: 0,
+				text: 'Multitimer Preview',
+				alignment: 'center:bottom',
+				png64: icons.Multitimer,
+				pngalignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'MultitimerPreview', options: {Key: 'toggle'} }],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'status',
+					options: {
+						Key: 'MultitimerPreview',
+					},
+					style: {
+						color: 16777215,
+						bgcolor: 16753920,
+					},
+				},
+			],
+		},
+		MultitimerFullscreen: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Multitimer Fullscreen',
+			style: {
+				bgcolor: 0,
+				text: 'Multitimer Fullscreen',
+				alignment: 'center:bottom',
+				png64: icons.Multitimer,
+				pngalignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'MultitimerFullscreen', options: {Key: 'toggle'} }],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'status',
+					options: {
+						Key: 'MultitimerFullscreen',
+					},
+					style: {
+						color: 16777215,
+						bgcolor: 16753920,
+					},
+				},
+			],
+		},
+		MultitimerNDI: {
+			type: 'button',
+			category: 'Commands',
+			name: 'Multitimer NDI',
+			style: {
+				bgcolor: 0,
+				text: 'Multitimer NDI',
+				alignment: 'center:bottom',
+				png64: icons.Multitimer,
+				pngalignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'MultitimerNDI' }],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'status',
+					options: {
+						Key: 'MultitimerNDI',
+					},
+					style: {
+						color: 16777215,
+						bgcolor: 16753920,
+					},
+				},
+			],
+		},
 		NDI: {
 			type: 'button',
 			category: 'Commands',
@@ -541,11 +614,11 @@ exports.getPresets = function (instanceLabel) {
 		FireTimerWithID: {
 			type: 'button',
 			category: 'Commands',
-			name: 'Fire with ID',
+			name: 'Start with ID',
 			style: {
 				bgcolor: 0,
 
-				text: 'Fire',
+				text: 'Start',
 				alignment: 'center:center',
 				size: '14',
 				color: 16777215,
@@ -621,16 +694,16 @@ exports.getPresets = function (instanceLabel) {
 		CueCurrent: {
 			type: 'button',
 			category: 'Commands',
-			name: 'Cue Current Timer',
+			name: 'Stop and go back',
 			style: {
 				bgcolor: 0,
 
 				png64: icons.CueCurrent,
 				pngalignment: 'center:top',
 
-				text: 'CueCurrent',
+				text: 'Stop and go back',
 				alignment: 'center:bottom',
-				size: '7',
+				size: '8',
 				color: 16777215,
 			},
 			steps: [
@@ -733,6 +806,46 @@ exports.getPresets = function (instanceLabel) {
 			steps: [
 				{
 					down: [{ actionId: 'InitList' }],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+
+		// List Control presets
+		PrevList: {
+			type: 'button',
+			category: 'List control',
+			name: 'Selects previous list',
+			style: {
+				bgcolor: 0,
+				text: 'Prev list',
+				alignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'ActivatePreviousList' }],
+					up: [],
+				},
+			],
+			feedbacks: [],
+		},
+		NextList: {
+			type: 'button',
+			category: 'List control',
+			name: 'Selects next list',
+			style: {
+				bgcolor: 0,
+				text: 'Next list',
+				alignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'ActivateNextList' }],
 					up: [],
 				},
 			],
@@ -948,4 +1061,40 @@ exports.getPresets = function (instanceLabel) {
 			feedbacks: [],
 		},
 	}
+
+	// Generate list presets dynamically (1-10)
+	for (var i = 1; i <= 10; i++) {
+		presets[`List${i}`] = {
+			type: 'button',
+			category: 'List control',
+			name: `Selects List ${i}`,
+			style: {
+				bgcolor: 0,
+				text: `$(${instanceLabel}:list_${i}_name)`,
+				alignment: 'center:center',
+				size: '14',
+				color: 16777215,
+			},
+			steps: [
+				{
+					down: [{ actionId: 'ActivateListByNumber', options: { Key: i } }],
+					up: [],
+				},
+			],
+			feedbacks: [
+				{
+					feedbackId: 'activeList',
+					options: {
+						Key: i,
+					},
+					style: {
+						color: 16777215,
+						bgcolor: '#9A9A00',
+					},
+				},
+			],
+		}
+	}
+
+	return presets
 }
