@@ -1,5 +1,6 @@
 const { InstanceBase, Regex, runEntrypoint, TCPHelper, combineRgb, InstanceStatus } = require('@companion-module/base')
 var presets = require('./presets')
+const upgradeScripts = require('./upgrades')
 
 class CueTimerInstance extends InstanceBase {
 	constructor(internal) {
@@ -897,4 +898,4 @@ class MessageBuffer {
 	}
 }
 
-runEntrypoint(CueTimerInstance, [])
+runEntrypoint(CueTimerInstance, upgradeScripts)
