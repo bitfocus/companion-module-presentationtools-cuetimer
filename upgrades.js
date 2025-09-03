@@ -10,7 +10,7 @@ module.exports = [
 
 		// write your script in here
 
-        if(props.config.list === undefined) {
+        if(props.config !== null && props.config.list === undefined) {
             props.config.list = '1'
             result.updatedConfig = props.config
         }
