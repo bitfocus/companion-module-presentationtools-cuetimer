@@ -232,6 +232,8 @@ class CueTimerInstance extends InstanceBase {
 			{ name: 'List Name', variableId: 'listName' },
 			{ name: 'List Number', variableId: 'listNumber' },
 			{ name: 'List GUID', variableId: 'listGUID' },
+			{ name: 'List Display Link', variableId: 'listDisplayLink' },
+			{ name: 'List Control Link', variableId: 'listControlLink' },
 		]
 
 		// Loop over self.lists and add variables for each list
@@ -240,6 +242,14 @@ class CueTimerInstance extends InstanceBase {
 				variables.push({
 					name: `List ${i + 1} Name`,
 					variableId: `list_${i + 1}_name`,
+				})
+				variables.push({
+					name: `List ${i + 1} Display Link`,
+					variableId: `list_${i + 1}_display_link`,
+				})
+				variables.push({
+					name: `List ${i + 1} Control Link`,
+					variableId: `list_${i + 1}_control_link`,
 				})
 			}
 		}
@@ -254,6 +264,8 @@ class CueTimerInstance extends InstanceBase {
 		self.setVariableValues({listNumber: listNumber })
 		self.setVariableValues({listName: self.lists[listIndex]?.title })
 		self.setVariableValues({listGUID: self.lists[listIndex]?.guid })
+		self.setVariableValues({listDisplayLink: self.lists[listIndex]?.displayLink ?? '' })
+		self.setVariableValues({listControlLink: self.lists[listIndex]?.controlLink ?? '' })
 		
 
 		// Update list variables
@@ -261,6 +273,8 @@ class CueTimerInstance extends InstanceBase {
 			for (let i = 0; i < self.lists.length; i++) {
 				self.setVariableValues({
 					[`list_${i + 1}_name`]: `${i + 1} - ${self.lists[i].title}`,
+					[`list_${i + 1}_display_link`]: self.lists[i].displayLink ?? '',
+					[`list_${i + 1}_control_link`]: self.lists[i].controlLink ?? '',
 				})
 			}
 		}
