@@ -1,9 +1,10 @@
 {
+	"type": "connection",
 	"id": "presentationtools-cuetimer",
 	"name": "presentationtools-cuetimer",
 	"shortname": "cuetimer",
 	"description": "Module to control CueTimer",
-	"version": "2.2.2",
+	"version": "0.0.0",
 	"license": "MIT",
 	"repository": "git+https://github.com/bitfocus/companion-module-presentationtools-cuetimer.git",
 	"bugs": "https://github.com/bitfocus/companion-module-presentationtools-cuetimer/issues",
@@ -15,7 +16,7 @@
 	],
 	"legacyIds": [],
 	"runtime": {
-		"type": "node18",
+		"type": "node26",
 		"api": "nodejs-ipc",
 		"apiVersion": "0.0.0",
 		"entrypoint": "../index.js"

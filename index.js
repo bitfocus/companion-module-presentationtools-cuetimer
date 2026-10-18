@@ -1,8 +1,10 @@
-const { InstanceBase, Regex, runEntrypoint, TCPHelper, combineRgb, InstanceStatus } = require('@companion-module/base')
-var presets = require('./presets')
-const upgradeScripts = require('./upgrades')
+import { InstanceBase, Regex, TCPHelper, combineRgb, InstanceStatus, sanitizeVariable } from '@companion-module/base'
+import { getPresets } from './presets.js'
+import { UpgradeScripts } from './upgrades.js'
 
-class CueTimerInstance extends InstanceBase {
+export { UpgradeScripts }
+
+export default class CueTimerInstance extends InstanceBase {
 	constructor(internal) {
 		super(internal)
 
@@ -209,8 +211,8 @@ class CueTimerInstance extends InstanceBase {
 
 					for (let x in self.timers) {
 						self.setVariableValues({
-							[`timer_${x}_name`]: self.timers[x].name,
-							[`timer_${x}_duration`]: self.timers[x].duration,
+							[`timer_${sanitizeVariable(x)}_name`]: self.timers[x].name,
+							[`timer_${sanitizeVariable(x)}_duration`]: self.timers[x].duration,
 						})
 					}
 
@@ -228,29 +230,20 @@ class CueTimerInstance extends InstanceBase {
 
 	getListVariablesDefinitions() {
 		let self = this
-		let variables = [
-			{ name: 'List Name', variableId: 'listName' },
-			{ name: 'List Number', variableId: 'listNumber' },
-			{ name: 'List GUID', variableId: 'listGUID' },
-			{ name: 'List Display Link', variableId: 'listDisplayLink' },
-			{ name: 'List Control Link', variableId: 'listControlLink' },
-		]
+		let variables = {
+			listName: { name: 'List Name' },
+			listNumber: { name: 'List Number' },
+			listGUID: { name: 'List GUID' },
+			listDisplayLink: { name: 'List Display Link' },
+			listControlLink: { name: 'List Control Link' },
+		}
 
 		// Loop over self.lists and add variables for each list
 		if (self.lists && self.lists.length > 0) {
 			for (let i = 0; i < self.lists.length; i++) {
-				variables.push({
-					name: `List ${i + 1} Name`,
-					variableId: `list_${i + 1}_name`,
-				})
-				variables.push({
-					name: `List ${i + 1} Display Link`,
-					variableId: `list_${i + 1}_display_link`,
-				})
-				variables.push({
-					name: `List ${i + 1} Control Link`,
-					variableId: `list_${i + 1}_control_link`,
-				})
+				variables[`list_${i + 1}_name`] = { name: `List ${i + 1} Name` }
+				variables[`list_${i + 1}_display_link`] = { name: `List ${i + 1} Display Link` }
+				variables[`list_${i + 1}_control_link`] = { name: `List ${i + 1} Control Link` }
 			}
 		}
 		
@@ -367,6 +360,7 @@ class CueTimerInstance extends InstanceBase {
 				type: 'static-text',
 				id: 'info-defaultport',
 				width: 12,
+				label: 'Port',
 				value: '<p>Check that the port in CueTimer matches the target port shown here. ' +
 				'To change the default port in CueTimer, go to Preferences/Triggers/Companion. '+
 				'We recommend using port 31601 for connection. If this port is not available, try something else in the same range.</p>' +
@@ -550,6 +544,7 @@ class CueTimerInstance extends InstanceBase {
 						label: 'ID',
 						id: 'Key',
 						default: '1',
+						useVariables: true,
 					},
 				],
 				callback: this.actionCallback.bind(this),
@@ -562,6 +557,7 @@ class CueTimerInstance extends InstanceBase {
 						label: 'ID',
 						id: 'Key',
 						default: '1',
+						useVariables: true,
 					},
 				],
 				callback: this.actionCallback.bind(this),
@@ -574,6 +570,7 @@ class CueTimerInstance extends InstanceBase {
 						label: 'New duration (hh:mm:ss)',
 						id: 'Key',
 						default: '00:10:00',
+						useVariables: true,
 					},
 				],
 				callback: this.actionCallback.bind(this),
@@ -586,6 +583,7 @@ class CueTimerInstance extends InstanceBase {
 						label: 'Time span to be added in minutes',
 						id: 'Key',
 						default: '1',
+						useVariables: true,
 					},
 				],
 				callback: this.actionCallback.bind(this),
@@ -598,6 +596,7 @@ class CueTimerInstance extends InstanceBase {
 						label: 'Time span to be subtracted in minutes',
 						id: 'Key',
 						default: '1',
+						useVariables: true,
 					},
 				],
 				callback: this.actionCallback.bind(this),
@@ -695,7 +694,7 @@ class CueTimerInstance extends InstanceBase {
 			// For all other actions, we use the actionId as the command
 			cmd = action.actionId
 			if (action.options) {
-				cmd += '#' + await this.parseVariablesInString(action.options.Key)
+				cmd += '#' + action.options.Key
 			}
 		}
 
@@ -711,25 +710,25 @@ class CueTimerInstance extends InstanceBase {
 	variables() {
 		var self = this
 
-		var variables = [
-			{ name: 'Hours', variableId: 'hours' },
-			{ name: 'Minutes', variableId: 'minutes' },
-			{ name: 'Seconds', variableId: 'seconds' },
-			{ name: 'Name', variableId: 'name' },
-			{ name: 'Speed', variableId: 'speed' },
-			{ name: 'End Time', variableId: 'endTime' },
-			{ name: 'Next Timer Name', variableId: 'nextTimerName' },
-			{ name: 'Next Timer Duration', variableId: 'nextTimerDuration' },
-			{ name: 'Schedule Offset', variableId: 'scheduleOffset' },
-			{ name: 'Schedule Offset Status', variableId: 'scheduleOffsetStatus' },
-		]
-
-		for (let x in self.timers) {
-			variables.push({ name: `Timer ${x} Name`, variableId: `timer_${x}_name` })
-			variables.push({ name: `Timer ${x} Duration`, variableId: `timer_${x}_duration` })
+		var variables = {
+			hours: { name: 'Hours' },
+			minutes: { name: 'Minutes' },
+			seconds: { name: 'Seconds' },
+			name: { name: 'Name' },
+			speed: { name: 'Speed' },
+			endTime: { name: 'End Time' },
+			nextTimerName: { name: 'Next Timer Name' },
+			nextTimerDuration: { name: 'Next Timer Duration' },
+			scheduleOffset: { name: 'Schedule Offset' },
+			scheduleOffsetStatus: { name: 'Schedule Offset Status' },
 		}
 
-		variables = variables.concat(self.getListVariablesDefinitions())
+		for (let x in self.timers) {
+			variables[`timer_${sanitizeVariable(x)}_name`] = { name: `Timer ${x} Name` }
+			variables[`timer_${sanitizeVariable(x)}_duration`] = { name: `Timer ${x} Duration` }
+		}
+
+		Object.assign(variables, self.getListVariablesDefinitions())
 		
 		self.setVariableDefinitions(variables)
 	}
@@ -742,6 +741,7 @@ class CueTimerInstance extends InstanceBase {
 				name: 'Main counter Colors from timer',
 				description: 'Foreground and background colors of the timer',
 				options: [],
+				affectedProperties: ['color', 'bgcolor'],
 				callback: function (_feedback) {
 					return { color: self.fgColor, bgcolor: self.bgColor }
 				},
@@ -784,6 +784,7 @@ class CueTimerInstance extends InstanceBase {
 				type: 'advanced',
 				name: 'ID timer Name',
 				description: 'Timer Name with ID',
+				affectedProperties: ['text'],
 				options: [
 					{
 						type: 'textinput',
@@ -803,6 +804,7 @@ class CueTimerInstance extends InstanceBase {
 				type: 'advanced',
 				name: 'ID timer Duration',
 				description: 'Timer Duration with ID',
+				affectedProperties: ['text'],
 				options: [
 					{
 						type: 'textinput',
@@ -822,6 +824,7 @@ class CueTimerInstance extends InstanceBase {
 				type: 'advanced',
 				name: 'ID timer Background',
 				description: 'Timer Background with ID',
+				affectedProperties: ['bgcolor'],
 				options: [
 					{
 						type: 'textinput',
@@ -866,7 +869,8 @@ class CueTimerInstance extends InstanceBase {
 
 	presets() {
 		var self = this
-		self.setPresetDefinitions(presets.getPresets(self.label))
+		const { structure, presets } = getPresets(self.label)
+		self.setPresetDefinitions(structure, presets)
 	}
 
 	async destroy() {
@@ -911,5 +915,3 @@ class MessageBuffer {
 		return message
 	}
 }
-
-runEntrypoint(CueTimerInstance, upgradeScripts)

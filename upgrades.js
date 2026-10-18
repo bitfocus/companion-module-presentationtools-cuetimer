@@ -1,4 +1,4 @@
-module.exports = [
+export const UpgradeScripts = [
 
 	function list_new_config_field (context, props) {
 

@@ -2,6 +2,8 @@
 
 Controls CueTimer by [PresentationTools](https://presentationtools.com/).
 
+Requires Companion 5.1 or later. Older Companion versions can keep using module version 2.2.x.
+
 ## Configuration
 
 - IP address of the computer running CueTimer for local use 127.0.0.1.
@@ -59,6 +61,7 @@ Variables can be used by putting $(instancename:variablename) e.g. $(cuetimer:ho
 - listNumber: The number of the list associated with the current instance
 - listGUID: The GUID of the list associated with the current instance
 - list_x_name: Number-prefixed name for each list (e.g., list_1_name: 1 - ABC)
+- timer_X_name / timer_X_duration: name and duration of the timer with ID X. Characters other than letters, digits, `-`, `_`, `.` and `!` are removed from the ID (e.g. `timer_AB_name` for the ID `A B`)
 
 
 ## Feedback:
