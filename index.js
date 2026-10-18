@@ -5,6 +5,49 @@ import { UpgradeScripts } from './upgrades.js'
 
 export { UpgradeScripts }
 
+const TERMINATOR = '$'
+
+/**
+ * Build the command string for an action, always ending in exactly one terminator.
+ * Returns null when nothing should be sent.
+ */
+export function buildCommand(action, ctx) {
+	const options = action.options ?? {}
+	const log = ctx.log ?? (() => {})
+
+	if (action.actionId === 'ActivateThisList') {
+		if (ctx.config?.list) return `ActivateListByGUID#${ctx.config.list}${TERMINATOR}`
+		log('debug', 'No list configured, nothing to activate')
+		return null
+	}
+
+	if (action.actionId === 'ActivateListByNumber') {
+		const selection = options.Key
+		if (selection === 'Previous') {
+			log('debug', 'Activating previous list')
+			return `ActivatePreviousList${TERMINATOR}`
+		}
+		if (selection === 'Next') {
+			log('debug', 'Activating next list')
+			return `ActivateNextList${TERMINATOR}`
+		}
+		const listIndex = parseInt(selection, 10) - 1
+		const lists = ctx.lists ?? []
+		if (Number.isInteger(listIndex) && listIndex >= 0 && listIndex < lists.length) {
+			const listGuid = lists[listIndex].guid
+			log('debug', `Activating list by index ${listIndex + 1} with GUID: ${listGuid}`)
+			return `ActivateListByGUID#${listGuid}${TERMINATOR}`
+		}
+		log('warn', `List index ${listIndex + 1} is out of range or lists not available`)
+		return null
+	}
+
+	// For all other actions the actionId is the command, optionally followed by #<Key>
+	let cmd = action.actionId
+	if (options.Key !== undefined && options.Key !== null) cmd += `#${options.Key}`
+	return cmd + TERMINATOR
+}
+
 export default class CueTimerInstance extends InstanceBase {
 	constructor(internal) {
 		super(internal)
@@ -86,7 +129,7 @@ export default class CueTimerInstance extends InstanceBase {
 
 		if (self.socket !== undefined && self.socket.isConnected) {
 			self.log('debug', `selectList: ${list}`)
-			self.socket.send(`select_list#${list}$`)
+			self.socket.send(`select_list#${list}${TERMINATOR}`)
 		} else {
 			self.log('debug', 'Socket not connected, cannot select list')
 		}
@@ -691,49 +734,18 @@ export default class CueTimerInstance extends InstanceBase {
 	}
 
 	async actionCallback(action) {
-		var cmd = ''
-		var terminationChar = '$'
+		const cmd = buildCommand(action, {
+			config: this.config,
+			lists: this.lists,
+			log: (level, message) => this.log(level, message),
+		})
+		if (!cmd) return
 
-		if (action.actionId === 'ActivateThisList') {
-			if (this.config.list && this.config.list !== '') {
-				cmd = `ActivateListByGUID#${this.config.list}${terminationChar}`
-			}
-		}
-		else if (action.actionId === 'ActivateListByNumber') {
-			const selection = action.options.Key
-			
-			if (selection === 'Previous') {
-				cmd = `ActivatePreviousList${terminationChar}`
-				this.log('debug', 'Activating previous list')
-			} else if (selection === 'Next') {
-				cmd = `ActivateNextList${terminationChar}`
-				this.log('debug', 'Activating next list')
-			} else {
-				const listIndex = parseInt(selection) - 1 // Convert to 0-based index
-				if (this.lists && this.lists.length > listIndex && listIndex >= 0) {
-					const listGuid = this.lists[listIndex].guid
-					cmd = `ActivateListByGUID#${listGuid}${terminationChar}`
-					this.log('debug', `Activating list by index ${listIndex + 1} with GUID: ${listGuid}`)
-				} else {
-					this.log('warn', `List index ${listIndex + 1} is out of range or lists not available`)
-					return
-				}
-			}
-		} 
-		else{
-			// For all other actions, we use the actionId as the command
-			cmd = action.actionId
-			if (action.options) {
-				cmd += '#' + action.options.Key
-			}
-		}
-
-		cmd += terminationChar
-		if (cmd !== undefined && cmd != terminationChar) {
-			if (this.socket !== undefined && this.socket.isConnected) {
-				this.log('debug', `Sending ${cmd}`)
-				this.socket.send(cmd)
-			}
+		if (this.socket !== undefined && this.socket.isConnected) {
+			this.log('debug', `Sending ${cmd}`)
+			this.socket.send(cmd)
+		} else {
+			this.log('debug', `Socket not connected, cannot send ${cmd}`)
 		}
 	}
 
