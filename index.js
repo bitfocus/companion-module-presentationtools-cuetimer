@@ -385,12 +385,6 @@ export function getVariableDefinitions(ctx) {
 export default class CueTimerInstance extends InstanceBase {
 	constructor(internal) {
 		super(internal)
-
-		String.prototype.lpad = function (padString, length) {
-			var str = this
-			while (str.length < length) str = padString + str
-			return str
-		}
 	}
 
 	hexToRgb(hex) {
@@ -402,6 +396,13 @@ export default class CueTimerInstance extends InstanceBase {
 		self.log('debug', `configUpdated`)
 
 		self.config = config
+
+		// Reset state before the definitions are built, so they do not reflect the previous config
+		self.bgColor = combineRgb(0, 0, 0)
+		self.fgColor = combineRgb(255, 255, 255)
+		self.buttonStates = emptyButtonStates()
+		self.lists = []
+		self.timers = {}
 
 		self.initTCP()
 		self.actions()
@@ -423,15 +424,10 @@ export default class CueTimerInstance extends InstanceBase {
 			listName: '',
 			listNumber: config.list,
 		})
-		self.bgColor = combineRgb(0, 0, 0)
-		self.fgColor = combineRgb(255, 255, 255)
-		self.buttonStates = emptyButtonStates()
-		self.lists = []
-		self.timers = {}
 	}
 
 	async init(config) {
-		this.configUpdated(config);
+		await this.configUpdated(config)
 	}
 
 	compareKeys(a, b) {
@@ -465,7 +461,7 @@ export default class CueTimerInstance extends InstanceBase {
 
 		if (self.config.host && self.config.port) {
 			self.receiveBuffer = new MessageBuffer()
-			self.socket = new TCPHelper(self.config.host, self.config.port)
+			self.socket = new TCPHelper(self.config.host, parseInt(self.config.port, 10))
 
 			// TCPHelper reconnects on its own; mirror its status into the connection status
 			self.socket.on('status_change', (status, message) => self.updateStatus(status, message))
