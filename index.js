@@ -48,6 +48,340 @@ export function buildCommand(action, ctx) {
 	return cmd + TERMINATOR
 }
 
+
+export function hexToRgb(hex) {
+	const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+	return result
+		? {
+				r: parseInt(result[1], 16),
+				g: parseInt(result[2], 16),
+				b: parseInt(result[3], 16),
+			}
+		: null
+}
+
+const MAX_LIST_CHOICES = 10
+const VARIABLE_ID_REGEX = /^[a-zA-Z0-9-_.!]+$/
+const BUTTON_STATE_KEYS = [
+	'Fullscreen',
+	'Preview',
+	'Presenter',
+	'NDI',
+	'Message',
+	'STM',
+	'Clock',
+	'Pause',
+	'Blackout',
+	'MultitimerPreview',
+	'MultitimerFullscreen',
+	'MultitimerNDI',
+]
+
+function emptyButtonStates() {
+	return Object.fromEntries(BUTTON_STATE_KEYS.map((key) => [key, false]))
+}
+
+export function getListNumberedChoices(ctx, includePreviousAndNext = false) {
+	const result = []
+
+	if (ctx.config?.list === '' && includePreviousAndNext) {
+		result.push({ id: 'Previous', label: 'Previous List' })
+		result.push({ id: 'Next', label: 'Next List' })
+	}
+
+	for (let i = 1; i <= MAX_LIST_CHOICES; i++) {
+		const title = ctx.lists?.[i - 1]?.title
+		result.push({ id: String(i), label: title !== undefined ? `${i} - ${title}` : `${i} - ` })
+	}
+
+	return result
+}
+
+function getListsChoices(lists) {
+	const result = (lists ?? []).map((item, index) => ({
+		id: item.guid,
+		label: `${index + 1}- ${item.title}`,
+	}))
+
+	// Placeholders so a list can be chosen before the first telemetry arrives
+	while (result.length < MAX_LIST_CHOICES) {
+		const index = result.length + 1
+		result.push({ id: String(index), label: `${index}- ` })
+	}
+
+	return result
+}
+
+// ─── Definitions (exported for tests; `ctx` is the instance or a stub) ──────
+
+function stateOption() {
+	return {
+		type: 'dropdown',
+		label: 'State',
+		id: 'Key',
+		default: 'toggle',
+		choices: [
+			{ id: 'on', label: 'On' },
+			{ id: 'off', label: 'Off' },
+			{ id: 'toggle', label: 'Toggle' },
+		],
+	}
+}
+
+function textOption(label, defaultValue) {
+	return {
+		type: 'textinput',
+		label,
+		id: 'Key',
+		default: defaultValue,
+		useVariables: true,
+	}
+}
+
+export function getActionDefinitions(ctx) {
+	const callback = (action) => ctx.actionCallback(action)
+	const simple = (name) => ({ name, options: [], callback })
+	const withState = (name) => ({ name, options: [stateOption()], callback })
+
+	return {
+		FireNext: simple('Start'),
+		CueNext: simple('Stop'),
+		CueCurrent: simple('Stop and go back'),
+		Pause: simple('Pause'),
+		Restart: simple('Restart'),
+		Undo: simple('Undo'),
+		AddSpeed: simple('Increase speed by 5%'),
+		SubSpeed: simple('Decrease speed by 5%'),
+		AddMinute: simple('Add 1 minute'),
+		SubMinute: simple('Subtract 1 minute'),
+		Blackout: simple('Blackout'),
+		Fullscreen: withState('Fullscreen'),
+		Preview: withState('Preview'),
+		Presenter: withState('Presenter'),
+		NDI: simple('NDI'),
+		Message: simple('Message'),
+		Clock: simple('Clock'),
+		STM: simple('Single Timer Mode'),
+		MultitimerPreview: withState('Multitimer Preview'),
+		MultitimerFullscreen: withState('Multitimer Fullscreen'),
+		MultitimerNDI: simple('Multitimer NDI'),
+		MoveNextUp: simple('Move Next Up'),
+		MoveNextDown: simple('Move Next Down'),
+		FireTimerWithID: {
+			name: 'Start timer with ID',
+			options: [textOption('ID', '1')],
+			callback,
+		},
+		CueTimerWithID: {
+			name: 'Cue Timer with ID',
+			options: [textOption('ID', '1')],
+			callback,
+		},
+		SetDuration: {
+			name: 'Set Duration',
+			options: [textOption('New duration (hh:mm:ss)', '00:10:00')],
+			callback,
+		},
+		AddXMinutes: {
+			name: 'Add X Minutes',
+			options: [textOption('Time span to be added in minutes', '1')],
+			callback,
+		},
+		SubXMinutes: {
+			name: 'Subtract X Minutes',
+			options: [textOption('Time span to be subtracted in minutes', '1')],
+			callback,
+		},
+		InitList: simple('Initialize List'),
+		InitEndTimeTimer: {
+			name: 'Initialize and start a new EndTime timer',
+			options: [textOption('EndTime hh:mm:ss', '')],
+			callback,
+		},
+		ActivateNextList: {
+			name: 'Activate next list',
+			description: 'Activate the next list',
+			options: [],
+			callback,
+		},
+		ActivatePreviousList: {
+			name: 'Activate previous list',
+			description: 'Activate the previous list',
+			options: [],
+			callback,
+		},
+		ActivateThisList: {
+			name: 'Activate this list',
+			description: 'Activate the list with the GUID set in the configuration settings',
+			options: [],
+			callback,
+		},
+		ActivateListByNumber: {
+			name: 'Activate list by number',
+			description: 'Activate a specific list by its number',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'List Selection',
+					id: 'Key',
+					default: '1',
+					choices: getListNumberedChoices(ctx, true),
+				},
+			],
+			callback,
+		},
+	}
+}
+
+export function getFeedbackDefinitions(ctx) {
+	const idOption = {
+		type: 'textinput',
+		label: 'ID',
+		id: 'Key',
+		default: '1',
+	}
+
+	return {
+		colors: {
+			type: 'advanced',
+			name: 'Main counter Colors from timer',
+			description: 'Foreground and background colors of the timer',
+			options: [],
+			affectedProperties: ['color', 'bgcolor'],
+			callback: () => ({ color: ctx.fgColor, bgcolor: ctx.bgColor }),
+		},
+		status: {
+			type: 'boolean',
+			name: 'Main counter Background Color',
+			description: 'Background color of button, based on its status',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Source',
+					id: 'Key',
+					default: 'Fullscreen',
+					choices: [
+						{ id: 'Fullscreen', label: 'Fullscreen' },
+						{ id: 'Preview', label: 'Preview' },
+						{ id: 'Presenter', label: 'Presenter' },
+						{ id: 'NDI', label: 'NDI' },
+						{ id: 'Message', label: 'Message' },
+						{ id: 'STM', label: 'Single Timer Mode' },
+						{ id: 'Clock', label: 'Clock' },
+						{ id: 'Pause', label: 'Pause' },
+						{ id: 'Blackout', label: 'Blackout' },
+						{ id: 'MultitimerPreview', label: 'Multitimer Preview' },
+						{ id: 'MultitimerFullscreen', label: 'Multitimer Fullscreen' },
+						{ id: 'MultitimerNDI', label: 'Multitimer NDI' },
+					],
+				},
+			],
+			defaultStyle: {
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(255, 165, 0),
+			},
+			callback: (feedback) => !!ctx.buttonStates[feedback.options.Key],
+		},
+		timerName: {
+			type: 'advanced',
+			name: 'ID timer Name',
+			description: 'Timer Name with ID',
+			options: [idOption],
+			affectedProperties: ['text'],
+			callback: (feedback) => {
+				const timer = ctx.timers[feedback.options.Key]
+				return timer ? { text: timer.name } : {}
+			},
+		},
+		timerDuration: {
+			type: 'advanced',
+			name: 'ID timer Duration',
+			description: 'Timer Duration with ID',
+			options: [idOption],
+			affectedProperties: ['text'],
+			callback: (feedback) => {
+				const timer = ctx.timers[feedback.options.Key]
+				return timer ? { text: timer.duration } : {}
+			},
+		},
+		timerBackground: {
+			type: 'advanced',
+			name: 'ID timer Background',
+			description: 'Timer Background with ID',
+			options: [idOption],
+			affectedProperties: ['bgcolor'],
+			callback: (feedback) => {
+				const timer = ctx.timers[feedback.options.Key]
+				const rgb = timer ? hexToRgb(String(timer.bg).substr(1)) : null
+				return { bgcolor: rgb ? combineRgb(rgb.r, rgb.g, rgb.b) : combineRgb(0, 0, 0) }
+			},
+		},
+		activeList: {
+			type: 'boolean',
+			name: 'Active List',
+			description: 'If list is active, change the style',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'List Number',
+					id: 'Key',
+					default: '1',
+					choices: getListNumberedChoices(ctx),
+				},
+			],
+			defaultStyle: {
+				color: combineRgb(255, 255, 255),
+				bgcolor: '#9A9A00',
+			},
+			callback: (feedback) => {
+				const targetIndex = parseInt(feedback.options.Key, 10)
+				return !!ctx.lists?.[targetIndex - 1]?.isActive
+			},
+		},
+	}
+}
+
+export function getListVariableDefinitions(lists) {
+	const variables = {
+		listName: { name: 'List Name' },
+		listNumber: { name: 'List Number' },
+		listGUID: { name: 'List GUID' },
+		listDisplayLink: { name: 'List Display Link' },
+		listControlLink: { name: 'List Control Link' },
+	}
+
+	for (let i = 1; i <= (lists?.length ?? 0); i++) {
+		variables[`list_${i}_name`] = { name: `List ${i} Name` }
+		variables[`list_${i}_display_link`] = { name: `List ${i} Display Link` }
+		variables[`list_${i}_control_link`] = { name: `List ${i} Control Link` }
+	}
+
+	return variables
+}
+
+export function getVariableDefinitions(ctx) {
+	const variables = {
+		hours: { name: 'Hours' },
+		minutes: { name: 'Minutes' },
+		seconds: { name: 'Seconds' },
+		name: { name: 'Name' },
+		speed: { name: 'Speed' },
+		endTime: { name: 'End Time' },
+		nextTimerName: { name: 'Next Timer Name' },
+		nextTimerDuration: { name: 'Next Timer Duration' },
+		scheduleOffset: { name: 'Schedule Offset' },
+		scheduleOffsetStatus: { name: 'Schedule Offset Status' },
+	}
+
+	for (const visibleId of Object.keys(ctx.timers ?? {})) {
+		const base = sanitizeVariable(visibleId)
+		variables[`timer_${base}_name`] = { name: `Timer ${visibleId} Name` }
+		variables[`timer_${base}_duration`] = { name: `Timer ${visibleId} Duration` }
+	}
+
+	return { ...variables, ...getListVariableDefinitions(ctx.lists) }
+}
+
 export default class CueTimerInstance extends InstanceBase {
 	constructor(internal) {
 		super(internal)
@@ -60,14 +394,7 @@ export default class CueTimerInstance extends InstanceBase {
 	}
 
 	hexToRgb(hex) {
-		var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-		return result
-			? {
-					r: parseInt(result[1], 16),
-					g: parseInt(result[2], 16),
-					b: parseInt(result[3], 16),
-			  }
-			: null
+		return hexToRgb(hex)
 	}
 
 	async configUpdated(config) {
@@ -98,20 +425,7 @@ export default class CueTimerInstance extends InstanceBase {
 		})
 		self.bgColor = combineRgb(0, 0, 0)
 		self.fgColor = combineRgb(255, 255, 255)
-		self.buttonStates = {
-			Fullscreen: false,
-			Preview: false,
-			Presenter: false,
-			NDI: false,
-			Message: false,
-			STM: false,
-			Clock: false,
-			Pause: false,
-			Blackout: false,
-			MultitimerPreview: false,
-			MultitimerFullscreen: false,
-			MultitimerNDI: false,
-		}
+		self.buttonStates = emptyButtonStates()
 		self.lists = []
 		self.timers = {}
 	}
@@ -262,18 +576,9 @@ export default class CueTimerInstance extends InstanceBase {
 			if (tempBg) self.bgColor = combineRgb(tempBg.r, tempBg.g, tempBg.b)
 		}
 
-		self.buttonStates['Fullscreen'] = jsonData['Fullscreen']
-		self.buttonStates['Preview'] = jsonData['Preview']
-		self.buttonStates['Presenter'] = jsonData['Presenter']
-		self.buttonStates['NDI'] = jsonData['NDI']
-		self.buttonStates['Message'] = jsonData['Message']
-		self.buttonStates['STM'] = jsonData['STM']
-		self.buttonStates['Clock'] = jsonData['Clock']
-		self.buttonStates['Pause'] = jsonData['Pause']
-		self.buttonStates['Blackout'] = jsonData['Blackout']
-		self.buttonStates['MultitimerPreview'] = jsonData['MultitimerPreview']
-		self.buttonStates['MultitimerFullscreen'] = jsonData['MultitimerFullscreen']
-		self.buttonStates['MultitimerNDI'] = jsonData['MultitimerNDI']
+		for (const key of BUTTON_STATE_KEYS) {
+			self.buttonStates[key] = jsonData[key]
+		}
 		self.setVariableValues({
 			nextTimerName: jsonData.nextTimerName,
 			nextTimerDuration: jsonData.nextTimerDuration,
@@ -299,28 +604,6 @@ export default class CueTimerInstance extends InstanceBase {
 		}
 
 		self.checkFeedbacks('colors', 'status', 'timerName', 'timerDuration', 'timerBackground')
-	}
-
-	getListVariablesDefinitions() {
-		let self = this
-		let variables = {
-			listName: { name: 'List Name' },
-			listNumber: { name: 'List Number' },
-			listGUID: { name: 'List GUID' },
-			listDisplayLink: { name: 'List Display Link' },
-			listControlLink: { name: 'List Control Link' },
-		}
-
-		// Loop over self.lists and add variables for each list
-		if (self.lists && self.lists.length > 0) {
-			for (let i = 0; i < self.lists.length; i++) {
-				variables[`list_${i + 1}_name`] = { name: `List ${i + 1} Name` }
-				variables[`list_${i + 1}_display_link`] = { name: `List ${i + 1} Display Link` }
-				variables[`list_${i + 1}_control_link`] = { name: `List ${i + 1} Control Link` }
-			}
-		}
-		
-		return variables
 	}
 
 	updateListVariablesValues(listNumber) {
@@ -350,52 +633,6 @@ export default class CueTimerInstance extends InstanceBase {
 		return /^-?\d+$/.test(str);
 	}
 
-	getListsChoises(arr) {
-		let result = []
-		if(arr){
-			result = arr.map((item, index) => ({
-				id: item.guid,
-				label: `${index + 1}- ${item.title}`
-			}));
-		}
-
-		// Add placeholders if the array has less than 10 items
-		while (result.length < 10) {
-			const index = result.length + 1;
-			result.push({
-				id: index.toString(),
-				label: `${index}- `
-			});
-		}
-
-		return result;
-	}
-
-	getListNumberedChoices(includePreviousAndNext = false) {
-		let result = []
-
-		if(this.config.list == '' && includePreviousAndNext){
-			result.push({ id: 'Previous', label: 'Previous List' })
-			result.push({ id: 'Next', label: 'Next List' })
-		}
-
-		// Add numbered list options (1-10) with names if available
-		for (let i = 1; i <= 10; i++) {
-			let label = `${i}`
-			if (this.lists && this.lists[i - 1]) {
-				label = `${i} - ${this.lists[i - 1]?.title}`
-			} else {
-				label = `${i} - `
-			}
-			result.push({
-				id: i.toString(),
-				label: label
-			})
-		}
-
-		return result
-	}
-
 	getConfigFields() {
 		return [
 			{
@@ -411,7 +648,7 @@ export default class CueTimerInstance extends InstanceBase {
 				label: 'List Number',
 				default: '1',
 				width: 12,
-				choices: [{id: '', label: 'Active List'}].concat(this.getListsChoises(this.lists))
+				choices: [{ id: '', label: 'Active List' }].concat(getListsChoices(this.lists)),
 			},
 			{
 				type: 'textinput',
@@ -442,295 +679,12 @@ export default class CueTimerInstance extends InstanceBase {
 		]
 	}
 
+	getListNumberedChoices(includePreviousAndNext = false) {
+		return getListNumberedChoices(this, includePreviousAndNext)
+	}
+
 	actions() {
-		let actions = {
-			FireNext: {
-				name: 'Start',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-			CueNext: {
-				name: 'Stop',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-			CueCurrent: {
-				name: 'Stop and go back',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-			Pause: {
-				name: 'Pause',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-			Restart: {
-				name: 'Restart',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-			Undo: {
-				name: 'Undo',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-			AddSpeed: {
-				name: 'Increase speed by 5%',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-			SubSpeed: {
-				name: 'Decrease speed by 5%',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-			AddMinute: {
-				name: 'Add 1 minute',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-			SubMinute: {
-				name: 'Subtract 1 minute',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-			Blackout: {
-				name: 'Blackout',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-			Fullscreen: {
-				name: 'Fullscreen',
-				options: [{
-					type: 'dropdown',
-					label: 'State',
-					id: 'Key',
-					default: 'toggle',
-					choices: [
-						{id: "on", label: "On"},
-						{id: "off", label: "Off"},
-						{id: "toggle", label: "Toggle"},
-					],
-				}],
-				callback: this.actionCallback.bind(this),
-			},
-			Preview: {
-				name: 'Preview',
-				options: [{
-					type: 'dropdown',
-					label: 'State',
-					id: 'Key',
-					default: 'toggle',
-					choices: [
-						{id: "on", label: "On"},
-						{id: "off", label: "Off"},
-						{id: "toggle", label: "Toggle"},
-					],
-				}],
-				callback: this.actionCallback.bind(this),
-			},
-			Presenter: {
-				name: 'Presenter',
-				options: [{
-					type: 'dropdown',
-					label: 'State',
-					id: 'Key',
-					default: 'toggle',
-					choices: [
-						{id: "on", label: "On"},
-						{id: "off", label: "Off"},
-						{id: "toggle", label: "Toggle"},
-					],
-				}],
-				callback: this.actionCallback.bind(this),
-			},
-			NDI: {
-				name: 'NDI',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-			Message: {
-				name: 'Message',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-			Clock: {
-				name: 'Clock',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-			STM: {
-				name: 'Single Timer Mode',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-			MultitimerPreview: {
-				name: 'Multitimer Preview',
-				options: [{
-					type: 'dropdown',
-					label: 'State',
-					id: 'Key',
-					default: 'toggle',
-					choices: [
-						{id: "on", label: "On"},
-						{id: "off", label: "Off"},
-						{id: "toggle", label: "Toggle"},
-					],
-				}],
-				callback: this.actionCallback.bind(this),
-			},
-			MultitimerFullscreen: {
-				name: 'Multitimer Fullscreen',
-				options: [{
-					type: 'dropdown',
-					label: 'State',
-					id: 'Key',
-					default: 'toggle',
-					choices: [
-						{id: "on", label: "On"},
-						{id: "off", label: "Off"},
-						{id: "toggle", label: "Toggle"},
-					],
-				}],
-				callback: this.actionCallback.bind(this),
-			},
-			MultitimerNDI: {
-				name: 'Multitimer NDI',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-			MoveNextUp: {
-				name: 'Move Next Up',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-			MoveNextDown: {
-				name: 'Move Next Down',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-			FireTimerWithID: {
-				name: 'Start timer with ID',
-				options: [
-					{
-						type: 'textinput',
-						label: 'ID',
-						id: 'Key',
-						default: '1',
-						useVariables: true,
-					},
-				],
-				callback: this.actionCallback.bind(this),
-			},
-			CueTimerWithID: {
-				name: 'Cue Timer with ID',
-				options: [
-					{
-						type: 'textinput',
-						label: 'ID',
-						id: 'Key',
-						default: '1',
-						useVariables: true,
-					},
-				],
-				callback: this.actionCallback.bind(this),
-			},
-			SetDuration: {
-				name: 'Set Duration',
-				options: [
-					{
-						type: 'textinput',
-						label: 'New duration (hh:mm:ss)',
-						id: 'Key',
-						default: '00:10:00',
-						useVariables: true,
-					},
-				],
-				callback: this.actionCallback.bind(this),
-			},
-			AddXMinutes: {
-				name: 'Add X Minutes',
-				options: [
-					{
-						type: 'textinput',
-						label: 'Time span to be added in minutes',
-						id: 'Key',
-						default: '1',
-						useVariables: true,
-					},
-				],
-				callback: this.actionCallback.bind(this),
-			},
-			SubXMinutes: {
-				name: 'Subtract X Minutes',
-				options: [
-					{
-						type: 'textinput',
-						label: 'Time span to be subtracted in minutes',
-						id: 'Key',
-						default: '1',
-						useVariables: true,
-					},
-				],
-				callback: this.actionCallback.bind(this),
-			},
-			InitList: {
-				name: 'Initialize List',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-			InitEndTimeTimer: {
-				name: 'Initialize and start a new EndTime timer',
-				options: [
-					{
-						type: 'textinput',
-						label: 'EndTime hh:mm:ss',
-						id: 'Key',
-						default: '',
-						useVariables: true,
-					},
-				],
-				callback: this.actionCallback.bind(this),
-			},
-
-			ActivateNextList: {
-				name: 'Activate next list',
-				description: 'Activate the next list',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-
-			ActivatePreviousList: {
-				name: 'Activate previous list',
-				description: 'Activate the previous list',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-
-			ActivateThisList: {
-				name: 'Activate this list',
-				description: 'Activate the list with the GUID set in the configuration settings',
-				options: [],
-				callback: this.actionCallback.bind(this),
-			},
-
-			ActivateListByNumber: {
-				name: 'Activate list by number',
-				description: 'Activate a specific list by its number',
-				options: [
-					{
-						type: 'dropdown',
-						label: 'List Selection',
-						id: 'Key',
-						default: '1',
-						choices: this.getListNumberedChoices(true),
-					},
-				],
-				callback: this.actionCallback.bind(this),
-			},
-		}
-
-		this.setActionDefinitions(actions)
+		this.setActionDefinitions(getActionDefinitions(this))
 	}
 
 	async actionCallback(action) {
@@ -750,163 +704,11 @@ export default class CueTimerInstance extends InstanceBase {
 	}
 
 	variables() {
-		var self = this
-
-		var variables = {
-			hours: { name: 'Hours' },
-			minutes: { name: 'Minutes' },
-			seconds: { name: 'Seconds' },
-			name: { name: 'Name' },
-			speed: { name: 'Speed' },
-			endTime: { name: 'End Time' },
-			nextTimerName: { name: 'Next Timer Name' },
-			nextTimerDuration: { name: 'Next Timer Duration' },
-			scheduleOffset: { name: 'Schedule Offset' },
-			scheduleOffsetStatus: { name: 'Schedule Offset Status' },
-		}
-
-		for (let x in self.timers) {
-			variables[`timer_${sanitizeVariable(x)}_name`] = { name: `Timer ${x} Name` }
-			variables[`timer_${sanitizeVariable(x)}_duration`] = { name: `Timer ${x} Duration` }
-		}
-
-		Object.assign(variables, self.getListVariablesDefinitions())
-		
-		self.setVariableDefinitions(variables)
+		this.setVariableDefinitions(getVariableDefinitions(this))
 	}
 
 	feedbacks() {
-		var self = this
-		var feedbacks = {
-			colors: {
-				type: 'advanced',
-				name: 'Main counter Colors from timer',
-				description: 'Foreground and background colors of the timer',
-				options: [],
-				affectedProperties: ['color', 'bgcolor'],
-				callback: function (_feedback) {
-					return { color: self.fgColor, bgcolor: self.bgColor }
-				},
-			},
-			status: {
-				type: 'boolean',
-				name: 'Main counter Background Color',
-				description: 'Background color of button, based on its status',
-				options: [
-					{
-						type: 'dropdown',
-						label: 'Source',
-						id: 'Key',
-						default: 'Fullscreen',
-						choices: [
-							{ id: 'Fullscreen', label: 'Fullscreen' },
-							{ id: 'Preview', label: 'Preview' },
-							{ id: 'Presenter', label: 'Presenter' },
-							{ id: 'NDI', label: 'NDI' },
-							{ id: 'Message', label: 'Message' },
-							{ id: 'STM', label: 'Single Timer Mode' },
-							{ id: 'Clock', label: 'Clock' },
-							{ id: 'Pause', label: 'Pause' },
-							{ id: 'Blackout', label: 'Blackout' },
-							{ id: 'MultitimerPreview', label: 'Multitimer Preview' },
-							{ id: 'MultitimerFullscreen', label: 'Multitimer Fullscreen' },
-							{ id: 'MultitimerNDI', label: 'Multitimer NDI' },
-						],
-					},
-				],
-				defaultStyle: {
-					color: combineRgb(255, 255, 255),
-					bgcolor: combineRgb(255, 165, 0),
-				},
-				callback: function (feedback) {
-					return self.buttonStates[feedback.options.Key]
-				},
-			},
-			timerName: {
-				type: 'advanced',
-				name: 'ID timer Name',
-				description: 'Timer Name with ID',
-				affectedProperties: ['text'],
-				options: [
-					{
-						type: 'textinput',
-						label: 'ID',
-						id: 'Key',
-						default: '1',
-					},
-				],
-				callback: function (feedback) {
-					if (feedback.options.Key in self.timers) {
-						return { text: self.timers[feedback.options.Key].name }
-					}
-					return {}
-				},
-			},
-			timerDuration: {
-				type: 'advanced',
-				name: 'ID timer Duration',
-				description: 'Timer Duration with ID',
-				affectedProperties: ['text'],
-				options: [
-					{
-						type: 'textinput',
-						label: 'ID',
-						id: 'Key',
-						default: '1',
-					},
-				],
-				callback: function (feedback) {
-					if (feedback.options.Key in self.timers) {
-						return { text: self.timers[feedback.options.Key].duration }
-					}
-					return {}
-				},
-			},
-			timerBackground: {
-				type: 'advanced',
-				name: 'ID timer Background',
-				description: 'Timer Background with ID',
-				affectedProperties: ['bgcolor'],
-				options: [
-					{
-						type: 'textinput',
-						label: 'ID',
-						id: 'Key',
-						default: '1',
-					},
-				],
-				callback: function (feedback) {
-					if (feedback.options.Key in self.timers) {
-						let tempBg = self.hexToRgb(self.timers[feedback.options.Key].bg.substr(1))
-						return { bgcolor: combineRgb(tempBg.r, tempBg.g, tempBg.b) }
-					}
-					return { bgcolor: combineRgb(0, 0, 0) }
-				},
-			},
-			activeList: {
-				type: 'boolean',
-				name: 'Active List',
-				description: 'If list is active, change the style',
-				options: [
-					{
-						type: 'dropdown',
-						label: 'List Number',
-						id: 'Key',
-						default: '1',
-						choices: self.getListNumberedChoices(),
-					},
-				],
-				defaultStyle: {
-					color: combineRgb(255, 255, 255),
-					bgcolor: '#9A9A00',
-				},
-				callback: function (feedback) {
-					const targetIndex = parseInt(feedback.options.Key)
-					return self.lists[targetIndex - 1]?.isActive
-				},
-			},
-		}
-		self.setFeedbackDefinitions(feedbacks)
+		this.setFeedbackDefinitions(getFeedbackDefinitions(this))
 	}
 
 	presets() {
