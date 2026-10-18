@@ -22,7 +22,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'FireNext' }],
+							down: [{ actionId: 'FireNext', options: {} }],
 							up: [],
 						},
 					],
@@ -44,7 +44,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'CueNext' }],
+							down: [{ actionId: 'CueNext', options: {} }],
 							up: [],
 						},
 					],
@@ -66,7 +66,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'Pause' }],
+							down: [{ actionId: 'Pause', options: {} }],
 							up: [],
 						},
 					],
@@ -99,7 +99,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'Restart' }],
+							down: [{ actionId: 'Restart', options: {} }],
 							up: [],
 						},
 					],
@@ -121,7 +121,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'Undo' }],
+							down: [{ actionId: 'Undo', options: {} }],
 							up: [],
 						},
 					],
@@ -143,7 +143,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'AddSpeed' }],
+							down: [{ actionId: 'AddSpeed', options: {} }],
 							up: [],
 						},
 					],
@@ -165,7 +165,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'SubSpeed' }],
+							down: [{ actionId: 'SubSpeed', options: {} }],
 							up: [],
 						},
 					],
@@ -187,7 +187,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'AddMinute' }],
+							down: [{ actionId: 'AddMinute', options: {} }],
 							up: [],
 						},
 					],
@@ -209,7 +209,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'SubMinute' }],
+							down: [{ actionId: 'SubMinute', options: {} }],
 							up: [],
 						},
 					],
@@ -231,7 +231,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'Blackout' }],
+							down: [{ actionId: 'Blackout', options: {} }],
 							up: [],
 						},
 					],
@@ -264,7 +264,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'Clock' }],
+							down: [{ actionId: 'Clock', options: {} }],
 							up: [],
 						},
 					],
@@ -297,7 +297,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'Message' }],
+							down: [{ actionId: 'Message', options: {} }],
 							up: [],
 						},
 					],
@@ -483,7 +483,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'MultitimerNDI' }],
+							down: [{ actionId: 'MultitimerNDI', options: {} }],
 							up: [],
 						},
 					],
@@ -512,7 +512,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'NDI' }],
+							down: [{ actionId: 'NDI', options: {} }],
 							up: [],
 						},
 					],
@@ -541,7 +541,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'STM' }],
+							down: [{ actionId: 'STM', options: {} }],
 							up: [],
 						},
 					],
@@ -567,10 +567,12 @@ export function getPresets(instanceLabel) {
 						png64: icons.Up,
 						pngalignment: 'center:center',
 						text: '',
+						size: 14,
+						color: 16777215,
 					},
 					steps: [
 						{
-							down: [{ actionId: 'MoveNextUp' }],
+							down: [{ actionId: 'MoveNextUp', options: {} }],
 							up: [],
 						},
 					],
@@ -585,10 +587,12 @@ export function getPresets(instanceLabel) {
 						png64: icons.Down,
 						pngalignment: 'center:center',
 						text: '',
+						size: 14,
+						color: 16777215,
 					},
 					steps: [
 						{
-							down: [{ actionId: 'MoveNextDown' }],
+							down: [{ actionId: 'MoveNextDown', options: {} }],
 							up: [],
 						},
 					],
@@ -683,12 +687,12 @@ export function getPresets(instanceLabel) {
 
 						text: 'Stop and go back',
 						alignment: 'center:bottom',
-						size: '8',
+						size: 7,
 						color: 16777215,
 					},
 					steps: [
 						{
-							down: [{ actionId: 'CueCurrent' }],
+							down: [{ actionId: 'CueCurrent', options: {} }],
 							up: [],
 						},
 					],
@@ -781,7 +785,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'InitList' }],
+							down: [{ actionId: 'InitList', options: {} }],
 							up: [],
 						},
 					],
@@ -805,7 +809,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'ActivatePreviousList' }],
+							down: [{ actionId: 'ActivatePreviousList', options: {} }],
 							up: [],
 						},
 					],
@@ -823,7 +827,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'ActivateNextList' }],
+							down: [{ actionId: 'ActivateNextList', options: {} }],
 							up: [],
 						},
 					],
@@ -855,6 +859,7 @@ export function getPresets(instanceLabel) {
 					feedbacks: [
 						{
 							feedbackId: 'colors',
+							options: {},
 						},
 					],
 				},
@@ -877,6 +882,7 @@ export function getPresets(instanceLabel) {
 					feedbacks: [
 						{
 							feedbackId: 'colors',
+							options: {},
 						},
 					],
 				},
@@ -899,6 +905,7 @@ export function getPresets(instanceLabel) {
 					feedbacks: [
 						{
 							feedbackId: 'colors',
+							options: {},
 						},
 					],
 				},
@@ -922,6 +929,7 @@ export function getPresets(instanceLabel) {
 					feedbacks: [
 						{
 							feedbackId: 'colors',
+							options: {},
 						},
 					],
 				},
@@ -1059,7 +1067,7 @@ function listPresets(instanceLabel) {
 			},
 			steps: [
 				{
-					down: [{ actionId: 'ActivateListByNumber', options: { Key: i } }],
+					down: [{ actionId: 'ActivateListByNumber', options: { Key: String(i) } }],
 					up: [],
 				},
 			],
@@ -1067,7 +1075,7 @@ function listPresets(instanceLabel) {
 				{
 					feedbackId: 'activeList',
 					options: {
-						Key: i,
+						Key: String(i),
 					},
 					style: {
 						color: 16777215,
