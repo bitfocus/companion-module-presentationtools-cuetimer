@@ -48,7 +48,6 @@ export function buildCommand(action, ctx) {
 	return cmd + TERMINATOR
 }
 
-
 export function hexToRgb(hex) {
 	const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
 	return result
@@ -445,10 +444,12 @@ export default class CueTimerInstance extends InstanceBase {
 		}
 	}
 
-	isListChanged(jsonData){
-		return JSON.stringify(this.lists) != JSON.stringify(jsonData.lists) || 
-				jsonData.listNumber != this.getVariableValue('listNumber') ||
-				jsonData.listGUID != this.getVariableValue('listGUID')
+	isListChanged(jsonData) {
+		return (
+			JSON.stringify(this.lists) != JSON.stringify(jsonData.lists) ||
+			jsonData.listNumber != this.getVariableValue('listNumber') ||
+			jsonData.listGUID != this.getVariableValue('listGUID')
+		)
 	}
 
 	initTCP() {
@@ -476,7 +477,7 @@ export default class CueTimerInstance extends InstanceBase {
 				// Fresh buffer per connection so a partial frame or decoder state never survives a reconnect
 				self.receiveBuffer = new MessageBuffer()
 			})
-			
+
 			self.socket.on('data', (chunk) => {
 				self.receiveBuffer.push(chunk)
 				for (const message of self.receiveBuffer.extractMessages()) {
@@ -490,7 +491,6 @@ export default class CueTimerInstance extends InstanceBase {
 			self.updateStatus(InstanceStatus.BadConfig, 'Host and port are required')
 		}
 	}
-
 
 	handleTelemetry(message) {
 		let jsonData
@@ -511,42 +511,37 @@ export default class CueTimerInstance extends InstanceBase {
 	applyTelemetry(jsonData) {
 		var self = this
 
-
-		if(jsonData.lists && self.isListChanged(jsonData)){
-			self.log('debug', `Lists changed, updating lists ${JSON.stringify(jsonData.lists)}`)						
+		if (jsonData.lists && self.isListChanged(jsonData)) {
+			self.log('debug', `Lists changed, updating lists ${JSON.stringify(jsonData.lists)}`)
 			self.lists = jsonData.lists
-				
-				if(self.isIntegerString(self.config.list)){
-					// If the config.list is an integer string, it means it was set to a placeholder list
-					self.log('debug', `Selected list is a placeholder list with index: ${self.config.list}`)
-					if(self.lists.length >= parseInt(self.config.list)){
-						// Found the current index in the new list - update config to new GUID
-						self.log('debug', `Selected placeholder list found at index: ${self.config.list}`)
-						self.config.list = self.lists[parseInt(self.config.list) - 1].guid
-						self.saveConfig(self.config)
-					}
+
+			if (self.isIntegerString(self.config.list)) {
+				// If the config.list is an integer string, it means it was set to a placeholder list
+				self.log('debug', `Selected list is a placeholder list with index: ${self.config.list}`)
+				if (self.lists.length >= parseInt(self.config.list)) {
+					// Found the current index in the new list - update config to new GUID
+					self.log('debug', `Selected placeholder list found at index: ${self.config.list}`)
+					self.config.list = self.lists[parseInt(self.config.list) - 1].guid
+					self.saveConfig(self.config)
 				}
-				
-				if(self.config.list == '' || self.lists.findIndex(item => item.guid === self.config.list) != -1){
-					
-					if(self.config.list == '' || self.config.list != jsonData.listGUID){
-						self.selectList(self.config.list)
-						self.updateStatus(InstanceStatus.Ok)
-					}
+			}
+
+			if (self.config.list == '' || self.lists.findIndex((item) => item.guid === self.config.list) != -1) {
+				if (self.config.list == '' || self.config.list != jsonData.listGUID) {
+					self.selectList(self.config.list)
+					self.updateStatus(InstanceStatus.Ok)
 				}
-				else{
-					self.updateStatus(
-						InstanceStatus.UnknownWarning, 
-						`Selected list not found, active list will be used`)
-				}
-			
+			} else {
+				self.updateStatus(InstanceStatus.UnknownWarning, `Selected list not found, active list will be used`)
+			}
+
 			self.variables()
 			self.updateListVariablesValues(jsonData.listNumber)
 			self.actions()
 			self.feedbacks()
 			self.checkFeedbacks('activeList')
 		}
-		
+
 		let hours = (jsonData.h < 0 ? '+' : '') + jsonData.h.replace('-', '')
 
 		let minutes = (jsonData.m < 0 ? '+' : '') + jsonData.m.replace('-', '')
@@ -606,12 +601,11 @@ export default class CueTimerInstance extends InstanceBase {
 		var self = this
 
 		let listIndex = listNumber - 1
-		self.setVariableValues({listNumber: listNumber })
-		self.setVariableValues({listName: self.lists[listIndex]?.title })
-		self.setVariableValues({listGUID: self.lists[listIndex]?.guid })
-		self.setVariableValues({listDisplayLink: self.lists[listIndex]?.displayLink ?? '' })
-		self.setVariableValues({listControlLink: self.lists[listIndex]?.controlLink ?? '' })
-		
+		self.setVariableValues({ listNumber: listNumber })
+		self.setVariableValues({ listName: self.lists[listIndex]?.title })
+		self.setVariableValues({ listGUID: self.lists[listIndex]?.guid })
+		self.setVariableValues({ listDisplayLink: self.lists[listIndex]?.displayLink ?? '' })
+		self.setVariableValues({ listControlLink: self.lists[listIndex]?.controlLink ?? '' })
 
 		// Update list variables
 		if (self.lists && self.lists.length > 0) {
@@ -626,7 +620,7 @@ export default class CueTimerInstance extends InstanceBase {
 	}
 
 	isIntegerString(str) {
-		return /^-?\d+$/.test(str);
+		return /^-?\d+$/.test(str)
 	}
 
 	getConfigFields() {
@@ -667,11 +661,12 @@ export default class CueTimerInstance extends InstanceBase {
 				id: 'info-defaultport',
 				width: 12,
 				label: 'Port',
-				value: '<p>Check that the port in CueTimer matches the target port shown here. ' +
-				'To change the default port in CueTimer, go to Preferences/Triggers/Companion. '+
-				'We recommend using port 31601 for connection. If this port is not available, try something else in the same range.</p>' +
-				'<p>For CueTimer v.3.2 and below: In the list selection, choose “Active list”</p>',
-			}
+				value:
+					'<p>Check that the port in CueTimer matches the target port shown here. ' +
+					'To change the default port in CueTimer, go to Preferences/Triggers/Companion. ' +
+					'We recommend using port 31601 for connection. If this port is not available, try something else in the same range.</p>' +
+					'<p>For CueTimer v.3.2 and below: In the list selection, choose “Active list”</p>',
+			},
 		]
 	}
 

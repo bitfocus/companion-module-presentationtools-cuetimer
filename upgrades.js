@@ -1,7 +1,5 @@
 export const UpgradeScripts = [
-
-	function list_new_config_field (context, props) {
-
+	function list_new_config_field(context, props) {
 		const result = {
 			updatedConfig: null,
 			updatedActions: [],
@@ -10,10 +8,10 @@ export const UpgradeScripts = [
 
 		// write your script in here
 
-        if(props.config !== null && props.config.list === undefined) {
-            props.config.list = '1'
-            result.updatedConfig = props.config
-        }
+		if (props.config !== null && props.config.list === undefined) {
+			props.config.list = '1'
+			result.updatedConfig = props.config
+		}
 
 		return result
 	},

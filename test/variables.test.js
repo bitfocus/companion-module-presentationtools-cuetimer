@@ -22,7 +22,23 @@ test('timer ids with unsupported characters are sanitised to valid ids', () => {
 
 test('the fixed variables are always present', () => {
 	const defs = getVariableDefinitions({ timers: {}, lists: [] })
-	for (const id of ['hours', 'minutes', 'seconds', 'name', 'speed', 'endTime', 'nextTimerName', 'nextTimerDuration', 'scheduleOffset', 'scheduleOffsetStatus', 'listName', 'listNumber', 'listGUID', 'listDisplayLink', 'listControlLink']) {
+	for (const id of [
+		'hours',
+		'minutes',
+		'seconds',
+		'name',
+		'speed',
+		'endTime',
+		'nextTimerName',
+		'nextTimerDuration',
+		'scheduleOffset',
+		'scheduleOffsetStatus',
+		'listName',
+		'listNumber',
+		'listGUID',
+		'listDisplayLink',
+		'listControlLink',
+	]) {
 		assert.ok(defs[id], id)
 	}
 })

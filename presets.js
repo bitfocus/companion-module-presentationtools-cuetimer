@@ -322,13 +322,13 @@ export function getPresets(instanceLabel) {
 						text: 'FullScreen',
 						alignment: 'center:bottom',
 						png64: icons.Fullscreen,
-						pngalignment: "center:center",
+						pngalignment: 'center:center',
 						size: '14',
 						color: 16777215,
 					},
 					steps: [
 						{
-							down: [{ actionId: 'Fullscreen', options: {Key: 'toggle'}}],
+							down: [{ actionId: 'Fullscreen', options: { Key: 'toggle' } }],
 							up: [],
 						},
 					],
@@ -353,13 +353,13 @@ export function getPresets(instanceLabel) {
 						text: 'Preview window',
 						alignment: 'center:bottom',
 						png64: icons.Preview,
-						pngalignment: "center:center",
+						pngalignment: 'center:center',
 						size: '14',
 						color: 16777215,
 					},
 					steps: [
 						{
-							down: [{ actionId: 'Preview', options: {Key: 'toggle'} }],
+							down: [{ actionId: 'Preview', options: { Key: 'toggle' } }],
 							up: [],
 						},
 					],
@@ -384,13 +384,13 @@ export function getPresets(instanceLabel) {
 						text: 'Presenter window',
 						alignment: 'center:bottom',
 						png64: icons.Presenter,
-						pngalignment: "center:center",
+						pngalignment: 'center:center',
 						size: '14',
 						color: 16777215,
 					},
 					steps: [
 						{
-							down: [{ actionId: 'Presenter', options: {Key: 'toggle'} }],
+							down: [{ actionId: 'Presenter', options: { Key: 'toggle' } }],
 							up: [],
 						},
 					],
@@ -421,7 +421,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'MultitimerPreview', options: {Key: 'toggle'} }],
+							down: [{ actionId: 'MultitimerPreview', options: { Key: 'toggle' } }],
 							up: [],
 						},
 					],
@@ -452,7 +452,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'MultitimerFullscreen', options: {Key: 'toggle'} }],
+							down: [{ actionId: 'MultitimerFullscreen', options: { Key: 'toggle' } }],
 							up: [],
 						},
 					],
