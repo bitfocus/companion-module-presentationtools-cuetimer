@@ -110,12 +110,14 @@ export default class CueTimerInstance extends InstanceBase {
 			self.receiveBuffer = new MessageBuffer()
 			self.socket = new TCPHelper(self.config.host, self.config.port)
 
-			self.socket.on('error', (_err) => {
-				self.updateStatus(InstanceStatus.UnknownError)
+			// TCPHelper reconnects on its own; mirror its status into the connection status
+			self.socket.on('status_change', (status, message) => self.updateStatus(status, message))
+
+			self.socket.on('error', (err) => {
+				self.log('debug', `Socket error: ${err.message}`)
 			})
 
 			self.socket.on('connect', () => {
-				self.updateStatus(InstanceStatus.Ok)
 				self.log('debug', `Connected to ${self.config.host}:${self.config.port}`)
 				self.lists = []
 				// Fresh buffer per connection so a partial frame or decoder state never survives a reconnect
@@ -131,6 +133,8 @@ export default class CueTimerInstance extends InstanceBase {
 			self.socket.on('end', function () {
 				self.log('debug', 'end')
 			})
+		} else {
+			self.updateStatus(InstanceStatus.BadConfig, 'Host and port are required')
 		}
 	}
 
