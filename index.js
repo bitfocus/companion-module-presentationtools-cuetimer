@@ -60,7 +60,6 @@ export function hexToRgb(hex) {
 }
 
 const MAX_LIST_CHOICES = 10
-const VARIABLE_ID_REGEX = /^[a-zA-Z0-9-_.!]+$/
 const BUTTON_STATE_KEYS = [
 	'Fullscreen',
 	'Preview',
