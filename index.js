@@ -1,3 +1,4 @@
+import { StringDecoder } from 'node:string_decoder'
 import { InstanceBase, Regex, TCPHelper, combineRgb, InstanceStatus, sanitizeVariable } from '@companion-module/base'
 import { getPresets } from './presets.js'
 import { UpgradeScripts } from './upgrades.js'
@@ -106,6 +107,7 @@ export default class CueTimerInstance extends InstanceBase {
 		}
 
 		if (self.config.host && self.config.port) {
+			self.receiveBuffer = new MessageBuffer()
 			self.socket = new TCPHelper(self.config.host, self.config.port)
 
 			self.socket.on('error', (_err) => {
@@ -116,116 +118,140 @@ export default class CueTimerInstance extends InstanceBase {
 				self.updateStatus(InstanceStatus.Ok)
 				self.log('debug', `Connected to ${self.config.host}:${self.config.port}`)
 				self.lists = []
+				// Fresh buffer per connection so a partial frame or decoder state never survives a reconnect
+				self.receiveBuffer = new MessageBuffer()
 			})
 			
-			self.socket.on('data', (data) => {
-				let received = new MessageBuffer('$')
-				received.push(data)
-				let message = received.handleData()
-
-				try {
-					let jsonData = JSON.parse(message)
-
-					if(jsonData.lists && self.isListChanged(jsonData)){
-						self.log('debug', `Lists changed, updating lists ${JSON.stringify(jsonData.lists)}`)						
-						self.lists = jsonData.lists
-							
-							if(self.isIntegerString(self.config.list)){
-								// If the config.list is an integer string, it means it was set to a placeholder list
-								self.log('debug', `Selected list is a placeholder list with index: ${self.config.list}`)
-								if(self.lists.length >= parseInt(self.config.list)){
-									// Found the current index in the new list - update config to new GUID
-									self.log('debug', `Selected placeholder list found at index: ${self.config.list}`)
-									self.config.list = self.lists[parseInt(self.config.list) - 1].guid
-									self.saveConfig(self.config)
-								}
-							}
-							
-							if(self.config.list == '' || self.lists.findIndex(item => item.guid === self.config.list) != -1){
-								
-								if(self.config.list == '' || self.config.list != jsonData.listGUID){
-									self.selectList(self.config.list)
-									self.updateStatus(InstanceStatus.Ok)
-								}
-							}
-							else{
-								self.updateStatus(
-									InstanceStatus.UnknownWarning, 
-									`Selected list not found, active list will be used`)
-							}
-						
-						self.variables()
-						self.updateListVariablesValues(jsonData.listNumber)
-						self.actions()
-						self.feedbacks()
-						self.checkFeedbacks('activeList')
-					}
-					
-					let hours = (jsonData.h < 0 ? '+' : '') + jsonData.h.replace('-', '')
-
-					let minutes = (jsonData.m < 0 ? '+' : '') + jsonData.m.replace('-', '')
-
-					let seconds = (jsonData.s < 0 ? '+' : '') + jsonData.s.replace('-', '')
-
-					self.setVariableValues({
-						hours: hours,
-						minutes: minutes,
-						seconds: seconds,
-						speed: jsonData.speed,
-						name: jsonData.name,
-						endTime: jsonData.endTime,
-					})
-
-					let tempFg = self.hexToRgb(jsonData.fg.substr(0, 1) + jsonData.fg.substr(3))
-					self.fgColor = combineRgb(tempFg.r, tempFg.g, tempFg.b)
-					let tempBg = self.hexToRgb(jsonData.bg.substr(0, 1) + jsonData.bg.substr(3))
-					self.bgColor = combineRgb(tempBg.r, tempBg.g, tempBg.b)
-
-					self.buttonStates['Fullscreen'] = jsonData['Fullscreen']
-					self.buttonStates['Preview'] = jsonData['Preview']
-					self.buttonStates['Presenter'] = jsonData['Presenter']
-					self.buttonStates['NDI'] = jsonData['NDI']
-					self.buttonStates['Message'] = jsonData['Message']
-					self.buttonStates['STM'] = jsonData['STM']
-					self.buttonStates['Clock'] = jsonData['Clock']
-					self.buttonStates['Pause'] = jsonData['Pause']
-					self.buttonStates['Blackout'] = jsonData['Blackout']
-					self.buttonStates['MultitimerPreview'] = jsonData['MultitimerPreview']
-					self.buttonStates['MultitimerFullscreen'] = jsonData['MultitimerFullscreen']
-					self.buttonStates['MultitimerNDI'] = jsonData['MultitimerNDI']
-					self.setVariableValues({
-						nextTimerName: jsonData.nextTimerName,
-						nextTimerDuration: jsonData.nextTimerDuration,
-						scheduleOffset: jsonData.scheduleOffset,
-						scheduleOffsetStatus: jsonData.scheduleOffsetStatus,
-					})
-
-					let updateVariablesFlag = false
-					if (!this.compareKeys(self.timers, jsonData.timers)) {
-						updateVariablesFlag = true
-					}
-
-					self.timers = jsonData.timers
-
-					if (updateVariablesFlag) self.variables()
-
-					for (let x in self.timers) {
-						self.setVariableValues({
-							[`timer_${sanitizeVariable(x)}_name`]: self.timers[x].name,
-							[`timer_${sanitizeVariable(x)}_duration`]: self.timers[x].duration,
-						})
-					}
-
-					self.checkFeedbacks('colors', 'status', 'timerName', 'timerDuration', 'timerBackground')
-				} catch (e) {
-					console.error(e.message)
-					return
+			self.socket.on('data', (chunk) => {
+				self.receiveBuffer.push(chunk)
+				for (const message of self.receiveBuffer.extractMessages()) {
+					self.handleTelemetry(message)
 				}
 			})
 			self.socket.on('end', function () {
 				self.log('debug', 'end')
 			})
 		}
+	}
+
+
+	handleTelemetry(message) {
+		let jsonData
+		try {
+			jsonData = JSON.parse(message)
+		} catch (e) {
+			this.log('debug', `Ignoring malformed telemetry frame: ${e.message}`)
+			return
+		}
+
+		try {
+			this.applyTelemetry(jsonData)
+		} catch (e) {
+			this.log('debug', `Failed to apply telemetry: ${e.message}`)
+		}
+	}
+
+	applyTelemetry(jsonData) {
+		var self = this
+
+
+		if(jsonData.lists && self.isListChanged(jsonData)){
+			self.log('debug', `Lists changed, updating lists ${JSON.stringify(jsonData.lists)}`)						
+			self.lists = jsonData.lists
+				
+				if(self.isIntegerString(self.config.list)){
+					// If the config.list is an integer string, it means it was set to a placeholder list
+					self.log('debug', `Selected list is a placeholder list with index: ${self.config.list}`)
+					if(self.lists.length >= parseInt(self.config.list)){
+						// Found the current index in the new list - update config to new GUID
+						self.log('debug', `Selected placeholder list found at index: ${self.config.list}`)
+						self.config.list = self.lists[parseInt(self.config.list) - 1].guid
+						self.saveConfig(self.config)
+					}
+				}
+				
+				if(self.config.list == '' || self.lists.findIndex(item => item.guid === self.config.list) != -1){
+					
+					if(self.config.list == '' || self.config.list != jsonData.listGUID){
+						self.selectList(self.config.list)
+						self.updateStatus(InstanceStatus.Ok)
+					}
+				}
+				else{
+					self.updateStatus(
+						InstanceStatus.UnknownWarning, 
+						`Selected list not found, active list will be used`)
+				}
+			
+			self.variables()
+			self.updateListVariablesValues(jsonData.listNumber)
+			self.actions()
+			self.feedbacks()
+			self.checkFeedbacks('activeList')
+		}
+		
+		let hours = (jsonData.h < 0 ? '+' : '') + jsonData.h.replace('-', '')
+
+		let minutes = (jsonData.m < 0 ? '+' : '') + jsonData.m.replace('-', '')
+
+		let seconds = (jsonData.s < 0 ? '+' : '') + jsonData.s.replace('-', '')
+
+		self.setVariableValues({
+			hours: hours,
+			minutes: minutes,
+			seconds: seconds,
+			speed: jsonData.speed,
+			name: jsonData.name,
+			endTime: jsonData.endTime,
+		})
+
+		// Colours arrive as #AARRGGBB; drop the alpha byte
+		if (typeof jsonData.fg === 'string') {
+			let tempFg = self.hexToRgb(jsonData.fg.substr(0, 1) + jsonData.fg.substr(3))
+			if (tempFg) self.fgColor = combineRgb(tempFg.r, tempFg.g, tempFg.b)
+		}
+		if (typeof jsonData.bg === 'string') {
+			let tempBg = self.hexToRgb(jsonData.bg.substr(0, 1) + jsonData.bg.substr(3))
+			if (tempBg) self.bgColor = combineRgb(tempBg.r, tempBg.g, tempBg.b)
+		}
+
+		self.buttonStates['Fullscreen'] = jsonData['Fullscreen']
+		self.buttonStates['Preview'] = jsonData['Preview']
+		self.buttonStates['Presenter'] = jsonData['Presenter']
+		self.buttonStates['NDI'] = jsonData['NDI']
+		self.buttonStates['Message'] = jsonData['Message']
+		self.buttonStates['STM'] = jsonData['STM']
+		self.buttonStates['Clock'] = jsonData['Clock']
+		self.buttonStates['Pause'] = jsonData['Pause']
+		self.buttonStates['Blackout'] = jsonData['Blackout']
+		self.buttonStates['MultitimerPreview'] = jsonData['MultitimerPreview']
+		self.buttonStates['MultitimerFullscreen'] = jsonData['MultitimerFullscreen']
+		self.buttonStates['MultitimerNDI'] = jsonData['MultitimerNDI']
+		self.setVariableValues({
+			nextTimerName: jsonData.nextTimerName,
+			nextTimerDuration: jsonData.nextTimerDuration,
+			scheduleOffset: jsonData.scheduleOffset,
+			scheduleOffsetStatus: jsonData.scheduleOffsetStatus,
+		})
+
+		let updateVariablesFlag = false
+		const timers = jsonData.timers ?? {}
+		if (!this.compareKeys(self.timers, timers)) {
+			updateVariablesFlag = true
+		}
+
+		self.timers = timers
+
+		if (updateVariablesFlag) self.variables()
+
+		for (let x in self.timers) {
+			self.setVariableValues({
+				[`timer_${sanitizeVariable(x)}_name`]: self.timers[x].name,
+				[`timer_${sanitizeVariable(x)}_duration`]: self.timers[x].duration,
+			})
+		}
+
+		self.checkFeedbacks('colors', 'status', 'timerName', 'timerDuration', 'timerBackground')
 	}
 
 	getListVariablesDefinitions() {
@@ -883,35 +909,30 @@ export default class CueTimerInstance extends InstanceBase {
 		self.log('debug', `destroy ${self.id}`)
 	}
 }
-class MessageBuffer {
-	constructor(delimiter) {
+/**
+ * Accumulates raw socket chunks and yields complete `$`-terminated messages.
+ * Uses a StringDecoder so a multibyte character split across two chunks decodes intact.
+ */
+export class MessageBuffer {
+	constructor(delimiter = '$') {
 		this.delimiter = delimiter
+		this.decoder = new StringDecoder('utf8')
 		this.buffer = ''
 	}
 
-	isFinished() {
-		if (this.buffer.length === 0 || this.buffer.indexOf(this.delimiter) === -1) {
-			return true
+	push(chunk) {
+		// decoder.write(), never decoder.end(): end() would flush a split character as U+FFFD
+		this.buffer += Buffer.isBuffer(chunk) ? this.decoder.write(chunk) : String(chunk)
+	}
+
+	extractMessages() {
+		const messages = []
+		let index
+		while ((index = this.buffer.indexOf(this.delimiter)) !== -1) {
+			const message = this.buffer.slice(0, index)
+			this.buffer = this.buffer.slice(index + this.delimiter.length)
+			if (message.length > 0) messages.push(message)
 		}
-		return false
-	}
-
-	push(data) {
-		this.buffer += data
-	}
-
-	getMessage() {
-		const delimiterIndex = this.buffer.indexOf(this.delimiter)
-		if (delimiterIndex !== -1) {
-			const message = this.buffer.slice(0, delimiterIndex)
-			this.buffer = this.buffer.replace(message + this.delimiter, '')
-			return message
-		}
-		return null
-	}
-
-	handleData() {
-		const message = this.getMessage()
-		return message
+		return messages
 	}
 }
