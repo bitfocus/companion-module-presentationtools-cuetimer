@@ -601,6 +601,7 @@ export function getPresets(instanceLabel) {
 				FireTimerWithID: {
 					type: 'simple',
 					name: 'Start with ID',
+					notes: 'Set the ID option to the CueTimer timer ID to start.',
 					style: {
 						bgcolor: 0,
 
@@ -640,6 +641,7 @@ export function getPresets(instanceLabel) {
 				CueTimerWithID: {
 					type: 'simple',
 					name: 'Cue with ID',
+					notes: 'Set the ID option to the CueTimer timer ID to cue.',
 					style: {
 						bgcolor: 0,
 
@@ -701,6 +703,7 @@ export function getPresets(instanceLabel) {
 				SetDuration: {
 					type: 'simple',
 					name: 'Set Duration',
+					notes: 'Set the duration option as hh:mm:ss. Applies to the running timer, or the next one when idle.',
 					style: {
 						bgcolor: 0,
 						text: 'Set Duration',
