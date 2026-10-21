@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { MessageBuffer } from '../index.js'
+import { MessageBuffer } from '../src/main.js'
 
 test('a payload split across chunks is returned once complete', () => {
 	const buffer = new MessageBuffer()

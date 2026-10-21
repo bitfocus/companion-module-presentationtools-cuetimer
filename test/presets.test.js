@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import CueTimerInstance, { getActionDefinitions, getFeedbackDefinitions } from '../index.js'
-import { getPresets } from '../presets.js'
+import CueTimerInstance, { getActionDefinitions, getFeedbackDefinitions } from '../src/main.js'
+import { getPresets } from '../src/presets.js'
 
 const stub = {
 	config: { list: '' },

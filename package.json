@@ -1,7 +1,7 @@
 {
 	"name": "presentationtools-cuetimer",
 	"version": "2.2.2",
-	"main": "index.js",
+	"main": "src/main.js",
 	"type": "module",
 	"prettier": "@companion-module/tools/.prettierrc.json",
 	"scripts": {

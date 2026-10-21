@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { buildCommand } from '../index.js'
+import { buildCommand } from '../src/main.js'
 
 const lists = [{ guid: 'guid-1' }, { guid: 'guid-2' }]
 const logs = []
