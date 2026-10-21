@@ -1,7 +1,5 @@
-import { TERMINATOR } from './message-buffer.js'
 import { getListNumberedChoices } from './choices.js'
-
-// ─── Definitions (exported for tests; `ctx` is the instance or a stub) ──────
+import { TERMINATOR } from './utils.js'
 
 function stateOption() {
 	return {
@@ -27,6 +25,7 @@ function textOption(label, defaultValue) {
 	}
 }
 
+/** @param ctx the instance, or a plain stub with the same fields (tests) */
 export function getActionDefinitions(ctx) {
 	const callback = (action) => ctx.actionCallback(action)
 	const simple = (name) => ({ name, options: [], callback })
@@ -126,7 +125,6 @@ export function getActionDefinitions(ctx) {
  * Build the command string for an action, always ending in exactly one terminator.
  * Returns null when nothing should be sent.
  */
-
 export function buildCommand(action, ctx) {
 	const options = action.options ?? {}
 	const log = ctx.log ?? (() => {})

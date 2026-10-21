@@ -3,7 +3,6 @@ import { sanitizeVariable } from '@companion-module/base'
 const VARIABLE_ID_REGEX = /^[a-zA-Z0-9-_.!]+$/
 
 /** 32-bit FNV-1a over the UTF-8 bytes of `input`, as 8 lowercase zero-padded hex digits */
-
 export function fnv1a32Hex(input) {
 	let hash = 0x811c9dc5
 	for (const byte of Buffer.from(String(input), 'utf8')) {
@@ -18,7 +17,6 @@ export function fnv1a32Hex(input) {
  * Companion only accepts variable ids matching VARIABLE_ID_REGEX; valid IDs are used unchanged,
  * any other ID is sanitised and gets a hash suffix so that "A B", "AB" and "A#B" stay distinct.
  */
-
 export function timerVariableBase(visibleId) {
 	const id = String(visibleId)
 	if (VARIABLE_ID_REGEX.test(id)) return id
@@ -33,7 +31,6 @@ export function timerVariableBase(visibleId) {
  * as a new timer reusing a deleted timer's ID would.
  * @returns {{ bases: Map<string, string>, collisions: { base: string, ids: string[] }[] }}
  */
-
 export function timerVariableMap(rawIds) {
 	const byBase = new Map()
 	for (const rawId of rawIds) {
@@ -70,6 +67,7 @@ export function getListVariableDefinitions(lists) {
 	return variables
 }
 
+/** @param ctx the instance, or a plain stub with the same fields (tests) */
 export function getVariableDefinitions(ctx) {
 	const variables = {
 		hours: { name: 'Hours' },

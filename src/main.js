@@ -1,11 +1,11 @@
 import { InstanceBase, InstanceStatus, Regex, TCPHelper, combineRgb } from '@companion-module/base'
 import { buildCommand, getActionDefinitions } from './actions.js'
-import { getListNumberedChoices, getListsChoices } from './choices.js'
+import { getListsChoices } from './choices.js'
 import { getFeedbackDefinitions } from './feedbacks.js'
-import { MessageBuffer, TERMINATOR } from './message-buffer.js'
+import { MessageBuffer } from './message-buffer.js'
 import { getPresets } from './presets.js'
 import { UpgradeScripts } from './upgrades.js'
-import { BUTTON_STATE_KEYS, emptyButtonStates, hexToRgb } from './utils.js'
+import { BUTTON_STATE_KEYS, TERMINATOR, emptyButtonStates, hexToRgb } from './utils.js'
 import { getVariableDefinitions, timerVariableMap } from './variables.js'
 
 export { UpgradeScripts }
@@ -312,10 +312,6 @@ export default class CueTimerInstance extends InstanceBase {
 					'<p>For CueTimer v.3.2 and below: In the list selection, choose “Active list”</p>',
 			},
 		]
-	}
-
-	getListNumberedChoices(includePreviousAndNext = false) {
-		return getListNumberedChoices(this, includePreviousAndNext)
 	}
 
 	actions() {

@@ -1,7 +1,8 @@
 import { combineRgb } from '@companion-module/base'
 import { getListNumberedChoices } from './choices.js'
-import { hexToRgb } from './utils.js'
+import { BUTTON_STATES, hexToRgb } from './utils.js'
 
+/** @param ctx the instance, or a plain stub with the same fields (tests) */
 export function getFeedbackDefinitions(ctx) {
 	const idOption = {
 		type: 'textinput',
@@ -29,20 +30,7 @@ export function getFeedbackDefinitions(ctx) {
 					label: 'Source',
 					id: 'Key',
 					default: 'Fullscreen',
-					choices: [
-						{ id: 'Fullscreen', label: 'Fullscreen' },
-						{ id: 'Preview', label: 'Preview' },
-						{ id: 'Presenter', label: 'Presenter' },
-						{ id: 'NDI', label: 'NDI' },
-						{ id: 'Message', label: 'Message' },
-						{ id: 'STM', label: 'Single Timer Mode' },
-						{ id: 'Clock', label: 'Clock' },
-						{ id: 'Pause', label: 'Pause' },
-						{ id: 'Blackout', label: 'Blackout' },
-						{ id: 'MultitimerPreview', label: 'Multitimer Preview' },
-						{ id: 'MultitimerFullscreen', label: 'Multitimer Fullscreen' },
-						{ id: 'MultitimerNDI', label: 'Multitimer NDI' },
-					],
+					choices: BUTTON_STATES,
 				},
 			],
 			defaultStyle: {

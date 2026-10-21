@@ -1,14 +1,12 @@
 import { StringDecoder } from 'node:string_decoder'
-
-export const TERMINATOR = '$'
+import { TERMINATOR } from './utils.js'
 
 /**
  * Accumulates raw socket chunks and yields complete `$`-terminated messages.
  * Uses a StringDecoder so a multibyte character split across two chunks decodes intact.
  */
-
 export class MessageBuffer {
-	constructor(delimiter = '$') {
+	constructor(delimiter = TERMINATOR) {
 		this.delimiter = delimiter
 		this.decoder = new StringDecoder('utf8')
 		this.buffer = ''
