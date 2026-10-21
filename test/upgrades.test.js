@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { UpgradeScripts } from '../index.js'
+import { UpgradeScripts } from '../src/upgrades.js'
 
 const [listNewConfigField] = UpgradeScripts
 const context = { currentConfig: {} }

@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import CueTimerInstance, { getActionDefinitions, getFeedbackDefinitions } from '../index.js'
-import { getPresets } from '../presets.js'
+import { getActionDefinitions } from '../src/actions.js'
+import { getFeedbackDefinitions } from '../src/feedbacks.js'
+import { getPresets } from '../src/presets.js'
 
 const stub = {
 	config: { list: '' },
 	lists: [],
 	timers: {},
 	buttonStates: {},
-	getListNumberedChoices: CueTimerInstance.prototype.getListNumberedChoices,
 	actionCallback() {},
 }
 
