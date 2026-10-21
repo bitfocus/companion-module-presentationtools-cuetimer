@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { getListVariableDefinitions, getVariableDefinitions } from '../src/main.js'
+import { getListVariableDefinitions, getVariableDefinitions } from '../src/variables.js'
 
 const HOST_VARIABLE_ID_REGEX = /^([a-zA-Z0-9-_.!]+)$/
 
@@ -53,7 +53,7 @@ test('list variables are produced for each list', () => {
 	assert.equal(Object.keys(getListVariableDefinitions([])).length, 5)
 })
 
-import { fnv1a32Hex, timerVariableBase, timerVariableMap } from '../src/main.js'
+import { fnv1a32Hex, timerVariableBase, timerVariableMap } from '../src/variables.js'
 
 test('fnv1a32Hex is the reference FNV-1a 32-bit hash', () => {
 	assert.equal(fnv1a32Hex(''), '811c9dc5')
