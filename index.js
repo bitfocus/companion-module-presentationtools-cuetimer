@@ -59,6 +59,55 @@ export function hexToRgb(hex) {
 		: null
 }
 
+const VARIABLE_ID_REGEX = /^[a-zA-Z0-9-_.!]+$/
+
+/** 32-bit FNV-1a over the UTF-8 bytes of `input`, as 8 lowercase zero-padded hex digits */
+export function fnv1a32Hex(input) {
+	let hash = 0x811c9dc5
+	for (const byte of Buffer.from(String(input), 'utf8')) {
+		hash ^= byte
+		hash = Math.imul(hash, 0x01000193) >>> 0
+	}
+	return hash.toString(16).padStart(8, '0')
+}
+
+/**
+ * Variable-id base for one raw CueTimer timer ID. Depends on that string only.
+ * Companion only accepts variable ids matching VARIABLE_ID_REGEX; valid IDs are used unchanged,
+ * any other ID is sanitised and gets a hash suffix so that "A B", "AB" and "A#B" stay distinct.
+ */
+export function timerVariableBase(visibleId) {
+	const id = String(visibleId)
+	if (VARIABLE_ID_REGEX.test(id)) return id
+	return `${sanitizeVariable(id, { ' ': '_' })}_${fnv1a32Hex(id)}`
+}
+
+/**
+ * Map every raw timer ID of a frame to its variable-id base.
+ * Timers whose base collides (with each other, or a raw valid ID equal to a derived id) are left out
+ * and reported, so two timers present at the same time never share a variable. The map is stateless:
+ * once a timer is removed, another timer deriving to the same base takes that variable over, exactly
+ * as a new timer reusing a deleted timer's ID would.
+ * @returns {{ bases: Map<string, string>, collisions: { base: string, ids: string[] }[] }}
+ */
+export function timerVariableMap(rawIds) {
+	const byBase = new Map()
+	for (const rawId of rawIds) {
+		const id = String(rawId)
+		const b = timerVariableBase(id)
+		if (!byBase.has(b)) byBase.set(b, [])
+		byBase.get(b).push(id)
+	}
+	const bases = new Map()
+	const collisions = []
+	for (const [b, ids] of byBase) {
+		if (ids.length === 1) bases.set(ids[0], b)
+		else collisions.push({ base: b, ids: [...ids].sort() })
+	}
+	collisions.sort((x, y) => (x.base < y.base ? -1 : x.base > y.base ? 1 : 0))
+	return { bases, collisions }
+}
+
 const MAX_LIST_CHOICES = 10
 const BUTTON_STATE_KEYS = [
 	'Fullscreen',
@@ -371,8 +420,7 @@ export function getVariableDefinitions(ctx) {
 		scheduleOffsetStatus: { name: 'Schedule Offset Status' },
 	}
 
-	for (const visibleId of Object.keys(ctx.timers ?? {})) {
-		const base = sanitizeVariable(visibleId)
+	for (const [visibleId, base] of timerVariableMap(Object.keys(ctx.timers ?? {})).bases) {
 		variables[`timer_${base}_name`] = { name: `Timer ${visibleId} Name` }
 		variables[`timer_${base}_duration`] = { name: `Timer ${visibleId} Duration` }
 	}
@@ -491,6 +539,19 @@ export default class CueTimerInstance extends InstanceBase {
 		}
 	}
 
+	reportTimerCollisions(collisions) {
+		// Warn once per distinct set of collisions, not on every 200 ms frame
+		const key = JSON.stringify(collisions)
+		if (key === this.lastTimerCollisionKey) return
+		this.lastTimerCollisionKey = key
+		for (const { base, ids } of collisions) {
+			this.log(
+				'warn',
+				`Timer IDs ${ids.map((id) => `"${id}"`).join(', ')} map to the same variable id "${base}"; their variables are not published. Rename one of them in CueTimer.`,
+			)
+		}
+	}
+
 	handleTelemetry(message) {
 		let jsonData
 		try {
@@ -586,12 +647,14 @@ export default class CueTimerInstance extends InstanceBase {
 
 		if (updateVariablesFlag) self.variables()
 
-		for (let x in self.timers) {
-			self.setVariableValues({
-				[`timer_${sanitizeVariable(x)}_name`]: self.timers[x].name,
-				[`timer_${sanitizeVariable(x)}_duration`]: self.timers[x].duration,
-			})
+		const { bases, collisions } = timerVariableMap(Object.keys(self.timers))
+		self.reportTimerCollisions(collisions)
+		const timerValues = {}
+		for (const [x, base] of bases) {
+			timerValues[`timer_${base}_name`] = self.timers[x].name
+			timerValues[`timer_${base}_duration`] = self.timers[x].duration
 		}
+		if (Object.keys(timerValues).length > 0) self.setVariableValues(timerValues)
 
 		self.checkFeedbacks('colors', 'status', 'timerName', 'timerDuration', 'timerBackground')
 	}

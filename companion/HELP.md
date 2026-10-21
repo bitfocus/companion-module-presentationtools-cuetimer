@@ -59,7 +59,7 @@ Variables are used as `$(instancename:variablename)`, e.g. `$(cuetimer:hours)`.
 - timer_X_name
 - timer_X_duration
 
-`X` is the timer ID as shown in CueTimer. Characters other than letters, digits, `-`, `_`, `.` and `!` are removed from the ID, for example `timer_AB_name` for the ID `A B`.
+`X` is the timer ID as shown in CueTimer. IDs made only of letters, digits, `-`, `_`, `.` and `!` are used as they are. Any other ID has those characters removed (a space becomes `_`) and gets an 8-character suffix derived from the full ID, for example `timer_A_B_546d26b2_name` for the ID `A B`. If two timers still end up with the same variable id, neither is published and the connection log names the IDs to rename.
 
 ##### Lists
 
