@@ -22,7 +22,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'FireNext' }],
+							down: [{ actionId: 'FireNext', options: {} }],
 							up: [],
 						},
 					],
@@ -44,7 +44,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'CueNext' }],
+							down: [{ actionId: 'CueNext', options: {} }],
 							up: [],
 						},
 					],
@@ -66,7 +66,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'Pause' }],
+							down: [{ actionId: 'Pause', options: {} }],
 							up: [],
 						},
 					],
@@ -99,7 +99,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'Restart' }],
+							down: [{ actionId: 'Restart', options: {} }],
 							up: [],
 						},
 					],
@@ -121,7 +121,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'Undo' }],
+							down: [{ actionId: 'Undo', options: {} }],
 							up: [],
 						},
 					],
@@ -143,7 +143,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'AddSpeed' }],
+							down: [{ actionId: 'AddSpeed', options: {} }],
 							up: [],
 						},
 					],
@@ -165,7 +165,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'SubSpeed' }],
+							down: [{ actionId: 'SubSpeed', options: {} }],
 							up: [],
 						},
 					],
@@ -187,7 +187,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'AddMinute' }],
+							down: [{ actionId: 'AddMinute', options: {} }],
 							up: [],
 						},
 					],
@@ -209,7 +209,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'SubMinute' }],
+							down: [{ actionId: 'SubMinute', options: {} }],
 							up: [],
 						},
 					],
@@ -231,7 +231,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'Blackout' }],
+							down: [{ actionId: 'Blackout', options: {} }],
 							up: [],
 						},
 					],
@@ -264,7 +264,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'Clock' }],
+							down: [{ actionId: 'Clock', options: {} }],
 							up: [],
 						},
 					],
@@ -297,7 +297,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'Message' }],
+							down: [{ actionId: 'Message', options: {} }],
 							up: [],
 						},
 					],
@@ -322,13 +322,13 @@ export function getPresets(instanceLabel) {
 						text: 'FullScreen',
 						alignment: 'center:bottom',
 						png64: icons.Fullscreen,
-						pngalignment: "center:center",
+						pngalignment: 'center:center',
 						size: '14',
 						color: 16777215,
 					},
 					steps: [
 						{
-							down: [{ actionId: 'Fullscreen', options: {Key: 'toggle'}}],
+							down: [{ actionId: 'Fullscreen', options: { Key: 'toggle' } }],
 							up: [],
 						},
 					],
@@ -353,13 +353,13 @@ export function getPresets(instanceLabel) {
 						text: 'Preview window',
 						alignment: 'center:bottom',
 						png64: icons.Preview,
-						pngalignment: "center:center",
+						pngalignment: 'center:center',
 						size: '14',
 						color: 16777215,
 					},
 					steps: [
 						{
-							down: [{ actionId: 'Preview', options: {Key: 'toggle'} }],
+							down: [{ actionId: 'Preview', options: { Key: 'toggle' } }],
 							up: [],
 						},
 					],
@@ -384,13 +384,13 @@ export function getPresets(instanceLabel) {
 						text: 'Presenter window',
 						alignment: 'center:bottom',
 						png64: icons.Presenter,
-						pngalignment: "center:center",
+						pngalignment: 'center:center',
 						size: '14',
 						color: 16777215,
 					},
 					steps: [
 						{
-							down: [{ actionId: 'Presenter', options: {Key: 'toggle'} }],
+							down: [{ actionId: 'Presenter', options: { Key: 'toggle' } }],
 							up: [],
 						},
 					],
@@ -421,7 +421,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'MultitimerPreview', options: {Key: 'toggle'} }],
+							down: [{ actionId: 'MultitimerPreview', options: { Key: 'toggle' } }],
 							up: [],
 						},
 					],
@@ -452,7 +452,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'MultitimerFullscreen', options: {Key: 'toggle'} }],
+							down: [{ actionId: 'MultitimerFullscreen', options: { Key: 'toggle' } }],
 							up: [],
 						},
 					],
@@ -483,7 +483,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'MultitimerNDI' }],
+							down: [{ actionId: 'MultitimerNDI', options: {} }],
 							up: [],
 						},
 					],
@@ -512,7 +512,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'NDI' }],
+							down: [{ actionId: 'NDI', options: {} }],
 							up: [],
 						},
 					],
@@ -541,7 +541,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'STM' }],
+							down: [{ actionId: 'STM', options: {} }],
 							up: [],
 						},
 					],
@@ -567,10 +567,12 @@ export function getPresets(instanceLabel) {
 						png64: icons.Up,
 						pngalignment: 'center:center',
 						text: '',
+						size: 14,
+						color: 16777215,
 					},
 					steps: [
 						{
-							down: [{ actionId: 'MoveNextUp' }],
+							down: [{ actionId: 'MoveNextUp', options: {} }],
 							up: [],
 						},
 					],
@@ -585,10 +587,12 @@ export function getPresets(instanceLabel) {
 						png64: icons.Down,
 						pngalignment: 'center:center',
 						text: '',
+						size: 14,
+						color: 16777215,
 					},
 					steps: [
 						{
-							down: [{ actionId: 'MoveNextDown' }],
+							down: [{ actionId: 'MoveNextDown', options: {} }],
 							up: [],
 						},
 					],
@@ -597,6 +601,7 @@ export function getPresets(instanceLabel) {
 				FireTimerWithID: {
 					type: 'simple',
 					name: 'Start with ID',
+					notes: 'Set the ID option to the CueTimer timer ID to start.',
 					style: {
 						bgcolor: 0,
 
@@ -636,6 +641,7 @@ export function getPresets(instanceLabel) {
 				CueTimerWithID: {
 					type: 'simple',
 					name: 'Cue with ID',
+					notes: 'Set the ID option to the CueTimer timer ID to cue.',
 					style: {
 						bgcolor: 0,
 
@@ -683,12 +689,12 @@ export function getPresets(instanceLabel) {
 
 						text: 'Stop and go back',
 						alignment: 'center:bottom',
-						size: '8',
+						size: 7,
 						color: 16777215,
 					},
 					steps: [
 						{
-							down: [{ actionId: 'CueCurrent' }],
+							down: [{ actionId: 'CueCurrent', options: {} }],
 							up: [],
 						},
 					],
@@ -697,6 +703,7 @@ export function getPresets(instanceLabel) {
 				SetDuration: {
 					type: 'simple',
 					name: 'Set Duration',
+					notes: 'Set the duration option as hh:mm:ss. Applies to the running timer, or the next one when idle.',
 					style: {
 						bgcolor: 0,
 						text: 'Set Duration',
@@ -781,7 +788,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'InitList' }],
+							down: [{ actionId: 'InitList', options: {} }],
 							up: [],
 						},
 					],
@@ -805,7 +812,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'ActivatePreviousList' }],
+							down: [{ actionId: 'ActivatePreviousList', options: {} }],
 							up: [],
 						},
 					],
@@ -823,7 +830,7 @@ export function getPresets(instanceLabel) {
 					},
 					steps: [
 						{
-							down: [{ actionId: 'ActivateNextList' }],
+							down: [{ actionId: 'ActivateNextList', options: {} }],
 							up: [],
 						},
 					],
@@ -855,6 +862,7 @@ export function getPresets(instanceLabel) {
 					feedbacks: [
 						{
 							feedbackId: 'colors',
+							options: {},
 						},
 					],
 				},
@@ -877,6 +885,7 @@ export function getPresets(instanceLabel) {
 					feedbacks: [
 						{
 							feedbackId: 'colors',
+							options: {},
 						},
 					],
 				},
@@ -899,6 +908,7 @@ export function getPresets(instanceLabel) {
 					feedbacks: [
 						{
 							feedbackId: 'colors',
+							options: {},
 						},
 					],
 				},
@@ -922,6 +932,7 @@ export function getPresets(instanceLabel) {
 					feedbacks: [
 						{
 							feedbackId: 'colors',
+							options: {},
 						},
 					],
 				},
@@ -1059,7 +1070,7 @@ function listPresets(instanceLabel) {
 			},
 			steps: [
 				{
-					down: [{ actionId: 'ActivateListByNumber', options: { Key: i } }],
+					down: [{ actionId: 'ActivateListByNumber', options: { Key: String(i) } }],
 					up: [],
 				},
 			],
@@ -1067,7 +1078,7 @@ function listPresets(instanceLabel) {
 				{
 					feedbackId: 'activeList',
 					options: {
-						Key: i,
+						Key: String(i),
 					},
 					style: {
 						color: 16777215,

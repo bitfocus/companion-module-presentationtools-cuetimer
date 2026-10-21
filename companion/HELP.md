@@ -6,46 +6,42 @@ Requires Companion 5.1 or later. Older Companion versions can keep using module 
 
 ## Configuration
 
-- IP address of the computer running CueTimer for local use 127.0.0.1.
-- Port, the default is 31601.
+- IP address of the computer running CueTimer. For local use 127.0.0.1.
+- Port, the default is 31601. Check that it matches Preferences / Triggers / Companion in CueTimer.
+- List: the CueTimer list this connection follows, or "Active list" to follow whichever list is active.
 
-## Available actions:
+## Available actions
 
-- Fire the next timer
-- Cue next
+- Start (fire the next timer)
+- Stop (cue next)
+- Stop and go back
 - Pause
 - Restart
 - Undo
 - Blackout
-- Add 1 minute
-- Subtract 1 minute
-- Increase speed by 5%
-- Decrease speed by 5%
-- Fullscreen
-- Preview
-- Presenter
+- Add 1 minute / Subtract 1 minute
+- Add X minutes / Subtract X minutes
+- Increase speed by 5% / Decrease speed by 5%
+- Fullscreen, Preview, Presenter (on / off / toggle)
 - NDI
 - Message
 - Single Timer Mode
 - Clock
-- Move next up
-- Move next down
-- Fire timer with ID
-- Cue timer with ID
-- Cue Current
-- Initialize List
-- Set Duration
-- Add X Minutes
-- Subtract X Minutes
-- ActivateNextList
-- ActivatePreviousList
-- ActivateThisList
+- Multitimer Preview, Multitimer Fullscreen (on / off / toggle), Multitimer NDI
+- Move next up / Move next down
+- Start timer with ID / Cue timer with ID
+- Set duration
+- Initialize list
+- Initialize and start a new EndTime timer
+- Activate next list / Activate previous list / Activate this list / Activate list by number
 
-## Variables:
+Text options (ID, duration, minutes, end time) accept Companion variables such as `$(custom:duration)`, and can be switched to expression mode.
 
-Variables can be used by putting $(instancename:variablename) e.g. $(cuetimer:hours)
+## Variables
 
-##### Variables names:
+Variables are used as `$(instancename:variablename)`, e.g. `$(cuetimer:hours)`.
+
+##### Main counter
 
 - hours
 - minutes
@@ -57,41 +53,43 @@ Variables can be used by putting $(instancename:variablename) e.g. $(cuetimer:ho
 - nextTimerDuration
 - scheduleOffset
 - scheduleOffsetStatus
-- listName: The name of the list associated with the current instance (without number prefix)
-- listNumber: The number of the list associated with the current instance
-- listGUID: The GUID of the list associated with the current instance
-- list_x_name: Number-prefixed name for each list (e.g., list_1_name: 1 - ABC)
-- timer_X_name / timer_X_duration: name and duration of the timer with ID X. Characters other than letters, digits, `-`, `_`, `.` and `!` are removed from the ID (e.g. `timer_AB_name` for the ID `A B`)
 
+##### Timers with an ID
 
-## Feedback:
+- timer_X_name
+- timer_X_duration
 
-##### Active timer
+`X` is the timer ID as shown in CueTimer. IDs made only of letters, digits, `-`, `_`, `.` and `!` are used as they are. Any other ID has those characters removed (a space becomes `_`) and gets an 8-character suffix derived from the full ID, for example `timer_A_B_546d26b2_name` for the ID `A B`. If two timers still end up with the same variable id, neither is published and the connection log names the IDs to rename.
 
-- Foreground & Backgroun colors
+##### Lists
 
-##### Status
+- listName: the name of the list this connection follows (without number prefix)
+- listNumber: the number of the list this connection follows
+- listGUID: the GUID of the list this connection follows
+- listDisplayLink / listControlLink: display and control links of that list
+- list_X_name: number-prefixed name of each list (e.g. `list_1_name` = `1 - ABC`)
+- list_X_display_link / list_X_control_link: links of each list
 
-- Orange/Black for on/off
+## Feedbacks
 
-- Available status
+##### Main counter colors from timer
 
-- Fullscreen
-- Preview
-- Presenter
-- NDI
-- Message
-- Single Timer Mode
-- Clock
-- Pause
-- Blackout
+- Foreground and background colors of the running timer
+
+##### Main counter background color (status)
+
+- Orange / black for on / off of: Fullscreen, Preview, Presenter, NDI, Message, Single Timer Mode, Clock, Pause, Blackout, Multitimer Preview, Multitimer Fullscreen, Multitimer NDI
 
 ##### Timer with ID
 
-- timerDuration
-- timerName
-- timerBackground
+- ID timer name
+- ID timer duration
+- ID timer background
 
-## Presets:
+##### Lists
 
-All the Actions, Variables and Feedbacks are available via the Presets tab.
+- Active list: changes the style when the chosen list number is the active one
+
+## Presets
+
+All actions, variables and feedbacks are available from the Presets tab, in the sections Commands, List control and Feedbacks.
