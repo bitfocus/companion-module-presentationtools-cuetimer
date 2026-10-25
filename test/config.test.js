@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { DEFAULT_CLOUD_URL, getConfigFields } from '../src/config.js'
+import { DEFAULT_CLOUD_URL, cloudUrl, getConfigFields } from '../src/config.js'
 
 const fields = getConfigFields({ lists: [] })
 const byId = Object.fromEntries(fields.map((field) => [field.id, field]))
@@ -20,6 +20,12 @@ test('fields follow the "Connect to" choice through expressions, never functions
 test('the Cloud endpoint is not a setting', () => {
 	assert.equal(byId.cloudUrl, undefined)
 	assert.equal(DEFAULT_CLOUD_URL, 'https://backend.cuetimer.io')
+})
+
+test('CUETIMER_CLOUD_URL overrides the Cloud endpoint for development', () => {
+	assert.equal(cloudUrl({}), DEFAULT_CLOUD_URL)
+	assert.equal(cloudUrl({ CUETIMER_CLOUD_URL: '' }), DEFAULT_CLOUD_URL)
+	assert.equal(cloudUrl({ CUETIMER_CLOUD_URL: ' http://localhost:3001 ' }), 'http://localhost:3001')
 })
 
 test('defaults match a fresh app connection', () => {

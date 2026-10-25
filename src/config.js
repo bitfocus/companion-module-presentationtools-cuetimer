@@ -1,8 +1,24 @@
+import { existsSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { Regex } from '@companion-module/base'
 import { getListsChoices } from './choices.js'
 
-/** The CueTimer Cloud engine. Not configurable in the UI; CUETIMER_CLOUD_URL in the environment overrides it for development. */
+// A `.env` file in the module folder (git-ignored, see .env.example) sets CUETIMER_CLOUD_URL for
+// development against a local or staging engine. A packaged module carries no such file.
+const envFile = fileURLToPath(new URL('../.env', import.meta.url))
+try {
+	if (existsSync(envFile)) process.loadEnvFile(envFile)
+} catch {
+	// unreadable file: keep the environment as it is
+}
+
+/** The CueTimer Cloud engine. Not configurable in the UI. */
 export const DEFAULT_CLOUD_URL = 'https://backend.cuetimer.io'
+
+/** The Cloud engine to connect to: CUETIMER_CLOUD_URL from the environment or the .env file, else the fixed endpoint */
+export function cloudUrl(env = process.env) {
+	return String(env.CUETIMER_CLOUD_URL || DEFAULT_CLOUD_URL).trim()
+}
 export const DEFAULT_LAN_PORT = '31609'
 
 /** @param ctx the instance, or a plain stub with the same fields (tests) */

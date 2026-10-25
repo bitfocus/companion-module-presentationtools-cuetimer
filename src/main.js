@@ -1,6 +1,6 @@
 import { InstanceBase, InstanceStatus } from '@companion-module/base'
 import { getActionDefinitions } from './actions.js'
-import { DEFAULT_CLOUD_URL, getConfigFields } from './config.js'
+import { cloudUrl, getConfigFields } from './config.js'
 import { CueTimerConnection } from './connection.js'
 import { buildEngineCommand, isPlaceholderList } from './engine-commands.js'
 import { getFeedbackDefinitions } from './feedbacks.js'
@@ -76,8 +76,8 @@ export default class CueTimerInstance extends InstanceBase {
 		if (config.mode === 'cloud') {
 			const listId = String(config.listId ?? '').trim()
 			if (!listId) return { error: 'A cue list ID is required for CueTimer Cloud' }
-			// The Cloud endpoint is fixed; the environment override exists for the local dev sandbox only.
-			const base = String(process.env.CUETIMER_CLOUD_URL || DEFAULT_CLOUD_URL).trim()
+			// The Cloud endpoint is fixed; CUETIMER_CLOUD_URL (environment or .env file) overrides it for development.
+			const base = cloudUrl()
 			return { base, query: { scheduleKey: listId, name } }
 		}
 		if (!config.host || !config.port) return { error: 'Host and port are required' }
