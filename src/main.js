@@ -1,128 +1,264 @@
-import { InstanceBase, InstanceStatus, Regex, TCPHelper, combineRgb } from '@companion-module/base'
-import { buildCommand, getActionDefinitions } from './actions.js'
-import { getListsChoices } from './choices.js'
+import { InstanceBase, InstanceStatus } from '@companion-module/base'
+import { getActionDefinitions } from './actions.js'
+import { cloudUrl, getConfigFields } from './config.js'
+import { CueTimerConnection } from './connection.js'
+import { buildEngineCommand, isPlaceholderList } from './engine-commands.js'
 import { getFeedbackDefinitions } from './feedbacks.js'
-import { MessageBuffer } from './message-buffer.js'
 import { getPresets } from './presets.js'
+import { capabilitiesForConfig, capabilitiesForMode, emptyState, mapState } from './state.js'
 import { UpgradeScripts } from './upgrades.js'
-import { BUTTON_STATE_KEYS, TERMINATOR, emptyButtonStates, hexToRgb } from './utils.js'
 import { getVariableDefinitions, timerVariableMap } from './variables.js'
 
 export { UpgradeScripts }
 
+/** Every variable without live data, as after a config change or a disconnect */
+function blankVariableValues() {
+	return {
+		hours: '',
+		minutes: '',
+		seconds: '',
+		name: '',
+		speed: '',
+		endTime: '',
+		nextTimerName: '',
+		nextTimerDuration: '',
+		scheduleOffset: '00:00:00',
+		scheduleOffsetStatus: '',
+		listName: '',
+		listNumber: '',
+	}
+}
+
+const STATUS = {
+	ok: InstanceStatus.Ok,
+	connecting: InstanceStatus.Connecting,
+	disconnected: InstanceStatus.Disconnected,
+	connection_failure: InstanceStatus.ConnectionFailure,
+	unknown_error: InstanceStatus.UnknownError,
+}
+
 export default class CueTimerInstance extends InstanceBase {
 	constructor(internal) {
 		super(internal)
-	}
-
-	hexToRgb(hex) {
-		return hexToRgb(hex)
-	}
-
-	async configUpdated(config) {
-		var self = this
-		self.log('debug', `configUpdated`)
-
-		self.config = config
-
-		// Reset state before the definitions are built, so they do not reflect the previous config
-		self.bgColor = combineRgb(0, 0, 0)
-		self.fgColor = combineRgb(255, 255, 255)
-		self.buttonStates = emptyButtonStates()
-		self.lists = []
-		self.timers = {}
-
-		self.initTCP()
-		self.actions()
-		self.feedbacks()
-		self.presets()
-		self.variables()
-
-		self.setVariableValues({
-			hours: '',
-			minutes: '',
-			seconds: '',
-			name: '',
-			speed: '',
-			endTime: '',
-			nextTimerName: '',
-			nextTimerDuration: '',
-			scheduleOffset: '00:00:00',
-			scheduleOffsetStatus: '',
-			listName: '',
-			listNumber: config.list,
-		})
+		this.capabilities = []
+		this.connection = null
+		Object.assign(this, emptyState())
 	}
 
 	async init(config) {
 		await this.configUpdated(config)
 	}
 
-	compareKeys(a, b) {
-		return JSON.stringify(Object.keys(a).sort()) === JSON.stringify(Object.keys(b).sort())
+	async configUpdated(config) {
+		this.log('debug', 'configUpdated')
+		this.config = config
+
+		// Reset state before the definitions are built, so they do not reflect the previous config.
+		// The app's actions and presets exist before the handshake, so buttons stay valid while it is closed.
+		Object.assign(this, emptyState())
+		this.capabilities = capabilitiesForConfig(config)
+		this.lastStatus = null
+		this.lastTimerCollisionKey = undefined
+
+		this.actions()
+		this.feedbacks()
+		this.presets()
+		this.variables()
+		this.setVariableValues(blankVariableValues())
+
+		this.connect()
 	}
 
-	selectList(list) {
-		var self = this
+	/** The engine base URL and handshake for the current config, or null with the reason */
+	connectionTarget() {
+		const config = this.config
+		const name = config.name || 'Companion'
+		if (config.mode === 'cloud') {
+			const listId = String(config.listId ?? '').trim()
+			if (!listId) return { error: 'A cue list ID is required for CueTimer Cloud' }
+			// The Cloud endpoint is fixed; CUETIMER_CLOUD_URL (environment or .env file) overrides it for development.
+			const base = cloudUrl()
+			return { base, query: { scheduleKey: listId, name } }
+		}
+		if (!config.host || !config.port) return { error: 'Host and port are required' }
+		const query = { name }
+		// A GUID pins the connection to that list; '' or a placeholder number follows the active list
+		if (config.list && !isPlaceholderList(config.list)) query.scheduleKey = config.list
+		else query.followActiveList = '1'
+		return { base: `http://${config.host}:${config.port}`, query }
+	}
 
-		if (self.socket !== undefined && self.socket.isConnected) {
-			self.log('debug', `selectList: ${list}`)
-			self.socket.send(`select_list#${list}${TERMINATOR}`)
-		} else {
-			self.log('debug', 'Socket not connected, cannot select list')
+	connect() {
+		this.connection?.destroy()
+		this.connection = null
+		const target = this.connectionTarget()
+		if (target.error) {
+			this.reportStatus(InstanceStatus.BadConfig, target.error)
+			return
+		}
+		const connection = new CueTimerConnection({ log: (level, message) => this.log(level, message) })
+		this.connection = connection
+		connection.on('status', (status, message) => {
+			if (connection !== this.connection) return
+			this.lastStatus = status
+			if (status === 'ok') this.refreshStatus()
+			else this.reportStatus(STATUS[status] ?? InstanceStatus.UnknownError, message)
+			if (status !== 'ok') this.resetLiveState()
+		})
+		connection.on('connectResponse', (data) => {
+			if (connection !== this.connection) return
+			this.applyConnectResponse(data)
+		})
+		connection.on('state', (snapshot) => {
+			if (connection !== this.connection) return
+			try {
+				this.applyState(snapshot)
+			} catch (e) {
+				this.log('debug', `Failed to apply a snapshot: ${e.message}`)
+			}
+		})
+		connection.connect(target.base, target.query)
+	}
+
+	/** After a disconnect the feedbacks and variables must not keep showing the last live data */
+	resetLiveState() {
+		if (!this.snapshot) return
+		const values = blankVariableValues()
+		for (let i = 0; i < this.lists.length; i++) {
+			values[`list_${i + 1}_name`] = ''
+			values[`list_${i + 1}_display_link`] = ''
+			values[`list_${i + 1}_control_link`] = ''
+		}
+		for (const [, base] of timerVariableMap(Object.keys(this.timers)).bases) {
+			values[`timer_${base}_name`] = ''
+			values[`timer_${base}_duration`] = ''
+		}
+		Object.assign(this, emptyState())
+		this.setVariableValues({ ...values, listGUID: '', listDisplayLink: '', listControlLink: '' })
+		this.checkFeedbacks('activeList', 'colors', 'status', 'timerName', 'timerDuration', 'timerBackground')
+	}
+
+	applyConnectResponse(data) {
+		if (typeof data?.mode !== 'string') return
+		const capabilities = capabilitiesForMode(data.mode)
+		if (JSON.stringify(capabilities) !== JSON.stringify(this.capabilities)) {
+			this.capabilities = capabilities
+			this.log('info', `Connected to CueTimer in ${data.mode} mode`)
+			this.actions()
+			this.presets()
+			this.feedbacks()
 		}
 	}
 
-	isListChanged(jsonData) {
-		return (
-			JSON.stringify(this.lists) != JSON.stringify(jsonData.lists) ||
-			jsonData.listNumber != this.getVariableValue('listNumber') ||
-			jsonData.listGUID != this.getVariableValue('listGUID')
-		)
+	/** Companion logs every status update, so an unchanged status is not reported again */
+	reportStatus(status, message = null) {
+		const last = this.reportedStatus
+		if (last && last.status === status && last.message === message) return
+		this.reportedStatus = { status, message }
+		this.updateStatus(status, message)
 	}
 
-	initTCP() {
-		var self = this
-
-		if (self.socket !== undefined) {
-			self.socket.destroy()
-			delete self.socket
+	/** Ok, or the warning that applies to the current snapshot; only while the connection is ready */
+	refreshStatus() {
+		if (this.lastStatus !== 'ok') return
+		if (this.syncError) {
+			this.reportStatus(
+				InstanceStatus.UnknownWarning,
+				`Cloud sync needs attention in the CueTimer control page: ${this.syncError}`,
+			)
+			return
 		}
-
-		if (self.config.host && self.config.port) {
-			self.receiveBuffer = new MessageBuffer()
-			self.socket = new TCPHelper(self.config.host, parseInt(self.config.port, 10))
-
-			// TCPHelper reconnects on its own; mirror its status into the connection status
-			self.socket.on('status_change', (status, message) => self.updateStatus(status, message))
-
-			self.socket.on('error', (err) => {
-				self.log('debug', `Socket error: ${err.message}`)
-			})
-
-			self.socket.on('connect', () => {
-				self.log('debug', `Connected to ${self.config.host}:${self.config.port}`)
-				self.lists = []
-				// Fresh buffer per connection so a partial frame or decoder state never survives a reconnect
-				self.receiveBuffer = new MessageBuffer()
-			})
-
-			self.socket.on('data', (chunk) => {
-				self.receiveBuffer.push(chunk)
-				for (const message of self.receiveBuffer.extractMessages()) {
-					self.handleTelemetry(message)
-				}
-			})
-			self.socket.on('end', function () {
-				self.log('debug', 'end')
-			})
-		} else {
-			self.updateStatus(InstanceStatus.BadConfig, 'Host and port are required')
+		const configured = this.config.mode !== 'cloud' ? this.config.list : ''
+		if (configured && !isPlaceholderList(configured) && this.snapshot && this.snapshot.list?.id !== configured) {
+			this.reportStatus(InstanceStatus.UnknownWarning, 'Selected list not found, active list will be used')
+			return
 		}
+		// A placeholder number beyond the catalog never resolves: the connection follows the active list
+		if (
+			configured &&
+			isPlaceholderList(configured) &&
+			this.lists.length > 0 &&
+			parseInt(configured, 10) > this.lists.length
+		) {
+			this.reportStatus(InstanceStatus.UnknownWarning, 'Selected list not found, active list will be used')
+			return
+		}
+		this.reportStatus(InstanceStatus.Ok)
+	}
+
+	applyState(snapshot) {
+		const mapped = mapState(snapshot)
+		const listsChanged = JSON.stringify(mapped.lists) !== JSON.stringify(this.lists)
+		const timersChanged = !this.compareKeys(mapped.timers, this.timers)
+		this.snapshot = snapshot
+		this.lists = mapped.lists
+		this.timers = mapped.timers
+		this.buttonStates = mapped.buttonStates
+		this.fgColor = mapped.fgColor
+		this.bgColor = mapped.bgColor
+		this.syncError = mapped.syncError
+
+		if (listsChanged) {
+			this.log('debug', `Lists changed: ${JSON.stringify(mapped.lists.map((l) => l.title))}`)
+			if (this.resolvePlaceholderList()) return
+			this.variables()
+			this.actions()
+			this.feedbacks()
+			this.checkFeedbacks('activeList')
+		}
+		if (timersChanged && !listsChanged) this.variables()
+
+		const { bases, collisions } = timerVariableMap(Object.keys(this.timers))
+		this.reportTimerCollisions(collisions)
+		const timerValues = {}
+		for (const [visibleId, base] of bases) {
+			timerValues[`timer_${base}_name`] = this.timers[visibleId].name
+			timerValues[`timer_${base}_duration`] = this.timers[visibleId].duration
+		}
+		this.setVariableValues({ ...mapped.variables, ...this.listVariableValues(mapped), ...timerValues })
+
+		this.refreshStatus()
+		this.checkFeedbacks('colors', 'status', 'timerName', 'timerDuration', 'timerBackground')
+	}
+
+	/**
+	 * A list chosen before CueTimer was reachable is stored as its number; once the catalog
+	 * is known the number becomes that list's id and the connection is pinned to it.
+	 * @returns true when the connection is being re-established
+	 */
+	resolvePlaceholderList() {
+		if (this.config.mode === 'cloud' || !isPlaceholderList(this.config.list)) return false
+		const index = parseInt(this.config.list, 10) - 1
+		if (index < 0 || index >= this.lists.length) return false
+		this.config.list = this.lists[index].id
+		this.log('debug', `List ${index + 1} is ${this.config.list}; pinning the connection to it`)
+		this.saveConfig(this.config)
+		// Define the catalog's variables first: reconnecting blanks them in resetLiveState
+		this.variables()
+		this.connect()
+		return true
+	}
+
+	/** The list variables for this snapshot: the shown list and the catalog */
+	listVariableValues(mapped) {
+		const values = {
+			listNumber: mapped.listNumber,
+			listName: mapped.listTitle,
+			listGUID: mapped.listId,
+		}
+		const current = this.lists.find((l) => l.id === mapped.listId)
+		values.listDisplayLink = current?.displayLink ?? ''
+		values.listControlLink = current?.controlLink ?? ''
+		for (let i = 0; i < this.lists.length; i++) {
+			values[`list_${i + 1}_name`] = `${i + 1} - ${this.lists[i].title}`
+			values[`list_${i + 1}_display_link`] = this.lists[i].displayLink
+			values[`list_${i + 1}_control_link`] = this.lists[i].controlLink
+		}
+		return values
 	}
 
 	reportTimerCollisions(collisions) {
-		// Warn once per distinct set of collisions, not on every 200 ms frame
+		// Warn once per distinct set of collisions, not on every snapshot
 		const key = JSON.stringify(collisions)
 		if (key === this.lastTimerCollisionKey) return
 		this.lastTimerCollisionKey = key
@@ -134,184 +270,12 @@ export default class CueTimerInstance extends InstanceBase {
 		}
 	}
 
-	handleTelemetry(message) {
-		let jsonData
-		try {
-			jsonData = JSON.parse(message)
-		} catch (e) {
-			this.log('debug', `Ignoring malformed telemetry frame: ${e.message}`)
-			return
-		}
-
-		try {
-			this.applyTelemetry(jsonData)
-		} catch (e) {
-			this.log('debug', `Failed to apply telemetry: ${e.message}`)
-		}
-	}
-
-	applyTelemetry(jsonData) {
-		var self = this
-
-		if (jsonData.lists && self.isListChanged(jsonData)) {
-			self.log('debug', `Lists changed, updating lists ${JSON.stringify(jsonData.lists)}`)
-			self.lists = jsonData.lists
-
-			if (self.isIntegerString(self.config.list)) {
-				// If the config.list is an integer string, it means it was set to a placeholder list
-				self.log('debug', `Selected list is a placeholder list with index: ${self.config.list}`)
-				if (self.lists.length >= parseInt(self.config.list)) {
-					// Found the current index in the new list - update config to new GUID
-					self.log('debug', `Selected placeholder list found at index: ${self.config.list}`)
-					self.config.list = self.lists[parseInt(self.config.list) - 1].guid
-					self.saveConfig(self.config)
-				}
-			}
-
-			if (self.config.list == '' || self.lists.findIndex((item) => item.guid === self.config.list) != -1) {
-				if (self.config.list == '' || self.config.list != jsonData.listGUID) {
-					self.selectList(self.config.list)
-					self.updateStatus(InstanceStatus.Ok)
-				}
-			} else {
-				self.updateStatus(InstanceStatus.UnknownWarning, `Selected list not found, active list will be used`)
-			}
-
-			self.variables()
-			self.updateListVariablesValues(jsonData.listNumber)
-			self.actions()
-			self.feedbacks()
-			self.checkFeedbacks('activeList')
-		}
-
-		let hours = (jsonData.h < 0 ? '+' : '') + jsonData.h.replace('-', '')
-
-		let minutes = (jsonData.m < 0 ? '+' : '') + jsonData.m.replace('-', '')
-
-		let seconds = (jsonData.s < 0 ? '+' : '') + jsonData.s.replace('-', '')
-
-		self.setVariableValues({
-			hours: hours,
-			minutes: minutes,
-			seconds: seconds,
-			speed: jsonData.speed,
-			name: jsonData.name,
-			endTime: jsonData.endTime,
-		})
-
-		// Colours arrive as #AARRGGBB; drop the alpha byte
-		if (typeof jsonData.fg === 'string') {
-			let tempFg = self.hexToRgb(jsonData.fg.substr(0, 1) + jsonData.fg.substr(3))
-			if (tempFg) self.fgColor = combineRgb(tempFg.r, tempFg.g, tempFg.b)
-		}
-		if (typeof jsonData.bg === 'string') {
-			let tempBg = self.hexToRgb(jsonData.bg.substr(0, 1) + jsonData.bg.substr(3))
-			if (tempBg) self.bgColor = combineRgb(tempBg.r, tempBg.g, tempBg.b)
-		}
-
-		for (const key of BUTTON_STATE_KEYS) {
-			self.buttonStates[key] = jsonData[key]
-		}
-		self.setVariableValues({
-			nextTimerName: jsonData.nextTimerName,
-			nextTimerDuration: jsonData.nextTimerDuration,
-			scheduleOffset: jsonData.scheduleOffset,
-			scheduleOffsetStatus: jsonData.scheduleOffsetStatus,
-		})
-
-		let updateVariablesFlag = false
-		const timers = jsonData.timers ?? {}
-		if (!this.compareKeys(self.timers, timers)) {
-			updateVariablesFlag = true
-		}
-
-		self.timers = timers
-
-		if (updateVariablesFlag) self.variables()
-
-		const { bases, collisions } = timerVariableMap(Object.keys(self.timers))
-		self.reportTimerCollisions(collisions)
-		const timerValues = {}
-		for (const [x, base] of bases) {
-			timerValues[`timer_${base}_name`] = self.timers[x].name
-			timerValues[`timer_${base}_duration`] = self.timers[x].duration
-		}
-		if (Object.keys(timerValues).length > 0) self.setVariableValues(timerValues)
-
-		self.checkFeedbacks('colors', 'status', 'timerName', 'timerDuration', 'timerBackground')
-	}
-
-	updateListVariablesValues(listNumber) {
-		var self = this
-
-		let listIndex = listNumber - 1
-		self.setVariableValues({ listNumber: listNumber })
-		self.setVariableValues({ listName: self.lists[listIndex]?.title })
-		self.setVariableValues({ listGUID: self.lists[listIndex]?.guid })
-		self.setVariableValues({ listDisplayLink: self.lists[listIndex]?.displayLink ?? '' })
-		self.setVariableValues({ listControlLink: self.lists[listIndex]?.controlLink ?? '' })
-
-		// Update list variables
-		if (self.lists && self.lists.length > 0) {
-			for (let i = 0; i < self.lists.length; i++) {
-				self.setVariableValues({
-					[`list_${i + 1}_name`]: `${i + 1} - ${self.lists[i].title}`,
-					[`list_${i + 1}_display_link`]: self.lists[i].displayLink ?? '',
-					[`list_${i + 1}_control_link`]: self.lists[i].controlLink ?? '',
-				})
-			}
-		}
-	}
-
-	isIntegerString(str) {
-		return /^-?\d+$/.test(str)
+	compareKeys(a, b) {
+		return JSON.stringify(Object.keys(a).sort()) === JSON.stringify(Object.keys(b).sort())
 	}
 
 	getConfigFields() {
-		return [
-			{
-				type: 'static-text',
-				id: 'info',
-				width: 12,
-				label: 'Information',
-				value: 'This will establish a TCP connection to interact with the CueTimer app',
-			},
-			{
-				type: 'dropdown',
-				id: 'list',
-				label: 'List Number',
-				default: '1',
-				width: 12,
-				choices: [{ id: '', label: 'Active List' }].concat(getListsChoices(this.lists)),
-			},
-			{
-				type: 'textinput',
-				id: 'host',
-				label: 'Target IP (For local: 127.0.0.1)',
-				default: '127.0.0.1',
-				width: 6,
-				regex: Regex.IP,
-			},
-			{
-				type: 'textinput',
-				id: 'port',
-				label: 'Target Port (Default: 31601)',
-				default: '31601',
-				width: 6,
-				regex: Regex.PORT,
-			},
-			{
-				type: 'static-text',
-				id: 'info-defaultport',
-				width: 12,
-				label: 'Port',
-				value:
-					'<p>Check that the port in CueTimer matches the target port shown here. ' +
-					'To change the default port in CueTimer, go to Preferences/Triggers/Companion. ' +
-					'We recommend using port 31601 for connection. If this port is not available, try something else in the same range.</p>' +
-					'<p>For CueTimer v.3.2 and below: In the list selection, choose “Active list”</p>',
-			},
-		]
+		return getConfigFields(this)
 	}
 
 	actions() {
@@ -319,18 +283,22 @@ export default class CueTimerInstance extends InstanceBase {
 	}
 
 	async actionCallback(action) {
-		const cmd = buildCommand(action, {
+		const command = buildEngineCommand(action, {
 			config: this.config,
+			snapshot: this.snapshot,
 			lists: this.lists,
+			capabilities: this.capabilities,
 			log: (level, message) => this.log(level, message),
 		})
-		if (!cmd) return
-
-		if (this.socket !== undefined && this.socket.isConnected) {
-			this.log('debug', `Sending ${cmd}`)
-			this.socket.send(cmd)
-		} else {
-			this.log('debug', `Socket not connected, cannot send ${cmd}`)
+		if (!command) return
+		if (!this.connection) return
+		this.log('debug', `Sending ${command.command} ${JSON.stringify(command.data)}`)
+		const result = await this.connection.sendCommand(command)
+		if (!result.success) {
+			this.log(
+				'warn',
+				`${command.command} failed: ${result.error ?? 'unknown'}${result.message ? ` (${result.message})` : ''}`,
+			)
 		}
 	}
 
@@ -343,18 +311,13 @@ export default class CueTimerInstance extends InstanceBase {
 	}
 
 	presets() {
-		var self = this
-		const { structure, presets } = getPresets(self.label)
-		self.setPresetDefinitions(structure, presets)
+		const { structure, presets } = getPresets(this.label, this.capabilities)
+		this.setPresetDefinitions(structure, presets)
 	}
 
 	async destroy() {
-		var self = this
-
-		if (self.socket !== undefined) {
-			self.socket.destroy()
-		}
-
-		self.log('debug', `destroy ${self.id}`)
+		this.connection?.destroy()
+		this.connection = null
+		this.log('debug', `destroy ${this.id}`)
 	}
 }

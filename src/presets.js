@@ -1,5 +1,11 @@
 import icons from './icons.js'
-export function getPresets(instanceLabel) {
+import { ALL_CAPABILITIES } from './state.js'
+
+/**
+ * @param instanceLabel the connection label, for variable references in preset text
+ * @param capabilities what the connected CueTimer offers; presets needing more are left out
+ */
+export function getPresets(instanceLabel, capabilities = ALL_CAPABILITIES) {
 	// API 2.x: presets are declared per section; a section's preset ids are the keys of its presets object
 	const sections = [
 		{
@@ -316,6 +322,7 @@ export function getPresets(instanceLabel) {
 				},
 				Fullscreen: {
 					type: 'simple',
+					requires: 'outputs',
 					name: 'Full Screen',
 					style: {
 						bgcolor: 0,
@@ -347,6 +354,7 @@ export function getPresets(instanceLabel) {
 				},
 				Preview: {
 					type: 'simple',
+					requires: 'outputs',
 					name: 'Preview',
 					style: {
 						bgcolor: 0,
@@ -378,6 +386,7 @@ export function getPresets(instanceLabel) {
 				},
 				Presenter: {
 					type: 'simple',
+					requires: 'outputs',
 					name: 'Presenter',
 					style: {
 						bgcolor: 0,
@@ -409,6 +418,7 @@ export function getPresets(instanceLabel) {
 				},
 				MultitimerPreview: {
 					type: 'simple',
+					requires: 'outputs',
 					name: 'Multitimer Preview',
 					style: {
 						bgcolor: 0,
@@ -440,6 +450,7 @@ export function getPresets(instanceLabel) {
 				},
 				MultitimerFullscreen: {
 					type: 'simple',
+					requires: 'outputs',
 					name: 'Multitimer Fullscreen',
 					style: {
 						bgcolor: 0,
@@ -471,6 +482,7 @@ export function getPresets(instanceLabel) {
 				},
 				MultitimerNDI: {
 					type: 'simple',
+					requires: 'outputs',
 					name: 'Multitimer NDI',
 					style: {
 						bgcolor: 0,
@@ -502,6 +514,7 @@ export function getPresets(instanceLabel) {
 				},
 				NDI: {
 					type: 'simple',
+					requires: 'outputs',
 					name: 'NDI',
 					style: {
 						bgcolor: 0,
@@ -802,6 +815,7 @@ export function getPresets(instanceLabel) {
 			presets: {
 				PrevList: {
 					type: 'simple',
+					requires: 'lists',
 					name: 'Selects previous list',
 					style: {
 						bgcolor: 0,
@@ -820,6 +834,7 @@ export function getPresets(instanceLabel) {
 				},
 				NextList: {
 					type: 'simple',
+					requires: 'lists',
 					name: 'Selects next list',
 					style: {
 						bgcolor: 0,
@@ -1048,9 +1063,22 @@ export function getPresets(instanceLabel) {
 		},
 	]
 
+	// A preset marked `requires` only appears when the connected CueTimer has that capability
+	const available = sections
+		.map(({ id, name, presets }) => ({
+			id,
+			name,
+			presets: Object.fromEntries(
+				Object.entries(presets)
+					.filter(([, preset]) => !preset.requires || capabilities.includes(preset.requires))
+					.map(([key, { requires: _requires, ...preset }]) => [key, preset]),
+			),
+		}))
+		.filter((section) => Object.keys(section.presets).length > 0)
+
 	return {
-		structure: sections.map(({ id, name, presets }) => ({ id, name, definitions: Object.keys(presets) })),
-		presets: Object.assign({}, ...sections.map((section) => section.presets)),
+		structure: available.map(({ id, name, presets }) => ({ id, name, definitions: Object.keys(presets) })),
+		presets: Object.assign({}, ...available.map((section) => section.presets)),
 	}
 }
 
@@ -1060,6 +1088,7 @@ function listPresets(instanceLabel) {
 	for (let i = 1; i <= 10; i++) {
 		presets[`List${i}`] = {
 			type: 'simple',
+			requires: 'lists',
 			name: `Selects List ${i}`,
 			style: {
 				bgcolor: 0,
