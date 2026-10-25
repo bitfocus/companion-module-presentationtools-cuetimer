@@ -18,7 +18,7 @@ export function getListNumberedChoices(ctx, includePreviousAndNext = false) {
 
 export function getListsChoices(lists) {
 	const result = (lists ?? []).map((item, index) => ({
-		id: item.guid,
+		id: item.id,
 		label: `${index + 1}- ${item.title}`,
 	}))
 
