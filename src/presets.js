@@ -1,11 +1,13 @@
 import icons from './icons.js'
 import { ALL_CAPABILITIES } from './state.js'
+import { getTimerPresets } from './timer-presets.js'
 
 /**
  * @param instanceLabel the connection label, for variable references in preset text
  * @param capabilities what the connected CueTimer offers; presets needing more are left out
+ * @param timers timers from the current snapshot, in cue-list order
  */
-export function getPresets(instanceLabel, capabilities = ALL_CAPABILITIES) {
+export function getPresets(instanceLabel, capabilities = ALL_CAPABILITIES, timers = []) {
 	// API 2.x: presets are declared per section; a section's preset ids are the keys of its presets object
 	const sections = [
 		{
@@ -611,86 +613,6 @@ export function getPresets(instanceLabel, capabilities = ALL_CAPABILITIES) {
 					],
 					feedbacks: [],
 				},
-				FireTimerWithID: {
-					type: 'simple',
-					name: 'Start with ID',
-					notes: 'Set the ID option to the CueTimer timer ID to start.',
-					style: {
-						bgcolor: 0,
-
-						text: 'Start',
-						alignment: 'center:center',
-						size: '14',
-						color: 16777215,
-					},
-					steps: [
-						{
-							down: [
-								{
-									actionId: 'FireTimerWithID',
-									options: {
-										Key: '1',
-									},
-								},
-							],
-							up: [],
-						},
-					],
-					feedbacks: [
-						{
-							feedbackId: 'timerName',
-							options: {
-								Key: '1',
-							},
-						},
-						{
-							feedbackId: 'timerBackground',
-							options: {
-								Key: '1',
-							},
-						},
-					],
-				},
-				CueTimerWithID: {
-					type: 'simple',
-					name: 'Cue with ID',
-					notes: 'Set the ID option to the CueTimer timer ID to cue.',
-					style: {
-						bgcolor: 0,
-
-						text: 'Cue',
-						alignment: 'center:center',
-						size: '14',
-						color: 16777215,
-					},
-					steps: [
-						{
-							down: [
-								{
-									actionId: 'CueTimerWithID',
-									options: {
-										Key: '1',
-									},
-								},
-							],
-							up: [],
-						},
-					],
-					feedbacks: [
-						{
-							feedbackId: 'timerName',
-							options: {
-								Key: '1',
-							},
-						},
-						{
-							feedbackId: 'timerBackground',
-							options: {
-								Key: '1',
-							},
-						},
-					],
-				},
 				CueCurrent: {
 					type: 'simple',
 					name: 'Stop and go back',
@@ -1081,9 +1003,20 @@ export function getPresets(instanceLabel, capabilities = ALL_CAPABILITIES) {
 		}))
 		.filter((section) => Object.keys(section.presets).length > 0)
 
+	const structure = available.map(({ id, name, presets }) => ({ id, name, definitions: Object.keys(presets) }))
+	const timerPresets = ['start', 'cue'].map((mode) => getTimerPresets(instanceLabel, timers, mode))
+	structure.splice(
+		1,
+		0,
+		...timerPresets.filter(({ section }) => section.definitions.length > 0).map(({ section }) => section),
+	)
 	return {
-		structure: available.map(({ id, name, presets }) => ({ id, name, definitions: Object.keys(presets) })),
-		presets: Object.assign({}, ...available.map((section) => section.presets)),
+		structure,
+		presets: Object.assign(
+			{},
+			...available.map((section) => section.presets),
+			...timerPresets.map(({ presets }) => presets),
+		),
 	}
 }
 

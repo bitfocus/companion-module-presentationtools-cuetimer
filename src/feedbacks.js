@@ -39,28 +39,6 @@ export function getFeedbackDefinitions(ctx) {
 			},
 			callback: (feedback) => !!ctx.buttonStates[feedback.options.Key],
 		},
-		timerName: {
-			type: 'advanced',
-			name: 'ID timer Name',
-			description: 'Timer Name with ID',
-			options: [idOption],
-			affectedProperties: ['text'],
-			callback: (feedback) => {
-				const timer = ctx.timers[feedback.options.Key]
-				return timer ? { text: timer.name } : {}
-			},
-		},
-		timerDuration: {
-			type: 'advanced',
-			name: 'ID timer Duration',
-			description: 'Timer Duration with ID',
-			options: [idOption],
-			affectedProperties: ['text'],
-			callback: (feedback) => {
-				const timer = ctx.timers[feedback.options.Key]
-				return timer ? { text: timer.duration } : {}
-			},
-		},
 		timerBackground: {
 			type: 'advanced',
 			name: 'ID timer Background',

@@ -65,10 +65,22 @@ Variables are used as `$(instancename:variablename)`, e.g. `$(cuetimer:hours)`. 
 
 ##### Timers with an ID
 
-- timer_X_name
-- timer_X_duration
+The **ID** field in CueTimer is optional and can usually be left empty. Assign an ID when you want to address a particular timer from Companion. An ID can be a number or text, such as `1`, `Opening` or `Speaker A`, and is independent of the timer's position in the list. IDs can appear in any order; moving a timer does not change which timer its ID identifies.
 
-`X` is the timer ID as shown in CueTimer. IDs made only of letters, digits, `-`, `_`, `.` and `!` are used as they are. Any other ID has those characters removed (a space becomes `_`) and gets an 8-character suffix derived from the full ID, for example `timer_A_B_546d26b2_name` for the ID `A B`. If two timers still end up with the same variable id, neither is published and the connection log names the IDs to rename.
+These variables are available only for timers with an assigned ID:
+
+- timer_id_X_name
+- timer_id_X_duration
+
+To show the name of timer ID `1`, enter `$(cuetimer:timer_id_1_name)` in the button's **Style > Text** field (replace `cuetimer` with your connection label). You can add your own text around the variable, or replace it with a custom label. The Start timer with ID and Cue timer with ID sections provide presets with the matching name variable, action and background feedback already configured for each assigned ID.
+
+To show the duration of timer ID `1`, use `$(cuetimer:timer_id_1_duration)` in **Style > Text**. You can combine it with the name variable and your own text, or replace it with a custom label.
+
+The **ID timer Name** and **ID timer Duration** feedbacks have been removed. For existing buttons, put the corresponding variable in **Style > Text** and delete the old feedback entries. Existing buttons are not converted automatically.
+
+If a button uses the earlier `timer_1_name` or `timer_1_duration` variable names, update them to `timer_id_1_name` or `timer_id_1_duration` (and likewise for other IDs). The `timer_id_` prefix explicitly identifies the optional CueTimer ID rather than a list position.
+
+`X` is the timer ID as shown in CueTimer. IDs made only of letters, digits, `-`, `_`, `.` and `!` are used as they are. Any other ID has those characters removed (a space becomes `_`) and gets an 8-character suffix derived from the full ID, for example `timer_id_A_B_546d26b2_name` for the ID `A B`. If two timers still end up with the same variable id, neither is published and the connection log names the IDs to rename.
 
 ##### Lists
 
@@ -93,9 +105,9 @@ Message feedback shows whether Message is enabled, including while the timer is 
 
 ##### Timer with ID
 
-- ID timer name
-- ID timer duration
 - ID timer background
+
+Timer names and durations use only the `timer_id_X_name` and `timer_id_X_duration` variables above.
 
 ##### Lists
 
@@ -104,6 +116,16 @@ Message feedback shows whether Message is enabled, including while the timer is 
 ## Presets
 
 All actions, variables and feedbacks are available from the Presets tab, in the sections Commands, List control and Feedbacks. On CueTimer Cloud the output and list presets are not shown.
+
+**Start timer with ID** and **Cue timer with ID** appear when the connected list contains timers with assigned IDs. Each section has a pair of presets for every timer, in cue-list order:
+
+- **Name / Start** shows the ID and the timer's name variable, and starts that ID when pressed.
+- **Name / Cue**, in the Cue section, shows the same ID and name variable, and cues that ID as the next timer when pressed.
+- **Duration**, beside the name button in each section, shows the matching duration variable and has no press action.
+
+Both buttons use the background feedback for the same ID. Drag either or both onto your page; their text remains editable. Numeric and text IDs (such as `A` or `Speaker A`) are supported. Timers without an ID are omitted, as are IDs whose variables cannot be published because of a collision.
+
+Both sections update when timers are added, removed, renamed, reordered, or assigned different IDs, and when the connection follows a different list. They are available with both the CueTimer app and Cloud, and are hidden while disconnected or when no eligible IDs exist. Buttons already placed on a page continue to target their assigned ID in the list this connection follows; changing an ID in CueTimer requires updating or replacing those buttons.
 
 ## Connection status
 

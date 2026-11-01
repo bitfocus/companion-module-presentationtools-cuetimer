@@ -1,20 +1,58 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { getListVariableDefinitions, getVariableDefinitions } from '../src/variables.js'
+import CueTimerInstance from '../src/main.js'
+import { emptyState } from '../src/state.js'
 
 const HOST_VARIABLE_ID_REGEX = /^([a-zA-Z0-9-_.!]+)$/
 
+test('ID variables follow assigned IDs across reordering and clear on disconnect', () => {
+	const inst = Object.create(CueTimerInstance.prototype)
+	let definitions = {}
+	const values = {}
+	Object.assign(inst, emptyState(), {
+		setVariableDefinitions: (defs) => (definitions = defs),
+		setVariableValues: (updates) => Object.assign(values, updates),
+		checkFeedbacks() {},
+		presets() {},
+		log() {},
+	})
+	const timers = [
+		{ visibleID: 'Opening', name: 'Welcome', duration: '00:10:00' },
+		{ visibleID: '', name: 'No ID', duration: '00:05:00' },
+		{ visibleID: '1', name: 'Keynote', duration: '00:30:00' },
+	]
+	inst.applyState({ timers })
+	assert.deepEqual(
+		Object.keys(definitions)
+			.filter((id) => id.startsWith('timer_'))
+			.sort(),
+		['timer_id_1_duration', 'timer_id_1_name', 'timer_id_Opening_duration', 'timer_id_Opening_name'],
+	)
+	assert.equal(values.timer_id_1_name, 'Keynote')
+	assert.equal(values.timer_id_Opening_duration, '00:10:00')
+	inst.applyState({ timers: [...timers].reverse() })
+	assert.equal(values.timer_id_1_name, 'Keynote')
+	assert.equal(values.timer_id_Opening_duration, '00:10:00')
+	assert.equal(values.timer_1_name, undefined)
+	assert.equal(values.timer_1_duration, undefined)
+	inst.resetLiveState()
+	for (const id of Object.keys(definitions).filter((id) => id.startsWith('timer_'))) {
+		assert.equal(values[id], '', id)
+	}
+})
+
 test('valid timer ids are used unchanged', () => {
 	const defs = getVariableDefinitions({ timers: { 1: {}, Speaker1: {}, 'a-b_c.d!': {} }, lists: [] })
-	for (const id of ['timer_1_name', 'timer_1_duration', 'timer_Speaker1_name', 'timer_a-b_c.d!_duration']) {
+	for (const id of ['timer_id_1_name', 'timer_id_1_duration', 'timer_id_Speaker1_name', 'timer_id_a-b_c.d!_duration']) {
 		assert.ok(defs[id], id)
 	}
 })
 
 test('timer ids with unsupported characters become valid, distinct ids', () => {
 	const defs = getVariableDefinitions({ timers: { 'A B': {}, 'Speaker #2': {} }, lists: [] })
-	assert.ok(defs['timer_A_B_546d26b2_name'])
-	assert.ok(defs[`timer_Speaker_2_${fnv1a32Hex('Speaker #2')}_duration`])
+	assert.ok(defs['timer_id_A_B_546d26b2_name'])
+	assert.ok(defs[`timer_id_Speaker_2_${fnv1a32Hex('Speaker #2')}_duration`])
 	for (const id of Object.keys(defs)) assert.match(id, HOST_VARIABLE_ID_REGEX)
 })
 
@@ -69,7 +107,7 @@ test('timerVariableBase keeps valid ids and derives distinct ids for the rest', 
 	for (const id of ['مرحبا', '计时器', '嬻一', '棖一', '   ', '#', 'Speaker #2']) {
 		const b = timerVariableBase(id)
 		assert.match(b, HOST_VARIABLE_ID_REGEX, id)
-		assert.match(`timer_${b}_name`, HOST_VARIABLE_ID_REGEX, id)
+		assert.match(`timer_id_${b}_name`, HOST_VARIABLE_ID_REGEX, id)
 	}
 	assert.notEqual(timerVariableBase('嬻一'), timerVariableBase('棖一'))
 })
@@ -122,8 +160,8 @@ test('timerVariableMap does not depend on input order', () => {
 
 test('getVariableDefinitions leaves suppressed timers out', () => {
 	const defs = getVariableDefinitions({ timers: { 1: {}, 'A B': {}, ['A_B_546d26b2']: {} }, lists: [] })
-	assert.ok(defs.timer_1_name)
-	assert.equal(defs['timer_A_B_546d26b2_name'], undefined)
+	assert.ok(defs.timer_id_1_name)
+	assert.equal(defs['timer_id_A_B_546d26b2_name'], undefined)
 	const mapped = getVariableDefinitions({ timers: { 1: {}, 'A B': {} }, lists: [] })
-	assert.ok(mapped['timer_A_B_546d26b2_name'])
+	assert.ok(mapped['timer_id_A_B_546d26b2_name'])
 })
