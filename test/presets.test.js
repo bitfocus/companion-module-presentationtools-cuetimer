@@ -21,7 +21,7 @@ test('on the Cloud the output and list presets are left out and no section is em
 	const cloudActions = getActionDefinitions({ ...stub, capabilities: [] })
 	assert.deepEqual(
 		cloud.structure.map((section) => section.id),
-		['commands', 'feedbacks'],
+		['commands', 'set-duration', 'feedbacks'],
 	)
 	for (const section of cloud.structure) assert.ok(section.definitions.length > 0, `${section.id} is empty`)
 	for (const [id, preset] of Object.entries(cloud.presets)) {
@@ -50,10 +50,10 @@ test('on the Cloud the output and list presets are left out and no section is em
 
 const optionIds = (definition) => new Set(definition.options.map((option) => option.id))
 
-test('the structure has the three sections and references only existing presets', () => {
+test('the structure has the four sections and references only existing presets', () => {
 	assert.deepEqual(
 		structure.map((section) => section.id),
-		['commands', 'list-control', 'feedbacks'],
+		['commands', 'set-duration', 'list-control', 'feedbacks'],
 	)
 	const referenced = new Set()
 	for (const section of structure) {
@@ -69,13 +69,18 @@ test('the structure has the three sections and references only existing presets'
 	}
 })
 
-test('every preset is a simple preset with a complete style and no category', () => {
+test('every preset has a complete simple style or layered graphics and no category', () => {
 	for (const [id, preset] of Object.entries(presets)) {
-		assert.equal(preset.type, 'simple', id)
+		assert.ok(['simple', 'layered'].includes(preset.type), id)
 		assert.equal(preset.category, undefined, id)
 		assert.equal(preset.requires, undefined, id)
-		for (const key of ['text', 'size', 'color', 'bgcolor']) {
-			assert.notEqual(preset.style[key], undefined, `${id} style.${key}`)
+		if (preset.type === 'simple') {
+			for (const key of ['text', 'size', 'color', 'bgcolor']) {
+				assert.notEqual(preset.style[key], undefined, `${id} style.${key}`)
+			}
+		} else {
+			assert.ok(Array.isArray(preset.elements) && preset.elements.length > 0, id)
+			assert.equal(preset.style, undefined, id)
 		}
 		assert.ok(Array.isArray(preset.steps), id)
 		assert.ok(Array.isArray(preset.feedbacks), id)
