@@ -131,13 +131,13 @@ export default class CueTimerInstance extends InstanceBase {
 			values[`list_${i + 1}_control_link`] = ''
 		}
 		for (const [, base] of timerVariableMap(Object.keys(this.timers)).bases) {
-			values[`timer_id_${base}_name`] = ''
-			values[`timer_id_${base}_duration`] = ''
+			values[`timer_${base}_name`] = ''
+			values[`timer_${base}_duration`] = ''
 		}
 		Object.assign(this, emptyState())
 		this.setVariableValues({ ...values, listGUID: '', listDisplayLink: '', listControlLink: '' })
 		this.presets()
-		this.checkFeedbacks('activeList', 'colors', 'status', 'timerBackground')
+		this.checkFeedbacks('activeList', 'colors', 'status', 'timerName', 'timerDuration', 'timerBackground')
 	}
 
 	applyConnectResponse(data) {
@@ -218,14 +218,14 @@ export default class CueTimerInstance extends InstanceBase {
 		this.reportTimerCollisions(collisions)
 		const timerValues = {}
 		for (const [visibleId, base] of bases) {
-			timerValues[`timer_id_${base}_name`] = this.timers[visibleId].name
-			timerValues[`timer_id_${base}_duration`] = this.timers[visibleId].duration
+			timerValues[`timer_${base}_name`] = this.timers[visibleId].name
+			timerValues[`timer_${base}_duration`] = this.timers[visibleId].duration
 		}
 		this.setVariableValues({ ...mapped.variables, ...this.listVariableValues(mapped), ...timerValues })
 		if (timerPresetsChanged) this.presets()
 
 		this.refreshStatus()
-		this.checkFeedbacks('colors', 'status', 'timerBackground')
+		this.checkFeedbacks('colors', 'status', 'timerName', 'timerDuration', 'timerBackground')
 	}
 
 	/**

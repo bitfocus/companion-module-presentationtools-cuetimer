@@ -35,8 +35,8 @@ export function getTimerPresets(instanceLabel, timers, mode = 'start') {
 					: `Shows the duration of the timer with ID "${id}". This button has no press action.`,
 				style: {
 					text: nameButton
-						? `${id} – $(${instanceLabel}:timer_id_${base}_name)`
-						: `$(${instanceLabel}:timer_id_${base}_duration)`,
+						? `${id} – $(${instanceLabel}:timer_${base}_name)`
+						: `$(${instanceLabel}:timer_${base}_duration)`,
 					size: '14',
 					color: 16777215,
 					bgcolor: 0,
