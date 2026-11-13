@@ -21,7 +21,7 @@ test('on the Cloud the output and list presets are left out and no section is em
 	const cloudActions = getActionDefinitions({ ...stub, capabilities: [] })
 	assert.deepEqual(
 		cloud.structure.map((section) => section.id),
-		['commands', 'set-duration', 'feedbacks'],
+		['commands', 'start-timer-with-id', 'cue-timer-with-id', 'set-duration', 'feedbacks'],
 	)
 	for (const section of cloud.structure) assert.ok(section.definitions.length > 0, `${section.id} is empty`)
 	for (const [id, preset] of Object.entries(cloud.presets)) {
@@ -50,15 +50,17 @@ test('on the Cloud the output and list presets are left out and no section is em
 
 const optionIds = (definition) => new Set(definition.options.map((option) => option.id))
 
-test('the structure has the four sections and references only existing presets', () => {
+test('the structure references only existing presets, including offline ID groups', () => {
 	assert.deepEqual(
 		structure.map((section) => section.id),
-		['commands', 'set-duration', 'list-control', 'feedbacks'],
+		['commands', 'start-timer-with-id', 'cue-timer-with-id', 'set-duration', 'list-control', 'feedbacks'],
 	)
 	const referenced = new Set()
 	for (const section of structure) {
 		assert.ok(section.definitions.length > 0, `${section.id} is empty`)
-		for (const id of section.definitions) {
+		for (const id of section.definitions.flatMap((entry) =>
+			typeof entry === 'string' ? [entry] : entry.type === 'template' ? [entry.presetId] : entry.presets,
+		)) {
 			assert.ok(presets[id], `${section.id} references unknown preset ${id}`)
 			assert.ok(!referenced.has(id), `${id} is listed twice`)
 			referenced.add(id)

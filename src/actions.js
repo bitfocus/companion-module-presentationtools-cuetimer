@@ -54,12 +54,12 @@ export function getActionDefinitions(ctx) {
 		MoveNextDown: simple('Move Next Down'),
 		FireTimerWithID: {
 			name: 'Start timer with ID',
-			options: [textOption('ID', '1')],
+			options: [textOption('ID', '')],
 			callback,
 		},
 		CueTimerWithID: {
 			name: 'Cue Timer with ID',
-			options: [textOption('ID', '1')],
+			options: [textOption('ID', '')],
 			callback,
 		},
 		SetDuration: {

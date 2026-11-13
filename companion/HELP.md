@@ -48,6 +48,8 @@ Only with the CueTimer app (not on CueTimer Cloud):
 
 Text options (ID, duration, minutes) accept Companion variables such as `$(custom:duration)`, and can be switched to expression mode.
 
+Newly added **Start timer with ID** / **Cue Timer with ID** actions and all **ID timer** feedbacks start with an empty ID. Enter the timer ID yourself, or use a shared local variable in expression mode. Existing buttons retain their saved IDs. An action with an empty ID sends no timer command.
+
 Pause, Blackout, Message, Clock and Single Timer Mode toggle from the state last received from CueTimer. Two presses within the same tenth of a second, or a change made by another operator at the same moment, count as one toggle; the button then shows the real state and the next press works as expected.
 
 ## Variables
@@ -107,7 +109,7 @@ Message feedback shows whether Message is enabled, including while the timer is 
 - ID timer duration
 - ID timer background
 
-The name and duration feedbacks replace the button text. Use the `timer_X_name` and `timer_X_duration` variables in **Style > Text** when you want to combine timer values with your own text.
+The original name and duration feedbacks replace the button text. **ID timer Name value** and **ID timer Duration value** instead supply a local variable, so the new presets keep their text editable. You can also use the `timer_X_name` and `timer_X_duration` variables in **Style > Text**.
 
 ##### Lists
 
@@ -117,15 +119,25 @@ The name and duration feedbacks replace the button text. Use the `timer_X_name` 
 
 All actions, variables and feedbacks are available from the Presets tab, in the sections Commands, List control and Feedbacks. On CueTimer Cloud the output and list presets are not shown.
 
-**Start timer with ID** and **Cue timer with ID** appear when the connected list contains timers with assigned IDs. Each section has a pair of presets for every timer, in cue-list order:
+**Start timer with ID** and **Cue timer with ID** are always available, with both the CueTimer app and Cloud. Each section starts with a clearly marked generic preset: **Start with ID — enter ID manually** or **Cue with ID — enter ID manually**. These work as templates even while offline or before IDs have been assigned. They start with an empty ID and show **Set timer ID** until you enter one. Pressing them before entering an ID sends no timer command. Once configured, they show only the matching timer’s name, just like the list-generated Start/Cue buttons; the generic label stays in the preset browser.
 
-- **Name / Start** shows the ID and the timer's name variable, and starts that ID when pressed.
-- **Name / Cue**, in the Cue section, shows the same ID and name variable, and cues that ID as the next timer when pressed.
-- **Duration**, beside the name button in each section, shows the matching duration variable and has no press action.
+When a list is connected, each section also has a pair of presets for every eligible timer, in cue-list order:
 
-Both buttons use the background feedback for the same ID. Drag either or both onto your page; their text remains editable. Numeric and text IDs (such as `A` or `Speaker A`) are supported. Timers without an ID are omitted, as are IDs whose variables cannot be published because of a collision.
+- **Name / Start** shows only the timer name, and starts that ID when pressed.
+- **Name / Cue**, in the Cue section, shows only the timer name, and cues that ID as the next timer when pressed.
+- **Duration**, immediately after the name button in each section, shows the timer duration and has no press action.
 
-Both sections update when timers are added, removed, renamed, reordered, or assigned different IDs, and when the connection follows a different list. They are available with both the CueTimer app and Cloud, and are hidden while disconnected or when no eligible IDs exist. Buttons already placed on a page continue to target their assigned ID in the list this connection follows; changing an ID in CueTimer requires updating or replacing those buttons.
+**Change the ID in one place:** choose **When placed → Linked** in the Presets tab, then drag any ID preset onto your page. Select the button and change **timer_id** under **Preset variables**, directly below Connection. There is no need to click **Edit** or open Local Variables. The button stays linked and can receive preset updates. The action, displayed name or duration, and background all follow that value. Each button has its own Timer ID; if you use a name/action button and a separate duration button, set the ID on each button. Numeric and text IDs (such as `A` or `Speaker A`) are supported.
+
+When the selected ID has no matching timer, both name/action and duration buttons show **ID: <value>** and **Not found**. While disconnected or waiting for the first list snapshot, they show **ID: <value>** and **Offline**. An empty ID shows **Set timer ID**. A matching timer with no name shows **Unnamed timer** on its name/action button. The normal name or duration returns automatically when the matching timer becomes available. Pressing a button with no matching timer does not send a timer command.
+
+The name and duration are supplied by feedback-driven local variables, `$(local:timer_name)` and `$(local:timer_duration)`. You can combine these with your own text in **Style > Text**. Leave their ID references pointing to `$(local:timer_id)` so that only Timer ID needs editing.
+
+The list-generated presets update when timers are added, removed, renamed, reordered, or assigned different IDs, and when the connection follows a different list. Timers without an ID are omitted, as are IDs whose variables cannot be published because of a collision. These list entries disappear on disconnect, but the generic presets remain available. Buttons already placed on a page continue to target their assigned ID in the list this connection follows; changing an ID in CueTimer requires changing Timer ID on those buttons.
+
+If you place a preset as a **Copy**, or click **Edit** to unlink it for full customization, change **Timer ID** (`timer_id`) in **Local Variables** instead.
+
+Previously placed buttons do not gain the new preset parameter automatically. Replace an older button with a freshly dragged **Linked** preset to get the direct **timer_id** field.
 
 ## Connection status
 

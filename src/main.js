@@ -137,7 +137,16 @@ export default class CueTimerInstance extends InstanceBase {
 		Object.assign(this, emptyState())
 		this.setVariableValues({ ...values, listGUID: '', listDisplayLink: '', listControlLink: '' })
 		this.presets()
-		this.checkFeedbacks('activeList', 'colors', 'status', 'timerName', 'timerDuration', 'timerBackground')
+		this.checkFeedbacks(
+			'activeList',
+			'colors',
+			'status',
+			'timerName',
+			'timerDuration',
+			'timerBackground',
+			'timerNameValue',
+			'timerDurationValue',
+		)
 	}
 
 	applyConnectResponse(data) {
@@ -225,7 +234,15 @@ export default class CueTimerInstance extends InstanceBase {
 		if (timerPresetsChanged) this.presets()
 
 		this.refreshStatus()
-		this.checkFeedbacks('colors', 'status', 'timerName', 'timerDuration', 'timerBackground')
+		this.checkFeedbacks(
+			'colors',
+			'status',
+			'timerName',
+			'timerDuration',
+			'timerBackground',
+			'timerNameValue',
+			'timerDurationValue',
+		)
 	}
 
 	/**

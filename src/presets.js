@@ -1004,12 +1004,8 @@ export function getPresets(instanceLabel, capabilities = ALL_CAPABILITIES, timer
 		.filter((section) => Object.keys(section.presets).length > 0)
 
 	const structure = available.map(({ id, name, presets }) => ({ id, name, definitions: Object.keys(presets) }))
-	const timerPresets = ['start', 'cue'].map((mode) => getTimerPresets(instanceLabel, timers, mode))
-	structure.splice(
-		1,
-		0,
-		...timerPresets.filter(({ section }) => section.definitions.length > 0).map(({ section }) => section),
-	)
+	const timerPresets = ['start', 'cue'].map((mode) => getTimerPresets(timers, mode))
+	structure.splice(1, 0, ...timerPresets.map(({ section }) => section))
 	return {
 		structure,
 		presets: Object.assign(
