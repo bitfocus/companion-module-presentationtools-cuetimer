@@ -1,58 +1,71 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { buildCommand } from '../src/actions.js'
+import { getActionDefinitions } from '../src/actions.js'
 
-const lists = [{ guid: 'guid-1' }, { guid: 'guid-2' }]
-const logs = []
-const ctx = { config: { list: 'guid-2' }, lists, log: (level, message) => logs.push([level, message]) }
+const stub = (capabilities) => ({ config: { list: '' }, lists: [], capabilities, actionCallback() {} })
 
-test('an action without options sends only its id and one terminator', () => {
-	assert.equal(buildCommand({ actionId: 'FireNext', options: {} }, ctx), 'FireNext$')
-	assert.equal(buildCommand({ actionId: 'FireNext' }, ctx), 'FireNext$')
+const SHARED = [
+	'FireNext',
+	'CueNext',
+	'CueCurrent',
+	'Pause',
+	'Restart',
+	'Undo',
+	'AddSpeed',
+	'SubSpeed',
+	'AddMinute',
+	'SubMinute',
+	'Blackout',
+	'Message',
+	'Clock',
+	'STM',
+	'MoveNextUp',
+	'MoveNextDown',
+	'FireTimerWithID',
+	'CueTimerWithID',
+	'SetDuration',
+	'AddXMinutes',
+	'SubXMinutes',
+	'InitList',
+]
+const OUTPUTS = [
+	'Fullscreen',
+	'Preview',
+	'Presenter',
+	'NDI',
+	'MultitimerPreview',
+	'MultitimerFullscreen',
+	'MultitimerNDI',
+]
+const LISTS = ['ActivateNextList', 'ActivatePreviousList', 'ActivateThisList', 'ActivateListByNumber']
+
+test('with the app every action of module 2.x exists, except the dead EndTime one', () => {
+	const actions = getActionDefinitions(stub(['outputs', 'lists', 'links']))
+	assert.deepEqual(Object.keys(actions).sort(), [...SHARED, ...OUTPUTS, ...LISTS].sort())
+	assert.equal(actions.InitEndTimeTimer, undefined)
 })
 
-test('a Key option is appended after #', () => {
-	assert.equal(buildCommand({ actionId: 'SetDuration', options: { Key: '00:10:00' } }, ctx), 'SetDuration#00:10:00$')
-	assert.equal(buildCommand({ actionId: 'Fullscreen', options: { Key: 'toggle' } }, ctx), 'Fullscreen#toggle$')
-	assert.equal(buildCommand({ actionId: 'FireTimerWithID', options: { Key: 3 } }, ctx), 'FireTimerWithID#3$')
+test('on the Cloud the output and list actions are left out', () => {
+	const actions = getActionDefinitions(stub([]))
+	assert.deepEqual(Object.keys(actions).sort(), [...SHARED].sort())
 })
 
-test('ActivateThisList uses the configured GUID, or sends nothing', () => {
-	assert.equal(buildCommand({ actionId: 'ActivateThisList', options: {} }, ctx), 'ActivateListByGUID#guid-2$')
-	assert.equal(buildCommand({ actionId: 'ActivateThisList', options: {} }, { ...ctx, config: { list: '' } }), null)
-	assert.equal(buildCommand({ actionId: 'ActivateThisList', options: {} }, { lists }), null)
+test('a stub without capabilities gets everything (presets are validated against the full set)', () => {
+	const actions = getActionDefinitions({ config: {}, lists: [], actionCallback() {} })
+	assert.ok(actions.Fullscreen && actions.ActivateListByNumber)
 })
 
-test('ActivateListByNumber handles Previous, Next, a number and out of range', () => {
-	assert.equal(
-		buildCommand({ actionId: 'ActivateListByNumber', options: { Key: 'Previous' } }, ctx),
-		'ActivatePreviousList$',
-	)
-	assert.equal(buildCommand({ actionId: 'ActivateListByNumber', options: { Key: 'Next' } }, ctx), 'ActivateNextList$')
-	assert.equal(
-		buildCommand({ actionId: 'ActivateListByNumber', options: { Key: '2' } }, ctx),
-		'ActivateListByGUID#guid-2$',
-	)
-	assert.equal(
-		buildCommand({ actionId: 'ActivateListByNumber', options: { Key: 1 } }, ctx),
-		'ActivateListByGUID#guid-1$',
-	)
-	assert.equal(buildCommand({ actionId: 'ActivateListByNumber', options: { Key: '3' } }, ctx), null)
-	assert.equal(buildCommand({ actionId: 'ActivateListByNumber', options: { Key: 'abc' } }, ctx), null)
-	assert.equal(
-		buildCommand({ actionId: 'ActivateListByNumber', options: { Key: '1' } }, { config: {}, lists: [] }),
-		null,
-	)
-})
-
-test('every emitted command ends in exactly one terminator', () => {
-	const commands = [
-		buildCommand({ actionId: 'ActivateNextList', options: {} }, ctx),
-		buildCommand({ actionId: 'ActivateThisList', options: {} }, ctx),
-		buildCommand({ actionId: 'ActivateListByNumber', options: { Key: 'Next' } }, ctx),
-		buildCommand({ actionId: 'AddXMinutes', options: { Key: '5' } }, ctx),
-	]
-	for (const cmd of commands) {
-		assert.match(cmd, /[^$]\$$/)
+test('every action keeps the option id Key and the on/off/toggle choices', () => {
+	const actions = getActionDefinitions(stub(['outputs', 'lists', 'links']))
+	for (const id of ['Fullscreen', 'Preview', 'Presenter', 'MultitimerPreview', 'MultitimerFullscreen']) {
+		assert.deepEqual(
+			actions[id].options[0].choices.map((c) => c.id),
+			['on', 'off', 'toggle'],
+		)
+		assert.equal(actions[id].options[0].id, 'Key')
+	}
+	for (const id of ['FireTimerWithID', 'CueTimerWithID', 'SetDuration', 'AddXMinutes', 'SubXMinutes']) {
+		assert.equal(actions[id].options[0].id, 'Key')
+		assert.equal(actions[id].options[0].useVariables, true)
 	}
 })

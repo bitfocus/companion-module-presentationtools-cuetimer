@@ -83,8 +83,8 @@ export function getVariableDefinitions(ctx) {
 	}
 
 	for (const [visibleId, base] of timerVariableMap(Object.keys(ctx.timers ?? {})).bases) {
-		variables[`timer_${base}_name`] = { name: `Timer ${visibleId} Name` }
-		variables[`timer_${base}_duration`] = { name: `Timer ${visibleId} Duration` }
+		variables[`timer_${base}_name`] = { name: `Timer with ID "${visibleId}" Name` }
+		variables[`timer_${base}_duration`] = { name: `Timer with ID "${visibleId}" Duration` }
 	}
 
 	return { ...variables, ...getListVariableDefinitions(ctx.lists) }

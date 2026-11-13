@@ -10,8 +10,8 @@ test('the entrypoint exports the instance class as default', () => {
 
 test('the entrypoint exports the upgrade scripts Companion reads', () => {
 	assert.ok(Array.isArray(UpgradeScripts))
-	assert.equal(UpgradeScripts.length, 1)
-	assert.equal(typeof UpgradeScripts[0], 'function')
+	assert.equal(UpgradeScripts.length, 2)
+	assert.ok(UpgradeScripts.every((script) => typeof script === 'function'))
 })
 
 test('the entrypoint exposes nothing else', () => {

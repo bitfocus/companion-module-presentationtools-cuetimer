@@ -1,5 +1,13 @@
 import icons from './icons.js'
-export function getPresets(instanceLabel) {
+import { ALL_CAPABILITIES } from './state.js'
+import { getTimerPresets } from './timer-presets.js'
+
+/**
+ * @param instanceLabel the connection label, for variable references in preset text
+ * @param capabilities what the connected CueTimer offers; presets needing more are left out
+ * @param timers timers from the current snapshot, in cue-list order
+ */
+export function getPresets(instanceLabel, capabilities = ALL_CAPABILITIES, timers = []) {
 	// API 2.x: presets are declared per section; a section's preset ids are the keys of its presets object
 	const sections = [
 		{
@@ -316,6 +324,7 @@ export function getPresets(instanceLabel) {
 				},
 				Fullscreen: {
 					type: 'simple',
+					requires: 'outputs',
 					name: 'Full Screen',
 					style: {
 						bgcolor: 0,
@@ -347,6 +356,7 @@ export function getPresets(instanceLabel) {
 				},
 				Preview: {
 					type: 'simple',
+					requires: 'outputs',
 					name: 'Preview',
 					style: {
 						bgcolor: 0,
@@ -378,6 +388,7 @@ export function getPresets(instanceLabel) {
 				},
 				Presenter: {
 					type: 'simple',
+					requires: 'outputs',
 					name: 'Presenter',
 					style: {
 						bgcolor: 0,
@@ -409,6 +420,7 @@ export function getPresets(instanceLabel) {
 				},
 				MultitimerPreview: {
 					type: 'simple',
+					requires: 'outputs',
 					name: 'Multitimer Preview',
 					style: {
 						bgcolor: 0,
@@ -440,6 +452,7 @@ export function getPresets(instanceLabel) {
 				},
 				MultitimerFullscreen: {
 					type: 'simple',
+					requires: 'outputs',
 					name: 'Multitimer Fullscreen',
 					style: {
 						bgcolor: 0,
@@ -471,6 +484,7 @@ export function getPresets(instanceLabel) {
 				},
 				MultitimerNDI: {
 					type: 'simple',
+					requires: 'outputs',
 					name: 'Multitimer NDI',
 					style: {
 						bgcolor: 0,
@@ -502,6 +516,7 @@ export function getPresets(instanceLabel) {
 				},
 				NDI: {
 					type: 'simple',
+					requires: 'outputs',
 					name: 'NDI',
 					style: {
 						bgcolor: 0,
@@ -597,86 +612,6 @@ export function getPresets(instanceLabel) {
 						},
 					],
 					feedbacks: [],
-				},
-				FireTimerWithID: {
-					type: 'simple',
-					name: 'Start with ID',
-					notes: 'Set the ID option to the CueTimer timer ID to start.',
-					style: {
-						bgcolor: 0,
-
-						text: 'Start',
-						alignment: 'center:center',
-						size: '14',
-						color: 16777215,
-					},
-					steps: [
-						{
-							down: [
-								{
-									actionId: 'FireTimerWithID',
-									options: {
-										Key: '1',
-									},
-								},
-							],
-							up: [],
-						},
-					],
-					feedbacks: [
-						{
-							feedbackId: 'timerName',
-							options: {
-								Key: '1',
-							},
-						},
-						{
-							feedbackId: 'timerBackground',
-							options: {
-								Key: '1',
-							},
-						},
-					],
-				},
-				CueTimerWithID: {
-					type: 'simple',
-					name: 'Cue with ID',
-					notes: 'Set the ID option to the CueTimer timer ID to cue.',
-					style: {
-						bgcolor: 0,
-
-						text: 'Cue',
-						alignment: 'center:center',
-						size: '14',
-						color: 16777215,
-					},
-					steps: [
-						{
-							down: [
-								{
-									actionId: 'CueTimerWithID',
-									options: {
-										Key: '1',
-									},
-								},
-							],
-							up: [],
-						},
-					],
-					feedbacks: [
-						{
-							feedbackId: 'timerName',
-							options: {
-								Key: '1',
-							},
-						},
-						{
-							feedbackId: 'timerBackground',
-							options: {
-								Key: '1',
-							},
-						},
-					],
 				},
 				CueCurrent: {
 					type: 'simple',
@@ -797,11 +732,17 @@ export function getPresets(instanceLabel) {
 			},
 		},
 		{
+			id: 'set-duration',
+			name: 'Set duration',
+			presets: durationPresets(),
+		},
+		{
 			id: 'list-control',
 			name: 'List control',
 			presets: {
 				PrevList: {
 					type: 'simple',
+					requires: 'lists',
 					name: 'Selects previous list',
 					style: {
 						bgcolor: 0,
@@ -820,6 +761,7 @@ export function getPresets(instanceLabel) {
 				},
 				NextList: {
 					type: 'simple',
+					requires: 'lists',
 					name: 'Selects next list',
 					style: {
 						bgcolor: 0,
@@ -1048,10 +990,103 @@ export function getPresets(instanceLabel) {
 		},
 	]
 
+	// A preset marked `requires` only appears when the connected CueTimer has that capability
+	const available = sections
+		.map(({ id, name, presets }) => ({
+			id,
+			name,
+			presets: Object.fromEntries(
+				Object.entries(presets)
+					.filter(([, preset]) => !preset.requires || capabilities.includes(preset.requires))
+					.map(([key, { requires: _requires, ...preset }]) => [key, preset]),
+			),
+		}))
+		.filter((section) => Object.keys(section.presets).length > 0)
+
+	const structure = available.map(({ id, name, presets }) => ({ id, name, definitions: Object.keys(presets) }))
+	const timerPresets = ['start', 'cue'].map((mode) => getTimerPresets(timers, mode))
+	structure.splice(1, 0, ...timerPresets.map(({ section }) => section))
 	return {
-		structure: sections.map(({ id, name, presets }) => ({ id, name, definitions: Object.keys(presets) })),
-		presets: Object.assign({}, ...sections.map((section) => section.presets)),
+		structure,
+		presets: Object.assign(
+			{},
+			...available.map((section) => section.presets),
+			...timerPresets.map(({ presets }) => presets),
+		),
 	}
+}
+
+function durationPresets() {
+	const minutes = [
+		...Array.from({ length: 20 }, (_, i) => i + 1),
+		...Array.from({ length: 14 }, (_, i) => 25 + i * 5),
+		120,
+		150,
+		180,
+		210,
+		240,
+		270,
+		300,
+	]
+	const durations = [15, 30, ...minutes.map((value) => value * 60)]
+	return Object.fromEntries(
+		durations.map((totalSeconds) => {
+			const totalMinutes = Math.floor(totalSeconds / 60)
+			const hours = Math.floor(totalMinutes / 60)
+			const remainder = totalMinutes % 60
+			const label =
+				totalSeconds < 60
+					? `${totalSeconds} sec`
+					: totalMinutes < 60
+						? `${totalMinutes} min`
+						: `${hours}h${remainder ? ` ${remainder}m` : ''}`
+			const duration = [hours, remainder, totalSeconds % 60].map((value) => String(value).padStart(2, '0')).join(':')
+			// Preserve existing minute preset IDs so linked buttons keep their source.
+			const id = totalSeconds < 60 ? `SetDuration${totalSeconds}Seconds` : `SetDuration${totalMinutes}Minutes`
+			return [
+				id,
+				{
+					type: 'layered',
+					name: `Set duration: ${label}`,
+					notes: `Set the duration to ${label}. Applies to the running timer, or the next one when idle.`,
+					elements: [
+						{ type: 'box', id: 'background', x: 0, y: 0, width: 100, height: 100, color: 0x153e60 },
+						{
+							type: 'text',
+							id: 'heading',
+							text: 'Set\nduration',
+							x: 4,
+							y: 4,
+							width: 92,
+							height: 32,
+							fontsize: 40,
+							fontsizeAllowShrink: true,
+							color: 0xb8cddd,
+							halign: 'center',
+							valign: 'center',
+						},
+						{
+							type: 'text',
+							id: 'duration',
+							text: label,
+							x: 4,
+							y: 38,
+							width: 92,
+							height: 56,
+							fontsize: 63,
+							fontsizeAllowShrink: true,
+							weight: 'bold',
+							color: 0xffffff,
+							halign: 'center',
+							valign: 'center',
+						},
+					],
+					steps: [{ down: [{ actionId: 'SetDuration', options: { Key: duration } }], up: [] }],
+					feedbacks: [],
+				},
+			]
+		}),
+	)
 }
 
 // Presets "Selects List 1" … "Selects List 10", generated from one template
@@ -1060,6 +1095,7 @@ function listPresets(instanceLabel) {
 	for (let i = 1; i <= 10; i++) {
 		presets[`List${i}`] = {
 			type: 'simple',
+			requires: 'lists',
 			name: `Selects List ${i}`,
 			style: {
 				bgcolor: 0,

@@ -1,6 +1,6 @@
 {
 	"name": "presentationtools-cuetimer",
-	"version": "2.2.2",
+	"version": "3.0.0",
 	"main": "src/main.js",
 	"type": "module",
 	"prettier": "@companion-module/tools/.prettierrc.json",
@@ -20,12 +20,14 @@
 		"yarn": "^4"
 	},
 	"dependencies": {
-		"@companion-module/base": "~2.2.1"
+		"@companion-module/base": "~2.2.1",
+		"socket.io-client": "^4.8.1"
 	},
 	"devDependencies": {
 		"@companion-module/tools": "^3.2.0",
 		"eslint": "^10.12.0",
-		"prettier": "^3.9.9"
+		"prettier": "^3.9.9",
+		"socket.io": "^4.8.1"
 	},
 	"packageManager": "yarn@4.18.1"
 }

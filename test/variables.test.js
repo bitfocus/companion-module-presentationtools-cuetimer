@@ -1,8 +1,48 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { getListVariableDefinitions, getVariableDefinitions } from '../src/variables.js'
+import CueTimerInstance from '../src/main.js'
+import { emptyState } from '../src/state.js'
 
 const HOST_VARIABLE_ID_REGEX = /^([a-zA-Z0-9-_.!]+)$/
+
+test('published 2.2.2 variable IDs follow assigned IDs across reordering and clear on disconnect', () => {
+	const inst = Object.create(CueTimerInstance.prototype)
+	let definitions = {}
+	const values = {}
+	Object.assign(inst, emptyState(), {
+		setVariableDefinitions: (defs) => (definitions = defs),
+		setVariableValues: (updates) => Object.assign(values, updates),
+		checkFeedbacks() {},
+		presets() {},
+		log() {},
+	})
+	const timers = [
+		{ visibleID: 'Opening', name: 'Welcome', duration: '00:10:00' },
+		{ visibleID: '', name: 'No ID', duration: '00:05:00' },
+		{ visibleID: '1', name: 'Keynote', duration: '00:30:00' },
+	]
+	inst.applyState({ timers })
+	assert.deepEqual(
+		Object.keys(definitions)
+			.filter((id) => id.startsWith('timer_'))
+			.sort(),
+		['timer_1_duration', 'timer_1_name', 'timer_Opening_duration', 'timer_Opening_name'],
+	)
+	assert.equal(values.timer_1_name, 'Keynote')
+	assert.equal(values.timer_Opening_duration, '00:10:00')
+	inst.applyState({ timers: [...timers].reverse() })
+	assert.equal(values.timer_1_name, 'Keynote')
+	assert.equal(values.timer_Opening_duration, '00:10:00')
+	assert.equal(values.timer_1_duration, '00:30:00')
+	inst.applyState({ timers: [{ visibleID: '1', name: 'Updated keynote', duration: '00:25:00' }] })
+	assert.equal(values.timer_1_name, 'Updated keynote')
+	assert.equal(values.timer_1_duration, '00:25:00')
+	inst.resetLiveState()
+	for (const id of Object.keys(definitions).filter((id) => id.startsWith('timer_'))) {
+		assert.equal(values[id], '', id)
+	}
+})
 
 test('valid timer ids are used unchanged', () => {
 	const defs = getVariableDefinitions({ timers: { 1: {}, Speaker1: {}, 'a-b_c.d!': {} }, lists: [] })

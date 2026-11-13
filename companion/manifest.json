@@ -3,7 +3,7 @@
 	"id": "presentationtools-cuetimer",
 	"name": "presentationtools-cuetimer",
 	"shortname": "cuetimer",
-	"description": "Module to control CueTimer",
+	"description": "Control the CueTimer app or a CueTimer Cloud cue list",
 	"version": "0.0.0",
 	"license": "MIT",
 	"repository": "git+https://github.com/bitfocus/companion-module-presentationtools-cuetimer.git",
@@ -22,6 +22,6 @@
 		"entrypoint": "../src/main.js"
 	},
 	"manufacturer": "PresentationTools",
-	"products": ["CueTimer"],
-	"keywords": ["Presentation", "Timer", "Software"]
+	"products": ["CueTimer", "CueTimer Cloud"],
+	"keywords": ["Presentation", "Timer", "Software", "Cloud"]
 }

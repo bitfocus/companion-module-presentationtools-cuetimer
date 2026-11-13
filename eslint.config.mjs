@@ -9,4 +9,9 @@ export default [
 		files: ['**/*.js'],
 		languageOptions: { sourceType: 'module' },
 	},
+	{
+		// Tests may use dev dependencies (a Socket.IO server stands in for CueTimer)
+		files: ['test/**/*.js'],
+		rules: { 'n/no-unpublished-import': 'off' },
+	},
 ]

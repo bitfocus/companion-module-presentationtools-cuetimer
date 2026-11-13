@@ -16,17 +16,51 @@ const actions = getActionDefinitions(stub)
 const feedbacks = getFeedbackDefinitions(stub)
 const { structure, presets } = getPresets('cuetimer')
 
+test('on the Cloud the output and list presets are left out and no section is empty', () => {
+	const cloud = getPresets('cuetimer', [])
+	const cloudActions = getActionDefinitions({ ...stub, capabilities: [] })
+	assert.deepEqual(
+		cloud.structure.map((section) => section.id),
+		['commands', 'start-timer-with-id', 'cue-timer-with-id', 'set-duration', 'feedbacks'],
+	)
+	for (const section of cloud.structure) assert.ok(section.definitions.length > 0, `${section.id} is empty`)
+	for (const [id, preset] of Object.entries(cloud.presets)) {
+		assert.equal(preset.requires, undefined, `${id} leaks its requirement`)
+		for (const step of preset.steps) {
+			for (const action of [...step.down, ...step.up]) {
+				assert.ok(cloudActions[action.actionId], `${id} uses app-only action ${action.actionId}`)
+			}
+		}
+		for (const feedback of preset.feedbacks) assert.notEqual(feedback.feedbackId, 'activeList', id)
+	}
+	const outputPresets = [
+		'Fullscreen',
+		'Preview',
+		'Presenter',
+		'NDI',
+		'MultitimerPreview',
+		'MultitimerFullscreen',
+		'MultitimerNDI',
+	]
+	for (const id of [...outputPresets, 'PrevList', 'NextList', 'List1', 'List10'])
+		assert.equal(cloud.presets[id], undefined, id)
+	for (const id of outputPresets) assert.ok(presets[id], `${id} exists with the app`)
+	assert.equal(Object.keys(presets).length - Object.keys(cloud.presets).length, outputPresets.length + 12)
+})
+
 const optionIds = (definition) => new Set(definition.options.map((option) => option.id))
 
-test('the structure has the three sections and references only existing presets', () => {
+test('the structure references only existing presets, including offline ID groups', () => {
 	assert.deepEqual(
 		structure.map((section) => section.id),
-		['commands', 'list-control', 'feedbacks'],
+		['commands', 'start-timer-with-id', 'cue-timer-with-id', 'set-duration', 'list-control', 'feedbacks'],
 	)
 	const referenced = new Set()
 	for (const section of structure) {
 		assert.ok(section.definitions.length > 0, `${section.id} is empty`)
-		for (const id of section.definitions) {
+		for (const id of section.definitions.flatMap((entry) =>
+			typeof entry === 'string' ? [entry] : entry.type === 'template' ? [entry.presetId] : entry.presets,
+		)) {
 			assert.ok(presets[id], `${section.id} references unknown preset ${id}`)
 			assert.ok(!referenced.has(id), `${id} is listed twice`)
 			referenced.add(id)
@@ -37,12 +71,18 @@ test('the structure has the three sections and references only existing presets'
 	}
 })
 
-test('every preset is a simple preset with a complete style and no category', () => {
+test('every preset has a complete simple style or layered graphics and no category', () => {
 	for (const [id, preset] of Object.entries(presets)) {
-		assert.equal(preset.type, 'simple', id)
+		assert.ok(['simple', 'layered'].includes(preset.type), id)
 		assert.equal(preset.category, undefined, id)
-		for (const key of ['text', 'size', 'color', 'bgcolor']) {
-			assert.notEqual(preset.style[key], undefined, `${id} style.${key}`)
+		assert.equal(preset.requires, undefined, id)
+		if (preset.type === 'simple') {
+			for (const key of ['text', 'size', 'color', 'bgcolor']) {
+				assert.notEqual(preset.style[key], undefined, `${id} style.${key}`)
+			}
+		} else {
+			assert.ok(Array.isArray(preset.elements) && preset.elements.length > 0, id)
+			assert.equal(preset.style, undefined, id)
 		}
 		assert.ok(Array.isArray(preset.steps), id)
 		assert.ok(Array.isArray(preset.feedbacks), id)

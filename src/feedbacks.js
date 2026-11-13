@@ -2,16 +2,42 @@ import { combineRgb } from '@companion-module/base'
 import { getListNumberedChoices } from './choices.js'
 import { BUTTON_STATES, hexToRgb } from './utils.js'
 
+/** Display text for the ID presets; keep legacy variables and text feedbacks unchanged. */
+function timerDisplayValue(ctx, rawId, field) {
+	const id = String(rawId ?? '')
+	if (!id.trim()) return 'Set timer ID'
+	const timer = Object.hasOwn(ctx.timers, id) ? ctx.timers[id] : undefined
+	if (timer) {
+		const value = timer[field] ?? ''
+		return field === 'name' && !value.trim() ? 'Unnamed timer' : value
+	}
+	return `ID: ${id}\n${ctx.snapshot === null ? 'Offline' : 'Not found'}`
+}
+
 /** @param ctx the instance, or a plain stub with the same fields (tests) */
 export function getFeedbackDefinitions(ctx) {
 	const idOption = {
 		type: 'textinput',
 		label: 'ID',
 		id: 'Key',
-		default: '1',
+		default: '',
 	}
 
 	return {
+		timerNameValue: {
+			type: 'value',
+			name: 'ID timer Name value',
+			description: 'Timer name, or an ID/status message when unavailable, for a local variable.',
+			options: [idOption],
+			callback: (feedback) => timerDisplayValue(ctx, feedback.options.Key, 'name'),
+		},
+		timerDurationValue: {
+			type: 'value',
+			name: 'ID timer Duration value',
+			description: 'Timer duration, or an ID/status message when unavailable, for a local variable.',
+			options: [idOption],
+			callback: (feedback) => timerDisplayValue(ctx, feedback.options.Key, 'duration'),
+		},
 		colors: {
 			type: 'advanced',
 			name: 'Main counter Colors from timer',
