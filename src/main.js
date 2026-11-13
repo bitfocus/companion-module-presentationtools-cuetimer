@@ -5,6 +5,7 @@ import { CueTimerConnection } from './connection.js'
 import { buildEngineCommand, isPlaceholderList } from './engine-commands.js'
 import { getFeedbackDefinitions } from './feedbacks.js'
 import { getPresets } from './presets.js'
+import { getTimerPresetCatalog } from './timer-presets.js'
 import { capabilitiesForConfig, capabilitiesForMode, emptyState, mapState } from './state.js'
 import { UpgradeScripts } from './upgrades.js'
 import { getVariableDefinitions, timerVariableMap } from './variables.js'
@@ -135,7 +136,17 @@ export default class CueTimerInstance extends InstanceBase {
 		}
 		Object.assign(this, emptyState())
 		this.setVariableValues({ ...values, listGUID: '', listDisplayLink: '', listControlLink: '' })
-		this.checkFeedbacks('activeList', 'colors', 'status', 'timerName', 'timerDuration', 'timerBackground')
+		this.presets()
+		this.checkFeedbacks(
+			'activeList',
+			'colors',
+			'status',
+			'timerName',
+			'timerDuration',
+			'timerBackground',
+			'timerNameValue',
+			'timerDurationValue',
+		)
 	}
 
 	applyConnectResponse(data) {
@@ -190,6 +201,10 @@ export default class CueTimerInstance extends InstanceBase {
 		const mapped = mapState(snapshot)
 		const listsChanged = JSON.stringify(mapped.lists) !== JSON.stringify(this.lists)
 		const timersChanged = !this.compareKeys(mapped.timers, this.timers)
+		const timerPresetsChanged =
+			this.snapshot?.list?.id !== snapshot.list?.id ||
+			JSON.stringify(getTimerPresetCatalog(this.snapshot?.timers)) !==
+				JSON.stringify(getTimerPresetCatalog(snapshot.timers))
 		this.snapshot = snapshot
 		this.lists = mapped.lists
 		this.timers = mapped.timers
@@ -216,9 +231,18 @@ export default class CueTimerInstance extends InstanceBase {
 			timerValues[`timer_${base}_duration`] = this.timers[visibleId].duration
 		}
 		this.setVariableValues({ ...mapped.variables, ...this.listVariableValues(mapped), ...timerValues })
+		if (timerPresetsChanged) this.presets()
 
 		this.refreshStatus()
-		this.checkFeedbacks('colors', 'status', 'timerName', 'timerDuration', 'timerBackground')
+		this.checkFeedbacks(
+			'colors',
+			'status',
+			'timerName',
+			'timerDuration',
+			'timerBackground',
+			'timerNameValue',
+			'timerDurationValue',
+		)
 	}
 
 	/**
@@ -311,7 +335,7 @@ export default class CueTimerInstance extends InstanceBase {
 	}
 
 	presets() {
-		const { structure, presets } = getPresets(this.label, this.capabilities)
+		const { structure, presets } = getPresets(this.label, this.capabilities, this.snapshot?.timers)
 		this.setPresetDefinitions(structure, presets)
 	}
 

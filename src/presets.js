@@ -1,11 +1,13 @@
 import icons from './icons.js'
 import { ALL_CAPABILITIES } from './state.js'
+import { getTimerPresets } from './timer-presets.js'
 
 /**
  * @param instanceLabel the connection label, for variable references in preset text
  * @param capabilities what the connected CueTimer offers; presets needing more are left out
+ * @param timers timers from the current snapshot, in cue-list order
  */
-export function getPresets(instanceLabel, capabilities = ALL_CAPABILITIES) {
+export function getPresets(instanceLabel, capabilities = ALL_CAPABILITIES, timers = []) {
 	// API 2.x: presets are declared per section; a section's preset ids are the keys of its presets object
 	const sections = [
 		{
@@ -611,86 +613,6 @@ export function getPresets(instanceLabel, capabilities = ALL_CAPABILITIES) {
 					],
 					feedbacks: [],
 				},
-				FireTimerWithID: {
-					type: 'simple',
-					name: 'Start with ID',
-					notes: 'Set the ID option to the CueTimer timer ID to start.',
-					style: {
-						bgcolor: 0,
-
-						text: 'Start',
-						alignment: 'center:center',
-						size: '14',
-						color: 16777215,
-					},
-					steps: [
-						{
-							down: [
-								{
-									actionId: 'FireTimerWithID',
-									options: {
-										Key: '1',
-									},
-								},
-							],
-							up: [],
-						},
-					],
-					feedbacks: [
-						{
-							feedbackId: 'timerName',
-							options: {
-								Key: '1',
-							},
-						},
-						{
-							feedbackId: 'timerBackground',
-							options: {
-								Key: '1',
-							},
-						},
-					],
-				},
-				CueTimerWithID: {
-					type: 'simple',
-					name: 'Cue with ID',
-					notes: 'Set the ID option to the CueTimer timer ID to cue.',
-					style: {
-						bgcolor: 0,
-
-						text: 'Cue',
-						alignment: 'center:center',
-						size: '14',
-						color: 16777215,
-					},
-					steps: [
-						{
-							down: [
-								{
-									actionId: 'CueTimerWithID',
-									options: {
-										Key: '1',
-									},
-								},
-							],
-							up: [],
-						},
-					],
-					feedbacks: [
-						{
-							feedbackId: 'timerName',
-							options: {
-								Key: '1',
-							},
-						},
-						{
-							feedbackId: 'timerBackground',
-							options: {
-								Key: '1',
-							},
-						},
-					],
-				},
 				CueCurrent: {
 					type: 'simple',
 					name: 'Stop and go back',
@@ -808,6 +730,11 @@ export function getPresets(instanceLabel, capabilities = ALL_CAPABILITIES) {
 					feedbacks: [],
 				},
 			},
+		},
+		{
+			id: 'set-duration',
+			name: 'Set duration',
+			presets: durationPresets(),
 		},
 		{
 			id: 'list-control',
@@ -1076,10 +1003,90 @@ export function getPresets(instanceLabel, capabilities = ALL_CAPABILITIES) {
 		}))
 		.filter((section) => Object.keys(section.presets).length > 0)
 
+	const structure = available.map(({ id, name, presets }) => ({ id, name, definitions: Object.keys(presets) }))
+	const timerPresets = ['start', 'cue'].map((mode) => getTimerPresets(timers, mode))
+	structure.splice(1, 0, ...timerPresets.map(({ section }) => section))
 	return {
-		structure: available.map(({ id, name, presets }) => ({ id, name, definitions: Object.keys(presets) })),
-		presets: Object.assign({}, ...available.map((section) => section.presets)),
+		structure,
+		presets: Object.assign(
+			{},
+			...available.map((section) => section.presets),
+			...timerPresets.map(({ presets }) => presets),
+		),
 	}
+}
+
+function durationPresets() {
+	const minutes = [
+		...Array.from({ length: 20 }, (_, i) => i + 1),
+		...Array.from({ length: 14 }, (_, i) => 25 + i * 5),
+		120,
+		150,
+		180,
+		210,
+		240,
+		270,
+		300,
+	]
+	const durations = [15, 30, ...minutes.map((value) => value * 60)]
+	return Object.fromEntries(
+		durations.map((totalSeconds) => {
+			const totalMinutes = Math.floor(totalSeconds / 60)
+			const hours = Math.floor(totalMinutes / 60)
+			const remainder = totalMinutes % 60
+			const label =
+				totalSeconds < 60
+					? `${totalSeconds} sec`
+					: totalMinutes < 60
+						? `${totalMinutes} min`
+						: `${hours}h${remainder ? ` ${remainder}m` : ''}`
+			const duration = [hours, remainder, totalSeconds % 60].map((value) => String(value).padStart(2, '0')).join(':')
+			// Preserve existing minute preset IDs so linked buttons keep their source.
+			const id = totalSeconds < 60 ? `SetDuration${totalSeconds}Seconds` : `SetDuration${totalMinutes}Minutes`
+			return [
+				id,
+				{
+					type: 'layered',
+					name: `Set duration: ${label}`,
+					notes: `Set the duration to ${label}. Applies to the running timer, or the next one when idle.`,
+					elements: [
+						{ type: 'box', id: 'background', x: 0, y: 0, width: 100, height: 100, color: 0x153e60 },
+						{
+							type: 'text',
+							id: 'heading',
+							text: 'Set\nduration',
+							x: 4,
+							y: 4,
+							width: 92,
+							height: 32,
+							fontsize: 40,
+							fontsizeAllowShrink: true,
+							color: 0xb8cddd,
+							halign: 'center',
+							valign: 'center',
+						},
+						{
+							type: 'text',
+							id: 'duration',
+							text: label,
+							x: 4,
+							y: 38,
+							width: 92,
+							height: 56,
+							fontsize: 63,
+							fontsizeAllowShrink: true,
+							weight: 'bold',
+							color: 0xffffff,
+							halign: 'center',
+							valign: 'center',
+						},
+					],
+					steps: [{ down: [{ actionId: 'SetDuration', options: { Key: duration } }], up: [] }],
+					feedbacks: [],
+				},
+			]
+		}),
+	)
 }
 
 // Presets "Selects List 1" … "Selects List 10", generated from one template

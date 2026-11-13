@@ -5,7 +5,9 @@ import { getListsChoices } from './choices.js'
 
 // A `.env` file in the module folder (git-ignored, see .env.example) sets CUETIMER_CLOUD_URL for
 // development against a local or staging engine. A packaged module carries no such file.
-const envFile = fileURLToPath(new URL('../.env', import.meta.url))
+// Source files live in src/; the packaged entrypoint lives beside package.json.
+const moduleRoot = new URL(existsSync(new URL('./package.json', import.meta.url)) ? './' : '../', import.meta.url)
+const envFile = fileURLToPath(new URL('.env', moduleRoot))
 try {
 	if (existsSync(envFile)) process.loadEnvFile(envFile)
 } catch {
