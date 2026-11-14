@@ -1,5 +1,6 @@
 import { combineRgb } from '@companion-module/base'
 import { emptyButtonStates, hexToRgb } from './utils.js'
+import { clockParts, formatHms, parseUtc, timeOfDayIn, zoneFor } from './time.js'
 
 /** The Companion API version this module speaks; the engine refuses another major. */
 export const COMPANION_API_VERSION = '1.0'
@@ -56,16 +57,36 @@ function toColor(hex, fallback) {
 }
 
 /**
+ * The counter variables. In Clock mode (or for a Clock-type timer) CueTimer sends the clock as
+ * an instant, read here in the chosen zone; a clock without seconds is hours and minutes, not
+ * the minutes and seconds a two-part counter is. An older CueTimer sends only the text.
+ */
+function counterParts(timer, zone) {
+	const instant = parseUtc(timer.clock?.utc)
+	if (instant) return clockParts(timeOfDayIn(instant, zone), timer.clock)
+	return signedParts(timer.displayTime)
+}
+
+/** End Time in the chosen zone; the list-zone text of an older CueTimer when it sends no instant */
+function endTimeText(timer, zone) {
+	if (timer.endTimeUtc === undefined) return timer.endTime ?? ''
+	const instant = parseUtc(timer.endTimeUtc)
+	return instant ? formatHms(timeOfDayIn(instant, zone)) : ''
+}
+
+/**
  * Map one `companionState` snapshot to the module's variables, feedback inputs and lists.
  * Pure; the variable and feedback ids are those of module 2.x plus a few new ones.
+ * `timeZone` is the module's "Time zone" setting (see time.js); times of day follow it.
  */
-export function mapState(snapshot) {
+export function mapState(snapshot, { timeZone } = {}) {
 	const timer = snapshot.timer ?? {}
 	const next = snapshot.next ?? {}
 	const flags = snapshot.flags ?? {}
 	const outputs = snapshot.outputs ?? {}
 	const list = snapshot.list ?? {}
-	const { hours, minutes, seconds } = signedParts(timer.displayTime)
+	const zone = zoneFor(timeZone, list.timeZone)
+	const { hours, minutes, seconds } = counterParts(timer, zone)
 
 	const timers = {}
 	for (const t of snapshot.timers ?? []) {
@@ -93,7 +114,7 @@ export function mapState(snapshot) {
 			seconds,
 			name: timer.name ?? '',
 			speed: timer.speed ?? '',
-			endTime: timer.endTime ?? '',
+			endTime: endTimeText(timer, zone),
 			nextTimerName: next.name ?? '',
 			nextTimerDuration: next.duration ?? '',
 			scheduleOffset: snapshot.schedule?.offset ?? '00:00:00',

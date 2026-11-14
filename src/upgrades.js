@@ -1,3 +1,5 @@
+import { TIME_ZONE_DEVICE } from './time.js'
+
 export const UpgradeScripts = [
 	function list_new_config_field(context, props) {
 		const result = {
@@ -32,6 +34,22 @@ export const UpgradeScripts = [
 			props.config.list = props.config.list ?? ''
 			props.config.listId = ''
 			props.config.name = 'Companion'
+			result.updatedConfig = props.config
+		}
+
+		return result
+	},
+
+	// Times of day arrive as UTC; a connection saved before the "Time zone" setting gets its default
+	function time_zone_config_field(context, props) {
+		const result = {
+			updatedConfig: null,
+			updatedActions: [],
+			updatedFeedbacks: [],
+		}
+
+		if (props.config !== null && props.config.timeZone === undefined) {
+			props.config.timeZone = TIME_ZONE_DEVICE
 			result.updatedConfig = props.config
 		}
 

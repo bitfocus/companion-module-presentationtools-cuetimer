@@ -14,7 +14,7 @@ test('fields follow the "Connect to" choice through expressions, never functions
 	assert.match(byId.port.description, /LAN port/)
 	for (const id of ['listId', 'name']) assert.equal(byId[id].isVisibleExpression, "$(options:mode) === 'cloud'", id)
 	assert.equal(byId['info-cloud'], undefined)
-	for (const id of ['info', 'mode']) assert.equal(byId[id].isVisibleExpression, undefined, id)
+	for (const id of ['info', 'mode', 'timeZone']) assert.equal(byId[id].isVisibleExpression, undefined, id)
 })
 
 test('the Cloud endpoint is not a setting', () => {
@@ -40,4 +40,9 @@ test('defaults match a fresh app connection', () => {
 	assert.equal(byId.list.choices[0].id, '')
 	assert.equal(byId.listId.default, '')
 	assert.equal(byId.name.default, 'Companion')
+	assert.deepEqual(
+		byId.timeZone.choices.map((c) => c.id),
+		['device', 'schedule'],
+	)
+	assert.equal(byId.timeZone.default, 'device')
 })

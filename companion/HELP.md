@@ -17,6 +17,13 @@ Requires Companion 5.1 or later and CueTimer 5 with the Companion API. For CueTi
 
 **Connection name** (Cloud mode) is shown in CueTimer Cloud's dashboard for the cue list.
 
+**Time zone** sets the zone End Time and the clock in Clock mode are shown in.
+
+- _This Companion device_ (default): the time zone of the computer Companion runs on. Operators in different time zones each see their own local time.
+- _CueTimer schedule time zone_: the zone set for the list in CueTimer (Preferences / General Settings / Schedule time zone, or the cue list's zone on CueTimer Cloud). Every operator sees the same time.
+
+A CueTimer build from before this setting sends these times in the schedule time zone only; they are then shown in that zone whichever option is chosen.
+
 Connections created with module version 2 are converted automatically: the app mode with the same IP and list, on the LAN port.
 
 ## Available actions
@@ -58,10 +65,10 @@ Variables are used as `$(instancename:variablename)`, e.g. `$(cuetimer:hours)`. 
 
 ##### Main counter
 
-- hours, minutes, seconds: the counter as shown on the outputs, split into its parts (overtime shows a `+`)
+- hours, minutes, seconds: the counter as shown on the outputs, split into its parts (overtime shows a `+`). In Clock mode, or for a Clock-type timer, they are the clock in the time zone chosen under **Time zone**, with CueTimer's clock settings; with seconds hidden, `seconds` is empty.
 - name
 - speed
-- endTime: end of the running timer, in the list's time zone
+- endTime: end of the running timer as `HH:mm:ss`, in the time zone chosen under **Time zone**
 - nextTimerName, nextTimerDuration
 - scheduleOffset, scheduleOffsetStatus (auto-schedule)
 

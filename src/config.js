@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { Regex } from '@companion-module/base'
 import { getListsChoices } from './choices.js'
+import { TIME_ZONE_DEVICE, TIME_ZONE_SCHEDULE } from './time.js'
 
 // A `.env` file in the module folder (git-ignored, see .env.example) sets CUETIMER_CLOUD_URL for
 // development against a local or staging engine. A packaged module carries no such file.
@@ -93,6 +94,21 @@ export function getConfigFields(ctx) {
 			default: 'Companion',
 			width: 12,
 			isVisibleExpression: "$(options:mode) === 'cloud'",
+		},
+		{
+			type: 'dropdown',
+			id: 'timeZone',
+			label: 'Time zone',
+			description:
+				'For End Time and the clock in Clock mode. "This Companion device" shows them in the time zone of the ' +
+				'computer Companion runs on; "CueTimer schedule time zone" shows them in the zone set for the list in ' +
+				'CueTimer, the same for every operator.',
+			default: TIME_ZONE_DEVICE,
+			width: 12,
+			choices: [
+				{ id: TIME_ZONE_DEVICE, label: 'This Companion device' },
+				{ id: TIME_ZONE_SCHEDULE, label: 'CueTimer schedule time zone' },
+			],
 		},
 	]
 }

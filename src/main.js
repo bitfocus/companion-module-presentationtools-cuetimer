@@ -198,7 +198,7 @@ export default class CueTimerInstance extends InstanceBase {
 	}
 
 	applyState(snapshot) {
-		const mapped = mapState(snapshot)
+		const mapped = mapState(snapshot, { timeZone: this.config?.timeZone })
 		const listsChanged = JSON.stringify(mapped.lists) !== JSON.stringify(this.lists)
 		const timersChanged = !this.compareKeys(mapped.timers, this.timers)
 		const timerPresetsChanged =
