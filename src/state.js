@@ -25,6 +25,7 @@ export function emptyState() {
 		lists: [],
 		timers: {},
 		buttonStates: emptyButtonStates(),
+		timerState: '',
 		fgColor: combineRgb(255, 255, 255),
 		bgColor: combineRgb(0, 0, 0),
 		syncError: undefined,
@@ -87,6 +88,8 @@ export function mapState(snapshot, { timeZone } = {}) {
 	const list = snapshot.list ?? {}
 	const zone = zoneFor(timeZone, list.timeZone)
 	const { hours, minutes, seconds } = counterParts(timer, zone)
+	// An older CueTimer sends no state: empty then, never "idle", which is a state to act on
+	const timerState = typeof timer.state === 'string' ? timer.state : ''
 
 	const timers = {}
 	for (const t of snapshot.timers ?? []) {
@@ -114,6 +117,7 @@ export function mapState(snapshot, { timeZone } = {}) {
 			seconds,
 			name: timer.name ?? '',
 			speed: timer.speed ?? '',
+			state: timerState,
 			endTime: endTimeText(timer, zone),
 			nextTimerName: next.name ?? '',
 			nextTimerDuration: next.duration ?? '',
@@ -134,6 +138,7 @@ export function mapState(snapshot, { timeZone } = {}) {
 			MultitimerFullscreen: !!outputs.multitimerFullscreen,
 			MultitimerNDI: !!outputs.multitimerNDI,
 		},
+		timerState,
 		fgColor: toColor(snapshot.colors?.fg, combineRgb(255, 255, 255)),
 		bgColor: toColor(snapshot.colors?.bg, combineRgb(0, 0, 0)),
 		timers,

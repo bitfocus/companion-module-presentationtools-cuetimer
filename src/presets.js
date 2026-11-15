@@ -986,6 +986,36 @@ export function getPresets(instanceLabel, capabilities = ALL_CAPABILITIES, timer
 					],
 					feedbacks: [],
 				},
+				timerState: {
+					type: 'simple',
+					name: 'Timer State',
+					style: {
+						bgcolor: 0,
+						text: `$(${instanceLabel}:state)`,
+						alignment: 'center:center',
+						// "overtime" breaks over two lines at 18
+						size: '16',
+						color: 16777215,
+					},
+					steps: [
+						{
+							down: [],
+							up: [],
+						},
+					],
+					feedbacks: [
+						{
+							feedbackId: 'timerState',
+							options: {
+								Key: 'overtime',
+							},
+							style: {
+								color: 16777215,
+								bgcolor: 16711680,
+							},
+						},
+					],
+				},
 			},
 		},
 	]

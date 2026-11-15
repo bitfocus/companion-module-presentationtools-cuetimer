@@ -21,6 +21,7 @@ function blankVariableValues() {
 		seconds: '',
 		name: '',
 		speed: '',
+		state: '',
 		endTime: '',
 		nextTimerName: '',
 		nextTimerDuration: '',
@@ -143,6 +144,7 @@ export default class CueTimerInstance extends InstanceBase {
 			'activeList',
 			'colors',
 			'status',
+			'timerState',
 			'timerName',
 			'timerDuration',
 			'timerBackground',
@@ -211,6 +213,7 @@ export default class CueTimerInstance extends InstanceBase {
 		this.lists = mapped.lists
 		this.timers = mapped.timers
 		this.buttonStates = mapped.buttonStates
+		this.timerState = mapped.timerState
 		this.fgColor = mapped.fgColor
 		this.bgColor = mapped.bgColor
 		this.syncError = mapped.syncError
@@ -239,6 +242,7 @@ export default class CueTimerInstance extends InstanceBase {
 		this.checkFeedbacks(
 			'colors',
 			'status',
+			'timerState',
 			'timerName',
 			'timerDuration',
 			'timerBackground',

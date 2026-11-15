@@ -90,3 +90,56 @@ test('ID preset displays distinguish missing IDs, offline state and unnamed matc
 	assert.equal(definitions.timerNameValue.callback({ options: { Key: '3' } }), 'Unnamed timer')
 	assert.equal(definitions.timerDurationValue.callback({ options: { Key: '3' } }), '00:00:00')
 })
+
+test('the timer state feedback is on only for the state CueTimer reports', () => {
+	const inst = Object.create(CueTimerInstance.prototype)
+	const values = {}
+	const checked = []
+	Object.assign(inst, emptyState(), {
+		setVariableDefinitions() {},
+		setVariableValues(v) {
+			Object.assign(values, v)
+		},
+		presets() {},
+		log() {},
+		checkFeedbacks(...ids) {
+			checked.push(ids)
+		},
+	})
+	const definitions = () => getFeedbackDefinitions(inst)
+	const on = (Key) => definitions().timerState.callback({ feedbackId: 'timerState', options: { Key } })
+	const states = ['idle', 'normal', 'alert1', 'alert2', 'overtime']
+
+	assert.equal(definitions().timerState.type, 'boolean')
+	assert.equal(definitions().timerState.options[0].default, 'overtime')
+	assert.deepEqual(
+		definitions().timerState.options[0].choices.map((c) => c.id),
+		states,
+	)
+	// Before any snapshot nothing matches
+	assert.deepEqual(states.map(on), [false, false, false, false, false])
+
+	for (const state of states) {
+		inst.applyState({ timer: { state }, timers: [] })
+		assert.equal(values.state, state)
+		assert.ok(checked.at(-1).includes('timerState'), 'the feedback is re-checked on every snapshot')
+		assert.deepEqual(
+			states.map(on),
+			states.map((s) => s === state),
+			state,
+		)
+	}
+
+	// A CueTimer from before the state: the variable is empty and the feedback off
+	inst.applyState({ timer: {}, timers: [] })
+	assert.equal(values.state, '')
+	assert.deepEqual(states.map(on), [false, false, false, false, false])
+
+	// After a disconnect the last state is not kept
+	inst.applyState({ timer: { state: 'overtime' }, timers: [] })
+	assert.equal(on('overtime'), true)
+	inst.resetLiveState()
+	assert.equal(values.state, '')
+	assert.ok(checked.at(-1).includes('timerState'))
+	assert.equal(on('overtime'), false)
+})

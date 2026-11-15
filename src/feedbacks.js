@@ -1,6 +1,6 @@
 import { combineRgb } from '@companion-module/base'
 import { getListNumberedChoices } from './choices.js'
-import { BUTTON_STATES, hexToRgb } from './utils.js'
+import { BUTTON_STATES, TIMER_STATES, hexToRgb } from './utils.js'
 
 /** Display text for the ID presets; keep legacy variables and text feedbacks unchanged. */
 function timerDisplayValue(ctx, rawId, field) {
@@ -64,6 +64,26 @@ export function getFeedbackDefinitions(ctx) {
 				bgcolor: combineRgb(255, 165, 0),
 			},
 			callback: (feedback) => !!ctx.buttonStates[feedback.options.Key],
+		},
+		timerState: {
+			type: 'boolean',
+			name: 'Timer state',
+			description: 'Change the style while the timer is in the chosen state',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'State',
+					id: 'Key',
+					default: 'overtime',
+					choices: TIMER_STATES,
+				},
+			],
+			defaultStyle: {
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(255, 0, 0),
+			},
+			// Empty with an older CueTimer or without a connection: no state matches
+			callback: (feedback) => !!ctx.timerState && ctx.timerState === feedback.options.Key,
 		},
 		timerName: {
 			type: 'advanced',

@@ -75,6 +75,7 @@ export function getVariableDefinitions(ctx) {
 		seconds: { name: 'Seconds' },
 		name: { name: 'Name' },
 		speed: { name: 'Speed' },
+		state: { name: 'Timer State' },
 		endTime: { name: 'End Time' },
 		nextTimerName: { name: 'Next Timer Name' },
 		nextTimerDuration: { name: 'Next Timer Duration' },

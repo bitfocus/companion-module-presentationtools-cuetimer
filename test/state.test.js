@@ -96,6 +96,7 @@ test('the legacy variables keep their values', () => {
 		'scheduleOffsetStatus',
 		'seconds',
 		'speed',
+		'state',
 	])
 })
 
@@ -245,4 +246,19 @@ test('the clock is the UTC instant in the chosen zone, with the clock preference
 	assert.deepEqual(parts(oslo({ seconds: false }), 'schedule'), ['20', '15', ''])
 	// Clock mode off again: the counter text is split as before
 	assert.deepEqual(parts(withTimes({ displayTime: '12:34' }), 'schedule'), ['', '12', '34'])
+})
+
+test('the timer state passes through, and is empty for a CueTimer that does not send it', () => {
+	// The fixture is a snapshot of an older CueTimer: no timer.state
+	const old = mapState(snapshot)
+	assert.equal(old.variables.state, '')
+	assert.equal(old.timerState, '')
+	for (const state of ['idle', 'normal', 'alert1', 'alert2', 'overtime']) {
+		const mapped = mapState({ ...snapshot, timer: { ...snapshot.timer, state } })
+		assert.equal(mapped.variables.state, state)
+		assert.equal(mapped.timerState, state)
+	}
+	assert.equal(mapState({ ...snapshot, timer: { ...snapshot.timer, state: 3 } }).variables.state, '')
+	assert.equal(mapState({}).variables.state, '')
+	assert.equal(emptyState().timerState, '')
 })

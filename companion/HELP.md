@@ -75,9 +75,23 @@ Variables are used as `$(instancename:variablename)`, e.g. `$(cuetimer:hours)`. 
 - hours, minutes, seconds: the counter as shown on the outputs, split into its parts (overtime shows a `+`). In Clock mode, or for a Clock-type timer, they are the clock in the time zone chosen under **Time zone**, with CueTimer's clock settings; with seconds hidden, `seconds` is empty.
 - name
 - speed
+- state: the timer state as shown on CueTimer's outputs: `idle` (no timer active), `normal`, `alert1`, `alert2` or `overtime`. See "Timer state" below.
 - endTime: end of the running timer as `HH:mm:ss`, in the time zone chosen under **Time zone**
 - nextTimerName, nextTimerDuration
 - scheduleOffset, scheduleOffsetStatus (auto-schedule)
+
+##### Timer state
+
+`state` follows the look of CueTimer's outputs (Colors & Animations), without Pause:
+
+- A paused timer keeps the state it was paused in. Use the Pause status feedback for pause.
+- `overtime` means the timer stays at or below zero: end action Overtime, or Hold at 00:00.
+- A timer that hands over to the next one, repeats or stops at its end does not read `overtime` when that happens on time. It does when there is no next timer to start, or when the hand-over is more than 2 seconds late.
+- Stopwatch, Clock and Text timers, and timers without a duration, are always `normal`.
+
+To run actions when a timer goes into overtime, add a trigger in Companion's **Triggers** tab with the event **On variable change** for `$(cuetimer:state)` and the condition `$(cuetimer:state) == 'overtime'` (replace `cuetimer` with your connection label). The **Timer state** feedback can be used as the condition instead, and colours a button while the timer is in the chosen state.
+
+The state needs a CueTimer version that sends it. With an older one the variable is empty and the feedback stays off.
 
 ##### Timers with an ID
 
@@ -116,6 +130,10 @@ The original `timer_X_name` / `timer_X_duration` variable names and **ID timer N
 - Orange / black for on / off of: Fullscreen, Preview, Presenter, NDI, Message, Single Timer Mode, Clock, Pause, Blackout, Multitimer Preview, Multitimer Fullscreen, Multitimer NDI
 
 Message feedback shows whether Message is enabled, including while the timer is idle.
+
+##### Timer state
+
+- Changes the style (white on red by default) while the timer is in the chosen state: Idle, Normal, Alert 1, Alert 2 or Overtime. See "Timer state" under Variables.
 
 ##### Timer with ID
 
