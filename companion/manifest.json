@@ -15,6 +15,13 @@
 		}
 	],
 	"legacyIds": [],
+	"bonjourQueries": {
+		"bonjourHost": {
+			"type": "cuetimer",
+			"protocol": "tcp",
+			"txt": { "txtvers": "1" }
+		}
+	},
 	"runtime": {
 		"type": "node26",
 		"api": "nodejs-ipc",

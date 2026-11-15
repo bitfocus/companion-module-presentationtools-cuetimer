@@ -7,6 +7,7 @@ import { getFeedbackDefinitions } from './feedbacks.js'
 import { getPresets } from './presets.js'
 import { getTimerPresetCatalog } from './timer-presets.js'
 import { capabilitiesForConfig, capabilitiesForMode, emptyState, mapState } from './state.js'
+import { resolveAppTarget } from './target.js'
 import { UpgradeScripts } from './upgrades.js'
 import { getVariableDefinitions, timerVariableMap } from './variables.js'
 
@@ -81,12 +82,13 @@ export default class CueTimerInstance extends InstanceBase {
 			const base = cloudUrl()
 			return { base, query: { scheduleKey: listId, name } }
 		}
-		if (!config.host || !config.port) return { error: 'Host and port are required' }
+		const app = resolveAppTarget(config)
+		if (app.error) return { error: app.error }
 		const query = { name }
 		// A GUID pins the connection to that list; '' or a placeholder number follows the active list
 		if (config.list && !isPlaceholderList(config.list)) query.scheduleKey = config.list
 		else query.followActiveList = '1'
-		return { base: `http://${config.host}:${config.port}`, query }
+		return { base: app.base, query }
 	}
 
 	connect() {

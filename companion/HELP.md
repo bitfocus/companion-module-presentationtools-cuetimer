@@ -9,7 +9,8 @@ Requires Companion 5.1 or later and CueTimer 5 with the Companion API. For CueTi
 **Connect to**
 
 - _CueTimer app on this network_: the CueTimer app on this or another computer.
-  - Target IP: the computer running CueTimer. For local use 127.0.0.1.
+  - CueTimer computer: the CueTimer computers Companion found on this network. Choose one to connect without typing its address, or "Manual" to enter Target IP and Target Port yourself.
+  - Target IP (Manual): the computer running CueTimer. For local use 127.0.0.1.
   - Target Port: the LAN port CueTimer shows under Preferences / Network for display and control links (31609 by default). This is not the Companion TCP port of module version 2.
   - List: the CueTimer list this connection follows, or "Active list" to follow whichever list is active. Lists chosen before CueTimer was reachable are matched by number once it is.
 - _CueTimer Cloud_: a cue list on CueTimer Cloud.
@@ -23,6 +24,12 @@ Requires Companion 5.1 or later and CueTimer 5 with the Companion API. For CueTi
 - _CueTimer schedule time zone_: the zone set for the list in CueTimer (Preferences / General Settings / Schedule time zone, or the cue list's zone on CueTimer Cloud). Every operator sees the same time.
 
 A CueTimer build from before this setting sends these times in the schedule time zone only; they are then shown in that zone whichever option is chosen.
+
+**Finding CueTimer on the network.** CueTimer is listed under "CueTimer computer" when "Make CueTimer discoverable on the network" is on in CueTimer (Preferences / Network, on by default) and its network access is not limited to its own computer. Notes:
+
+- Companion keeps the address and port the computer had when you chose it. If the computer gets another IP address, or CueTimer's LAN port is changed, choose it again.
+- Discovery works within one local network (subnet). Across routed networks or VLANs, or where the network blocks Bonjour (mDNS), the computer is not listed: use Manual.
+- CueTimer on the same computer as Companion: use Manual with 127.0.0.1 when it is not listed.
 
 Connections created with module version 2 are converted automatically: the app mode with the same IP and list, on the LAN port.
 

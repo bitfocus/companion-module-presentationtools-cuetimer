@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { Regex } from '@companion-module/base'
 import { getListsChoices } from './choices.js'
 import { TIME_ZONE_DEVICE, TIME_ZONE_SCHEDULE } from './time.js'
+import { DISCOVERY_FIELD } from './target.js'
 
 // A `.env` file in the module folder (git-ignored, see .env.example) sets CUETIMER_CLOUD_URL for
 // development against a local or staging engine. A packaged module carries no such file.
@@ -23,6 +24,10 @@ export function cloudUrl(env = process.env) {
 	return String(env.CUETIMER_CLOUD_URL || DEFAULT_CLOUD_URL).trim()
 }
 export const DEFAULT_LAN_PORT = '31609'
+
+const APP_MODE = "$(options:mode) !== 'cloud'"
+/** The manual address fields: app mode with no computer picked from the discovery list */
+const MANUAL_TARGET = `${APP_MODE} && !$(options:${DISCOVERY_FIELD})`
 
 /** @param ctx the instance, or a plain stub with the same fields (tests) */
 export function getConfigFields(ctx) {
@@ -48,6 +53,16 @@ export function getConfigFields(ctx) {
 			],
 		},
 		{
+			type: 'bonjour-device',
+			id: DISCOVERY_FIELD,
+			label: 'CueTimer computer',
+			description:
+				'CueTimer computers found on this network. Choose "Manual" to enter the IP address and port yourself, ' +
+				'also when the computer is not listed.',
+			width: 12,
+			isVisibleExpression: APP_MODE,
+		},
+		{
 			type: 'textinput',
 			id: 'host',
 			label: 'Target IP',
@@ -55,7 +70,7 @@ export function getConfigFields(ctx) {
 			default: '127.0.0.1',
 			width: 6,
 			regex: Regex.IP,
-			isVisibleExpression: "$(options:mode) !== 'cloud'",
+			isVisibleExpression: MANUAL_TARGET,
 		},
 		{
 			type: 'textinput',
@@ -67,7 +82,7 @@ export function getConfigFields(ctx) {
 			default: DEFAULT_LAN_PORT,
 			width: 6,
 			regex: Regex.PORT,
-			isVisibleExpression: "$(options:mode) !== 'cloud'",
+			isVisibleExpression: MANUAL_TARGET,
 		},
 		{
 			type: 'dropdown',
@@ -76,7 +91,7 @@ export function getConfigFields(ctx) {
 			default: '1',
 			width: 12,
 			choices: [{ id: '', label: 'Active List' }].concat(getListsChoices(ctx.lists)),
-			isVisibleExpression: "$(options:mode) !== 'cloud'",
+			isVisibleExpression: APP_MODE,
 		},
 		{
 			type: 'textinput',
