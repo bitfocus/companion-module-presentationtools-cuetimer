@@ -54,7 +54,10 @@ export default class CueTimerInstance extends InstanceBase {
 
 	async configUpdated(config) {
 		this.log('debug', 'configUpdated')
+		const previousTarget = this.config?.mode !== 'cloud' ? resolveAppTarget(this.config).base : undefined
 		this.config = config
+		const nextTarget = config.mode !== 'cloud' ? resolveAppTarget(config).base : undefined
+		if (!nextTarget || nextTarget !== previousTarget) this.updateConfigLists([])
 
 		// Reset state before the definitions are built, so they do not reflect the previous config.
 		// The app's actions and presets exist before the handshake, so buttons stay valid while it is closed.
@@ -217,6 +220,7 @@ export default class CueTimerInstance extends InstanceBase {
 		this.fgColor = mapped.fgColor
 		this.bgColor = mapped.bgColor
 		this.syncError = mapped.syncError
+		this.updateConfigLists(mapped.lists)
 
 		if (listsChanged) {
 			this.log('debug', `Lists changed: ${JSON.stringify(mapped.lists.map((l) => l.title))}`)
@@ -302,6 +306,16 @@ export default class CueTimerInstance extends InstanceBase {
 
 	compareKeys(a, b) {
 		return JSON.stringify(Object.keys(a).sort()) === JSON.stringify(Object.keys(b).sort())
+	}
+
+	/** Keep names through a reconnect to the same computer, and publish them as soon as they arrive. */
+	updateConfigLists(lists) {
+		const catalog = lists.map(({ id, title }) => ({ id, title }))
+		if (JSON.stringify(catalog) === JSON.stringify(this.configLists ?? [])) return
+		this.configLists = catalog
+		// Refresh the open config editor without replacing settings or reconnecting.
+		// Only ids, names and ordering affect this menu, not active-list or link updates.
+		this.saveConfig(undefined)
 	}
 
 	getConfigFields() {

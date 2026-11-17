@@ -90,7 +90,7 @@ export function getConfigFields(ctx) {
 			label: 'List',
 			default: '1',
 			width: 12,
-			choices: [{ id: '', label: 'Active List' }].concat(getListsChoices(ctx.lists)),
+			choices: [{ id: '', label: 'Active List' }].concat(getListsChoices(ctx.configLists ?? ctx.lists)),
 			isVisibleExpression: APP_MODE,
 		},
 		{
