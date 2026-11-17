@@ -33,6 +33,7 @@ export const TIMER_STATES = [
 	{ id: 'alert1', label: 'Alert 1' },
 	{ id: 'alert2', label: 'Alert 2' },
 	{ id: 'overtime', label: 'Overtime' },
+	{ id: 'paused', label: 'Paused' },
 ]
 
 export function emptyButtonStates() {

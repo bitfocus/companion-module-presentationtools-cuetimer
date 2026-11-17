@@ -253,7 +253,7 @@ test('the timer state passes through, and is empty for a CueTimer that does not 
 	const old = mapState(snapshot)
 	assert.equal(old.variables.state, '')
 	assert.equal(old.timerState, '')
-	for (const state of ['idle', 'normal', 'alert1', 'alert2', 'overtime']) {
+	for (const state of ['idle', 'normal', 'alert1', 'alert2', 'overtime', 'paused']) {
 		const mapped = mapState({ ...snapshot, timer: { ...snapshot.timer, state } })
 		assert.equal(mapped.variables.state, state)
 		assert.equal(mapped.timerState, state)

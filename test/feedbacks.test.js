@@ -108,7 +108,7 @@ test('the timer state feedback is on only for the state CueTimer reports', () =>
 	})
 	const definitions = () => getFeedbackDefinitions(inst)
 	const on = (Key) => definitions().timerState.callback({ feedbackId: 'timerState', options: { Key } })
-	const states = ['idle', 'normal', 'alert1', 'alert2', 'overtime']
+	const states = ['idle', 'normal', 'alert1', 'alert2', 'overtime', 'paused']
 
 	assert.equal(definitions().timerState.type, 'boolean')
 	assert.equal(definitions().timerState.options[0].default, 'overtime')
@@ -117,7 +117,10 @@ test('the timer state feedback is on only for the state CueTimer reports', () =>
 		states,
 	)
 	// Before any snapshot nothing matches
-	assert.deepEqual(states.map(on), [false, false, false, false, false])
+	assert.deepEqual(
+		states.map(on),
+		states.map(() => false),
+	)
 
 	for (const state of states) {
 		inst.applyState({ timer: { state }, timers: [] })
@@ -133,7 +136,10 @@ test('the timer state feedback is on only for the state CueTimer reports', () =>
 	// A CueTimer from before the state: the variable is empty and the feedback off
 	inst.applyState({ timer: {}, timers: [] })
 	assert.equal(values.state, '')
-	assert.deepEqual(states.map(on), [false, false, false, false, false])
+	assert.deepEqual(
+		states.map(on),
+		states.map(() => false),
+	)
 
 	// After a disconnect the last state is not kept
 	inst.applyState({ timer: { state: 'overtime' }, timers: [] })
