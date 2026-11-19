@@ -66,6 +66,7 @@ test('the fixed variables are always present', () => {
 		'seconds',
 		'name',
 		'speed',
+		'state',
 		'endTime',
 		'nextTimerName',
 		'nextTimerDuration',

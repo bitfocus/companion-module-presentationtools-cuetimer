@@ -7,6 +7,7 @@ import { getFeedbackDefinitions } from './feedbacks.js'
 import { getPresets } from './presets.js'
 import { getTimerPresetCatalog } from './timer-presets.js'
 import { capabilitiesForConfig, capabilitiesForMode, emptyState, mapState } from './state.js'
+import { resolveAppTarget } from './target.js'
 import { UpgradeScripts } from './upgrades.js'
 import { getVariableDefinitions, timerVariableMap } from './variables.js'
 
@@ -20,6 +21,7 @@ function blankVariableValues() {
 		seconds: '',
 		name: '',
 		speed: '',
+		state: '',
 		endTime: '',
 		nextTimerName: '',
 		nextTimerDuration: '',
@@ -52,7 +54,10 @@ export default class CueTimerInstance extends InstanceBase {
 
 	async configUpdated(config) {
 		this.log('debug', 'configUpdated')
+		const previousTarget = this.config?.mode !== 'cloud' ? resolveAppTarget(this.config).base : undefined
 		this.config = config
+		const nextTarget = config.mode !== 'cloud' ? resolveAppTarget(config).base : undefined
+		if (!nextTarget || nextTarget !== previousTarget) this.updateConfigLists([])
 
 		// Reset state before the definitions are built, so they do not reflect the previous config.
 		// The app's actions and presets exist before the handshake, so buttons stay valid while it is closed.
@@ -81,12 +86,13 @@ export default class CueTimerInstance extends InstanceBase {
 			const base = cloudUrl()
 			return { base, query: { scheduleKey: listId, name } }
 		}
-		if (!config.host || !config.port) return { error: 'Host and port are required' }
+		const app = resolveAppTarget(config)
+		if (app.error) return { error: app.error }
 		const query = { name }
 		// A GUID pins the connection to that list; '' or a placeholder number follows the active list
 		if (config.list && !isPlaceholderList(config.list)) query.scheduleKey = config.list
 		else query.followActiveList = '1'
-		return { base: `http://${config.host}:${config.port}`, query }
+		return { base: app.base, query }
 	}
 
 	connect() {
@@ -141,6 +147,7 @@ export default class CueTimerInstance extends InstanceBase {
 			'activeList',
 			'colors',
 			'status',
+			'timerState',
 			'timerName',
 			'timerDuration',
 			'timerBackground',
@@ -198,7 +205,7 @@ export default class CueTimerInstance extends InstanceBase {
 	}
 
 	applyState(snapshot) {
-		const mapped = mapState(snapshot)
+		const mapped = mapState(snapshot, { timeZone: this.config?.timeZone })
 		const listsChanged = JSON.stringify(mapped.lists) !== JSON.stringify(this.lists)
 		const timersChanged = !this.compareKeys(mapped.timers, this.timers)
 		const timerPresetsChanged =
@@ -209,9 +216,11 @@ export default class CueTimerInstance extends InstanceBase {
 		this.lists = mapped.lists
 		this.timers = mapped.timers
 		this.buttonStates = mapped.buttonStates
+		this.timerState = mapped.timerState
 		this.fgColor = mapped.fgColor
 		this.bgColor = mapped.bgColor
 		this.syncError = mapped.syncError
+		this.updateConfigLists(mapped.lists)
 
 		if (listsChanged) {
 			this.log('debug', `Lists changed: ${JSON.stringify(mapped.lists.map((l) => l.title))}`)
@@ -237,6 +246,7 @@ export default class CueTimerInstance extends InstanceBase {
 		this.checkFeedbacks(
 			'colors',
 			'status',
+			'timerState',
 			'timerName',
 			'timerDuration',
 			'timerBackground',
@@ -296,6 +306,16 @@ export default class CueTimerInstance extends InstanceBase {
 
 	compareKeys(a, b) {
 		return JSON.stringify(Object.keys(a).sort()) === JSON.stringify(Object.keys(b).sort())
+	}
+
+	/** Keep names through a reconnect to the same computer, and publish them as soon as they arrive. */
+	updateConfigLists(lists) {
+		const catalog = lists.map(({ id, title }) => ({ id, title }))
+		if (JSON.stringify(catalog) === JSON.stringify(this.configLists ?? [])) return
+		this.configLists = catalog
+		// Refresh the open config editor without replacing settings or reconnecting.
+		// Only ids, names and ordering affect this menu, not active-list or link updates.
+		this.saveConfig(undefined)
 	}
 
 	getConfigFields() {

@@ -9,13 +9,27 @@ Requires Companion 5.1 or later and CueTimer 5 with the Companion API. For CueTi
 **Connect to**
 
 - _CueTimer app on this network_: the CueTimer app on this or another computer.
-  - Target IP: the computer running CueTimer. For local use 127.0.0.1.
+  - CueTimer computer: the CueTimer computers Companion found on this network. Choose one to connect without typing its address, or "Manual" to enter Target IP and Target Port yourself.
+  - Target IP (Manual): the computer running CueTimer. For local use 127.0.0.1.
   - Target Port: the LAN port CueTimer shows under Preferences / Network for display and control links (31609 by default). This is not the Companion TCP port of module version 2.
   - List: the CueTimer list this connection follows, or "Active list" to follow whichever list is active. Lists chosen before CueTimer was reachable are matched by number once it is.
 - _CueTimer Cloud_: a cue list on CueTimer Cloud.
   - Cue list ID: the id in the cue list's control link (`?id=…`), the same one the CueTimer app asks for under Cloud.
 
 **Connection name** (Cloud mode) is shown in CueTimer Cloud's dashboard for the cue list.
+
+**Time zone** sets the zone End Time and the clock in Clock mode are shown in.
+
+- _This Companion device_ (default): the time zone of the computer Companion runs on. Operators in different time zones each see their own local time.
+- _CueTimer schedule time zone_: the zone set for the list in CueTimer (Preferences / General Settings / Schedule time zone, or the cue list's zone on CueTimer Cloud). Every operator sees the same time.
+
+A CueTimer build from before this setting sends these times in the schedule time zone only; they are then shown in that zone whichever option is chosen.
+
+**Finding CueTimer on the network.** CueTimer is listed under "CueTimer computer" when "Make CueTimer discoverable on the network" is on in CueTimer (Preferences / Network, on by default) and its network access is not limited to its own computer. Notes:
+
+- Companion keeps the address and port the computer had when you chose it. If the computer gets another IP address, or CueTimer's LAN port is changed, choose it again.
+- Discovery works within one local network (subnet). Across routed networks or VLANs, or where the network blocks Bonjour (mDNS), the computer is not listed: use Manual.
+- CueTimer on the same computer as Companion: use Manual with 127.0.0.1 when it is not listed.
 
 Connections created with module version 2 are converted automatically: the app mode with the same IP and list, on the LAN port.
 
@@ -58,12 +72,26 @@ Variables are used as `$(instancename:variablename)`, e.g. `$(cuetimer:hours)`. 
 
 ##### Main counter
 
-- hours, minutes, seconds: the counter as shown on the outputs, split into its parts (overtime shows a `+`)
+- hours, minutes, seconds: the counter as shown on the outputs, split into its parts (overtime shows a `+`). In Clock mode, or for a Clock-type timer, they are the clock in the time zone chosen under **Time zone**, with CueTimer's clock settings; with seconds hidden, `seconds` is empty.
 - name
 - speed
-- endTime: end of the running timer, in the list's time zone
+- state: the timer state as shown on CueTimer's outputs: `idle` (no timer active), `normal`, `alert1`, `alert2`, `overtime` or `paused`. See "Timer state" below.
+- endTime: end of the running timer as `HH:mm:ss`, in the time zone chosen under **Time zone**
 - nextTimerName, nextTimerDuration
 - scheduleOffset, scheduleOffsetStatus (auto-schedule)
+
+##### Timer state
+
+`state` follows the look of CueTimer's outputs (Colors & Animations):
+
+- `paused` means the active timer is paused, whatever state it was in. When it is resumed, the state is worked out again: the one from before the pause, unless the timer was edited while paused.
+- `overtime` means the timer stays at or below zero: end action Overtime, or Hold at 00:00.
+- A timer that hands over to the next one, repeats or stops at its end does not read `overtime` when that happens on time. It does when there is no next timer to start, or when the hand-over is more than 2 seconds late.
+- Stopwatch, Clock and Text timers, and timers without a duration, are `normal` while they run.
+
+To run actions when a timer goes into overtime, add a trigger in Companion's **Triggers** tab with the event **On variable change** for `$(cuetimer:state)` and the condition `$(cuetimer:state) == 'overtime'` (replace `cuetimer` with your connection label). The **Timer state** feedback can be used as the condition instead, and colours a button while the timer is in the chosen state. A timer that is paused in overtime and resumed reads `overtime` again, so the trigger then runs a second time.
+
+The state needs a CueTimer version that sends it. With an older one the variable is empty and the feedback stays off. A CueTimer version from before `paused` keeps the state the timer was paused in; use the Pause status feedback there.
 
 ##### Timers with an ID
 
@@ -102,6 +130,10 @@ The original `timer_X_name` / `timer_X_duration` variable names and **ID timer N
 - Orange / black for on / off of: Fullscreen, Preview, Presenter, NDI, Message, Single Timer Mode, Clock, Pause, Blackout, Multitimer Preview, Multitimer Fullscreen, Multitimer NDI
 
 Message feedback shows whether Message is enabled, including while the timer is idle.
+
+##### Timer state
+
+- Changes the style (white on red by default) while the timer is in the chosen state: Idle, Normal, Alert 1, Alert 2, Overtime or Paused. See "Timer state" under Variables.
 
 ##### Timer with ID
 
@@ -145,3 +177,5 @@ Previously placed buttons do not gain the new preset parameter automatically. Re
 - _Cloud sync needs attention in the CueTimer control page_: CueTimer Cloud is holding a change it could not save. Commands are refused until the cue list is reloaded in the control page.
 - _Fix the cue list in CueTimer Cloud, then save or re-enable this connection_: the cue list is missing, deleted or its trial has expired. After fixing it on CueTimer Cloud, save the connection settings or disable and re-enable the connection.
 - _CueTimer does not support the Companion API_: the CueTimer at this address is too old for module version 3. Update CueTimer, or use module version 2.
+- _This is CueTimer's port for Companion module version 2_: Target Port is CueTimer's Companion port (31601 by default), which only module version 2 can use. Set Target Port to the LAN port CueTimer shows under Preferences / Network (31609 by default). CueTimer shows a warning for this too.
+- _This port speaks the protocol of Companion module version 2_: the same mistake, with a CueTimer that did not say which version it is. With CueTimer 5, set Target Port to the LAN port as above. CueTimer 4 and older cannot be used with module version 3; use module version 2.

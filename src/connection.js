@@ -1,6 +1,7 @@
 import { EventEmitter } from 'node:events'
+import { get as httpGet } from 'node:http'
 import { io } from 'socket.io-client'
-import { COMPANION_API_VERSION } from './state.js'
+import { CLIENT_IDENTITY, COMPANION_API_VERSION } from './state.js'
 
 /** Handshake refusals after which trying again cannot help until the configuration changes */
 const TERMINAL_CODES = new Set(['COMPANION_API_VERSION_MISMATCH', 'NETWORK_NOT_ALLOWED'])
@@ -11,6 +12,32 @@ const ROOM_ERRORS = new Set(['ROOM_NOT_FOUND', 'ROOM_DELETED', 'TRIAL_EXPIRED', 
 function refusalText(code, err) {
 	return `${code}: ${err?.data?.message ?? ''}`.trim().replace(/:$/, '')
 }
+
+/** CueTimer's Companion port (for module version 2) answered: the port to use is the LAN port */
+export const LEGACY_PORT_TEXT =
+	"This is CueTimer's port for Companion module version 2 (31601 by default). " +
+	"Set Target Port to CueTimer's LAN port, shown under Preferences / Network (31609 by default)"
+/** Something sends module version 2 frames here, but it did not say which CueTimer it is */
+export const LEGACY_PROTOCOL_TEXT =
+	'This port speaks the protocol of Companion module version 2. For CueTimer 5, set Target Port to the LAN port ' +
+	'shown under Preferences / Network (31609 by default). CueTimer 4 and older need module version 2'
+
+/** `{…}$` frames pushed into the WebSocket handshake: the peer is a module version 2 port */
+function sentLegacyFrames(err) {
+	const cause = err?.description?.error
+	return typeof cause?.code === 'string' && cause.code.startsWith('HPE_') && cause.rawPacket?.[0] === 0x7b
+}
+
+/** The answer CueTimer's Companion port gives to HTTP, though any server can answer 426 */
+function refusedUpgrade(err) {
+	return err?.description?.message === 'Unexpected server response: 426'
+}
+
+const LEGACY_PORT_HEADER = 'x-cuetimer-port'
+const LEGACY_PORT_HEADER_VALUE = 'companion-legacy'
+const PROBE_TIMEOUT_MS = 2000
+/** How long an answer about a port is trusted before asking again */
+const PROBE_CACHE_MS = 30000
 
 const ACK_TIMEOUT_MS = 5000
 const SNAPSHOT_GUARD_MS = 5000
@@ -37,16 +64,29 @@ export class CueTimerConnection extends EventEmitter {
 		this.backoffAttempt = 0
 		this.backoffTimer = null
 		this.guardTimer = null
+		this.base = ''
+		/** Counts status events, so a late answer can tell whether anything happened since */
+		this.statusCount = 0
+		/** The pending request asking a port that answered 426 whether it is CueTimer's */
+		this.probe = null
+		/** Per base URL: `{ at, legacy }`, whether it is CueTimer's module version 2 port */
+		this.probed = new Map()
+	}
+
+	emit(event, ...args) {
+		if (event === 'status') this.statusCount++
+		return super.emit(event, ...args)
 	}
 
 	/** `base` is `http://host:port` or the Cloud URL; `query` the handshake fields */
 	connect(base, query) {
 		this.disconnect()
-		const url = `${String(base).replace(/\/+$/, '')}/companion`
+		this.base = String(base).replace(/\/+$/, '')
+		const url = `${this.base}/companion`
 		this.log('debug', `Connecting to ${url} (${JSON.stringify(query)})`)
 		this.emit('status', 'connecting', 'Connecting')
 		const socket = this.ioFactory(url, {
-			auth: { apiVersion: COMPANION_API_VERSION },
+			auth: { apiVersion: COMPANION_API_VERSION, client: { ...CLIENT_IDENTITY } },
 			query,
 			transports: ['websocket'],
 			forceNew: true,
@@ -161,9 +201,52 @@ export class CueTimerConnection extends EventEmitter {
 			return
 		}
 		// Transport-level error: Socket.IO keeps reconnecting on its own.
+		if (sentLegacyFrames(err)) {
+			this.log('debug', 'Connection error: the port sends Companion module version 2 frames')
+			this.emit('status', 'connection_failure', LEGACY_PROTOCOL_TEXT)
+			return
+		}
+		if (refusedUpgrade(err)) {
+			const known = this.probed.get(this.base)
+			const fresh = known && Date.now() - known.at < PROBE_CACHE_MS
+			if (fresh && known.legacy) {
+				this.emit('status', 'connection_failure', LEGACY_PORT_TEXT)
+				return
+			}
+			// The generic text below stands until the port has said whether it is CueTimer's.
+			if (!fresh) queueMicrotask(() => this.probeLegacyPort())
+		}
 		const detail = err?.description?.message ?? (typeof err?.description === 'string' ? err.description : '')
 		this.log('debug', `Connection error: ${err?.message}${detail ? ` (${detail})` : ''}`)
 		this.emit('status', 'connection_failure', `${err?.message || 'Connection failed'}${detail ? `: ${detail}` : ''}`)
+	}
+
+	/**
+	 * Ask the port that refused the upgrade with 426 whether it is CueTimer's module version 2
+	 * port: the status code alone does not say. A plain request, which CueTimer answers with
+	 * its header and does not take for a module. The answer is used only if this connection
+	 * is still the one that asked and nothing else has been reported since.
+	 */
+	probeLegacyPort() {
+		const base = this.base
+		const socket = this.socket
+		if (this.probe || !socket || !base.startsWith('http://')) return
+		const asked = this.statusCount
+		const settle = (legacy) => {
+			if (this.probe !== request) return
+			this.probe = null
+			this.probed.set(base, { at: Date.now(), legacy })
+			if (legacy && this.socket === socket && this.base === base && this.statusCount === asked) {
+				this.emit('status', 'connection_failure', LEGACY_PORT_TEXT)
+			}
+		}
+		const request = httpGet(`${base}/`, { timeout: PROBE_TIMEOUT_MS, agent: false }, (response) => {
+			response.resume()
+			settle(response.headers[LEGACY_PORT_HEADER] === LEGACY_PORT_HEADER_VALUE)
+		})
+		request.on('timeout', () => request.destroy(new Error('timeout')))
+		request.on('error', () => settle(false))
+		this.probe = request
 	}
 
 	/** True once the engine accepted the connection and sent the first snapshot */
@@ -233,6 +316,11 @@ export class CueTimerConnection extends EventEmitter {
 		this.backoffAttempt = 0
 		this.clearReady()
 		this.connectResponse = null
+		if (this.probe) {
+			const request = this.probe
+			this.probe = null
+			request.destroy()
+		}
 		if (this.socket) {
 			const socket = this.socket
 			this.socket = null

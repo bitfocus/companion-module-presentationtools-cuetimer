@@ -2,17 +2,18 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { UpgradeScripts } from '../src/upgrades.js'
 
-const [listNewConfigField, tcpToSocketIo] = UpgradeScripts
+const [listNewConfigField, tcpToSocketIo, timeZoneConfigField] = UpgradeScripts
 const context = { currentConfig: {} }
 const props = (config) => ({ config, secrets: null, actions: [], feedbacks: [] })
 
-test('the upgrade script list has the two scripts in order', () => {
-	assert.equal(UpgradeScripts.length, 2)
+test('the upgrade script list has the three scripts in order', () => {
+	assert.equal(UpgradeScripts.length, 3)
 	assert.equal(typeof listNewConfigField, 'function')
 	assert.equal(typeof tcpToSocketIo, 'function')
+	assert.equal(typeof timeZoneConfigField, 'function')
 })
 
-test('a null config is left alone by both', () => {
+test('a null config is left alone by all', () => {
 	for (const script of UpgradeScripts) {
 		assert.deepEqual(script(context, props(null)), { updatedConfig: null, updatedActions: [], updatedFeedbacks: [] })
 	}
@@ -57,4 +58,13 @@ test('a config that already has a mode is untouched', () => {
 	const config = { mode: 'cloud', listId: 'abc', name: 'Desk' }
 	assert.equal(tcpToSocketIo(context, props(config)).updatedConfig, null)
 	assert.equal(config.listId, 'abc')
+})
+
+test('a connection saved before the Time zone setting gets the device zone; a chosen one is kept', () => {
+	const config = { mode: 'cloud', listId: 'abc', name: 'Desk' }
+	const result = timeZoneConfigField(context, props(config))
+	assert.deepEqual(result.updatedConfig, { mode: 'cloud', listId: 'abc', name: 'Desk', timeZone: 'device' })
+	const chosen = { mode: 'app', timeZone: 'schedule' }
+	assert.equal(timeZoneConfigField(context, props(chosen)).updatedConfig, null)
+	assert.equal(chosen.timeZone, 'schedule')
 })

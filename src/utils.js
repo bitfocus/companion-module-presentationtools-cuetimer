@@ -26,6 +26,16 @@ export const BUTTON_STATES = [
 ]
 export const BUTTON_STATE_KEYS = BUTTON_STATES.map((state) => state.id)
 
+/** The timer states CueTimer reports (`timer.state`), in the order shown to users (timer state feedback) */
+export const TIMER_STATES = [
+	{ id: 'idle', label: 'Idle' },
+	{ id: 'normal', label: 'Normal' },
+	{ id: 'alert1', label: 'Alert 1' },
+	{ id: 'alert2', label: 'Alert 2' },
+	{ id: 'overtime', label: 'Overtime' },
+	{ id: 'paused', label: 'Paused' },
+]
+
 export function emptyButtonStates() {
 	return Object.fromEntries(BUTTON_STATE_KEYS.map((key) => [key, false]))
 }

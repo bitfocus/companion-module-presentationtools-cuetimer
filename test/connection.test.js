@@ -2,7 +2,9 @@ import assert from 'node:assert/strict'
 import { test, after } from 'node:test'
 import { createServer } from 'node:http'
 import { Server } from 'socket.io'
-import { CueTimerConnection } from '../src/connection.js'
+import { createServer as createTcpServer } from 'node:net'
+import { readFileSync } from 'node:fs'
+import { CueTimerConnection, LEGACY_PORT_TEXT, LEGACY_PROTOCOL_TEXT } from '../src/connection.js'
 
 // A bare Socket.IO server stands in for the engine's /companion namespace.
 
@@ -86,6 +88,25 @@ test('ready only after ConnectResponse and the first snapshot; nothing is sent b
 	assert.equal(statuses.at(-1)[0], 'ok')
 	assert.deepEqual(await c.sendCommand({ command: 'StartNext' }), { success: true })
 	assert.deepEqual(e.received, [{ command: 'StartNext', data: {} }])
+	c.destroy()
+})
+
+test('the handshake says what the client is: Companion, and the module version', async () => {
+	let auth
+	let query
+	engine({
+		onConnect: (socket) => {
+			auth = socket.handshake.auth
+			query = socket.handshake.query
+		},
+	})
+	const { c } = connection()
+	c.connect(base, { scheduleKey: 'l1', name: 'Booth A' })
+	await until(() => auth)
+	const { version } = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
+	assert.match(version, /^\d+\.\d+\.\d+/)
+	assert.deepEqual(auth, { apiVersion: '1.0', client: { kind: 'companion', version } })
+	assert.equal(query.name, 'Booth A', 'the configured name still travels in the query')
 	c.destroy()
 })
 
@@ -234,4 +255,136 @@ test('the first snapshot is delivered before the status turns ok', async () => {
 	await until(() => c.isReady)
 	assert.deepEqual(order.slice(-2), ['state', 'status:ok'])
 	c.destroy()
+})
+
+// ─── The module version 2 port ───────────────────────────────────────────────────────────
+
+/** A raw TCP server; `onData(socket, text, state)` answers. Returns its base URL and what it saw. */
+async function tcpServer(onConnection) {
+	const sockets = new Set()
+	const server = createTcpServer((socket) => {
+		sockets.add(socket)
+		socket.on('error', () => {})
+		socket.on('close', () => sockets.delete(socket))
+		onConnection(socket)
+	})
+	await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
+	return {
+		base: `http://127.0.0.1:${server.address().port}`,
+		close: () => {
+			for (const socket of sockets) socket.destroy()
+			server.close()
+		},
+	}
+}
+
+/**
+ * A port that answers HTTP with 426, as CueTimer's Companion port does. `header` adds
+ * CueTimer's own mark; `probeDelayMs` holds back the answer to a plain (non Socket.IO) request.
+ */
+async function refusingServer({ header = true, probeDelayMs = 0 } = {}) {
+	const seen = { upgrades: 0, probes: 0 }
+	const response =
+		'HTTP/1.1 426 Upgrade Required\r\nConnection: close\r\nContent-Type: text/plain\r\n' +
+		(header ? 'X-CueTimer-Port: companion-legacy\r\n' : '') +
+		'\r\nno\n'
+	const server = await tcpServer((socket) => {
+		let text = ''
+		socket.on('data', (chunk) => {
+			text += chunk
+			if (!text.includes('\r\n\r\n')) return
+			const probe = !text.startsWith('GET /socket.io/')
+			text = ''
+			if (probe) seen.probes++
+			else seen.upgrades++
+			setTimeout(() => socket.end(response), probe ? probeDelayMs : 0)
+		})
+	})
+	return { ...server, seen }
+}
+
+test('a port that pushes module version 2 frames is named, with advice for CueTimer 5 and 4', async () => {
+	// A CueTimer without the 426 answer, or CueTimer 4: frames arrive whatever the client sends
+	const legacy = await tcpServer((socket) => {
+		const timer = setInterval(() => socket.write('{"h":"","m":"05","s":"00"}$'), 50)
+		socket.on('close', () => clearInterval(timer))
+	})
+	const { c, statuses } = connection()
+	c.connect(legacy.base, { followActiveList: '1' })
+	await until(() => statuses.some(([s]) => s === 'connection_failure'))
+	assert.deepEqual(statuses.at(-1), ['connection_failure', LEGACY_PROTOCOL_TEXT])
+	assert.match(LEGACY_PROTOCOL_TEXT, /CueTimer 4 and older need module version 2/)
+	c.destroy()
+	legacy.close()
+})
+
+test("CueTimer's module version 2 port is recognised by its header, asked once across retries", async () => {
+	const port = await refusingServer()
+	const { c, statuses } = connection()
+	c.connect(port.base, { followActiveList: '1' })
+	await until(() => statuses.some(([, message]) => message === LEGACY_PORT_TEXT))
+	// Until the port has answered, the status is the plain transport error
+	assert.deepEqual(statuses[1], ['connection_failure', 'websocket error: Unexpected server response: 426'])
+	// Socket.IO retries on its own: the message stays, and the port is not asked again
+	await until(() => port.seen.upgrades >= 3, 15000)
+	assert.equal(port.seen.probes, 1)
+	const afterProbe = statuses.slice(statuses.findIndex(([, message]) => message === LEGACY_PORT_TEXT))
+	assert.ok(afterProbe.length >= 2, 'the retries reported again')
+	assert.ok(afterProbe.every(([status, message]) => status === 'connection_failure' && message === LEGACY_PORT_TEXT))
+	c.destroy()
+	port.close()
+})
+
+test('another server that answers 426 keeps the plain error', async () => {
+	const port = await refusingServer({ header: false })
+	const { c, statuses } = connection()
+	c.connect(port.base, { followActiveList: '1' })
+	await until(() => port.seen.probes === 1 && port.seen.upgrades >= 2, 10000)
+	await sleep(200)
+	assert.ok(statuses.length >= 3)
+	for (const [status, message] of statuses.slice(1)) {
+		assert.deepEqual([status, message], ['connection_failure', 'websocket error: Unexpected server response: 426'])
+	}
+	assert.equal(port.seen.probes, 1, 'asked once, though the answer was no')
+	c.destroy()
+	port.close()
+})
+
+test('a closed port keeps the plain error', async () => {
+	const closed = await tcpServer(() => {})
+	closed.close()
+	const { c, statuses } = connection()
+	c.connect(closed.base, { followActiveList: '1' })
+	await until(() => statuses.some(([s]) => s === 'connection_failure'))
+	assert.match(statuses.at(-1)[1], /^websocket error: connect ECONNREFUSED/)
+	c.destroy()
+})
+
+test('an answer that arrives after the port was corrected changes nothing', async () => {
+	const e = engine({
+		onConnect: (socket) => {
+			e.send(socket, 'ConnectResponse', { success: true, mode: 'desktop' })
+			e.send(socket, 'companionState', snapshot)
+		},
+	})
+	const port = await refusingServer({ probeDelayMs: 600 })
+	const { c, statuses } = connection()
+	c.connect(port.base, { followActiveList: '1' })
+	await until(() => port.seen.probes === 1)
+	// The user corrects the port while the question is still out
+	c.connect(base, { scheduleKey: 'l1' })
+	await until(() => c.isReady)
+	await sleep(900)
+	assert.equal(statuses.at(-1)[0], 'ok')
+	assert.ok(!statuses.some(([, message]) => message === LEGACY_PORT_TEXT))
+	c.destroy()
+
+	// The same when the connection is removed while the question is out
+	const removed = connection()
+	removed.c.connect(port.base, { followActiveList: '1' })
+	await until(() => port.seen.probes === 2)
+	removed.c.destroy()
+	await sleep(900)
+	assert.ok(!removed.statuses.some(([, message]) => message === LEGACY_PORT_TEXT))
+	port.close()
 })

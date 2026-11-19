@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { DEFAULT_CLOUD_URL, cloudUrl, getConfigFields } from '../src/config.js'
 
@@ -7,14 +8,28 @@ const byId = Object.fromEntries(fields.map((field) => [field.id, field]))
 
 test('fields follow the "Connect to" choice through expressions, never functions', () => {
 	for (const field of fields) assert.equal(field.isVisible, undefined, `${field.id} uses a function`)
-	for (const id of ['host', 'port', 'list']) {
+	for (const id of ['bonjourHost', 'list']) {
 		assert.equal(byId[id].isVisibleExpression, "$(options:mode) !== 'cloud'", id)
+	}
+	// The manual address is hidden while a computer is picked from the discovery list
+	for (const id of ['host', 'port']) {
+		assert.equal(byId[id].isVisibleExpression, "$(options:mode) !== 'cloud' && !$(options:bonjourHost)", id)
 	}
 	assert.equal(byId['info-app'], undefined)
 	assert.match(byId.port.description, /LAN port/)
 	for (const id of ['listId', 'name']) assert.equal(byId[id].isVisibleExpression, "$(options:mode) === 'cloud'", id)
 	assert.equal(byId['info-cloud'], undefined)
-	for (const id of ['info', 'mode']) assert.equal(byId[id].isVisibleExpression, undefined, id)
+	for (const id of ['info', 'mode', 'timeZone']) assert.equal(byId[id].isVisibleExpression, undefined, id)
+})
+
+test('the discovery list is a config field with a matching query in the manifest', () => {
+	const manifest = JSON.parse(readFileSync(new URL('../companion/manifest.json', import.meta.url), 'utf8'))
+	assert.equal(byId.bonjourHost.type, 'bonjour-device')
+	assert.equal(byId.bonjourHost.default, undefined, 'a new connection starts on Manual')
+	assert.deepEqual(Object.keys(manifest.bonjourQueries), ['bonjourHost'])
+	// CueTimer advertises _cuetimer._tcp with txtvers=1
+	assert.deepEqual(manifest.bonjourQueries.bonjourHost, { type: 'cuetimer', protocol: 'tcp', txt: { txtvers: '1' } })
+	assert.ok(fields.indexOf(byId.bonjourHost) < fields.indexOf(byId.host), 'above the manual address')
 })
 
 test('the Cloud endpoint is not a setting', () => {
@@ -40,4 +55,9 @@ test('defaults match a fresh app connection', () => {
 	assert.equal(byId.list.choices[0].id, '')
 	assert.equal(byId.listId.default, '')
 	assert.equal(byId.name.default, 'Companion')
+	assert.deepEqual(
+		byId.timeZone.choices.map((c) => c.id),
+		['device', 'schedule'],
+	)
+	assert.equal(byId.timeZone.default, 'device')
 })
