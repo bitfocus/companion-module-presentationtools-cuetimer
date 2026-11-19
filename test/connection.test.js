@@ -3,6 +3,7 @@ import { test, after } from 'node:test'
 import { createServer } from 'node:http'
 import { Server } from 'socket.io'
 import { createServer as createTcpServer } from 'node:net'
+import { readFileSync } from 'node:fs'
 import { CueTimerConnection, LEGACY_PORT_TEXT, LEGACY_PROTOCOL_TEXT } from '../src/connection.js'
 
 // A bare Socket.IO server stands in for the engine's /companion namespace.
@@ -87,6 +88,25 @@ test('ready only after ConnectResponse and the first snapshot; nothing is sent b
 	assert.equal(statuses.at(-1)[0], 'ok')
 	assert.deepEqual(await c.sendCommand({ command: 'StartNext' }), { success: true })
 	assert.deepEqual(e.received, [{ command: 'StartNext', data: {} }])
+	c.destroy()
+})
+
+test('the handshake says what the client is: Companion, and the module version', async () => {
+	let auth
+	let query
+	engine({
+		onConnect: (socket) => {
+			auth = socket.handshake.auth
+			query = socket.handshake.query
+		},
+	})
+	const { c } = connection()
+	c.connect(base, { scheduleKey: 'l1', name: 'Booth A' })
+	await until(() => auth)
+	const { version } = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
+	assert.match(version, /^\d+\.\d+\.\d+/)
+	assert.deepEqual(auth, { apiVersion: '1.0', client: { kind: 'companion', version } })
+	assert.equal(query.name, 'Booth A', 'the configured name still travels in the query')
 	c.destroy()
 })
 

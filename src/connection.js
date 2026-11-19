@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events'
 import { get as httpGet } from 'node:http'
 import { io } from 'socket.io-client'
-import { COMPANION_API_VERSION } from './state.js'
+import { CLIENT_IDENTITY, COMPANION_API_VERSION } from './state.js'
 
 /** Handshake refusals after which trying again cannot help until the configuration changes */
 const TERMINAL_CODES = new Set(['COMPANION_API_VERSION_MISMATCH', 'NETWORK_NOT_ALLOWED'])
@@ -86,7 +86,7 @@ export class CueTimerConnection extends EventEmitter {
 		this.log('debug', `Connecting to ${url} (${JSON.stringify(query)})`)
 		this.emit('status', 'connecting', 'Connecting')
 		const socket = this.ioFactory(url, {
-			auth: { apiVersion: COMPANION_API_VERSION },
+			auth: { apiVersion: COMPANION_API_VERSION, client: { ...CLIENT_IDENTITY } },
 			query,
 			transports: ['websocket'],
 			forceNew: true,

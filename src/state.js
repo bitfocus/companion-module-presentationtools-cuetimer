@@ -1,9 +1,28 @@
+import { existsSync, readFileSync } from 'node:fs'
 import { combineRgb } from '@companion-module/base'
 import { emptyButtonStates, hexToRgb } from './utils.js'
 import { clockParts, formatHms, parseUtc, timeOfDayIn, zoneFor } from './time.js'
 
 /** The Companion API version this module speaks; the engine refuses another major. */
 export const COMPANION_API_VERSION = '1.0'
+
+/** This module's version from package.json, or '' when it cannot be read. */
+function moduleVersion() {
+	try {
+		// Source files live in src/; the packaged entrypoint lives beside package.json.
+		const root = new URL(existsSync(new URL('./package.json', import.meta.url)) ? './' : '../', import.meta.url)
+		const version = JSON.parse(readFileSync(new URL('package.json', root), 'utf8')).version
+		return typeof version === 'string' ? version : ''
+	} catch {
+		return ''
+	}
+}
+
+/**
+ * What this client is, sent in the handshake. CueTimer refuses a client that does not say,
+ * and lists the kind and version with the connection in its network settings.
+ */
+export const CLIENT_IDENTITY = Object.freeze({ kind: 'companion', version: moduleVersion() })
 
 /** Everything the desktop app offers beyond the Cloud: output windows, the list catalog and its links */
 export const ALL_CAPABILITIES = ['outputs', 'lists', 'links']
